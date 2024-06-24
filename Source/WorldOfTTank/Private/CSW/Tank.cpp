@@ -15,11 +15,8 @@ ATank::ATank()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Collier"));
-	RootComponent = CapsuleComp;
-
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base Mesh"));
-	BaseMesh->SetupAttachment(CapsuleComp);
+	RootComponent = BaseMesh;
 
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Turret Mesh"));
 	TurretMesh->SetupAttachment(BaseMesh);
@@ -27,8 +24,16 @@ ATank::ATank()
 	BarrelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Barrel Mesh"));
 	BarrelMesh->SetupAttachment(TurretMesh);
 
+	LeftWheelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftWhell Mesh"));
+	LeftWheelMesh->SetupAttachment(BaseMesh);
+
+	RightWheelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RigthWhell Mesh"));
+	RightWheelMesh->SetupAttachment(BaseMesh);
+
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArmComp->SetupAttachment(RootComponent);
+	SpringArmComp->bUsePawnControlRotation = true;
+	SpringArmComp->TargetArmLength = 800;
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComp->SetupAttachment(SpringArmComp);
@@ -38,8 +43,6 @@ ATank::ATank()
 void ATank::BeginPlay()
 {
 	Super::BeginPlay();
-
-	PlayerControllerRef = Cast<APlayerController>(GetController());
 }
 
 // Called every frame
@@ -47,30 +50,22 @@ void ATank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (PlayerControllerRef)
-	{
-		FHitResult	HitResult;
-		PlayerControllerRef->GetHitResultUnderCursor(
-			ECC_Visibility,
-			false,
-			HitResult);
-
-		DrawDebugCircle(
-			GetWorld(),
-			HitResult.ImpactPoint,
-			20,
-			12,
-			FColor::White,
-			false,
-			-1);
-
-		RotateTurretAndBarrel(HitResult.ImpactPoint);
-		
-		// int32	ViewPortSizeX, ViewPortSizeY;
-		// PlayerControllerRef->GetViewportSize(ViewPortSizeX, ViewPortSizeY);
-		// PlayerControllerRef->SetMouseLocation(ViewPortSizeX/ 2, ViewPortSizeY / 2);
-	}
+	RotateTurretAndBarrel();
 }
+
+void	ATank::LookRightLeft(float value)
+{
+	AddControllerYawInput(value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
+}
+
+void ATank::LookUpDown(float value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("View: %f"), GetViewRotation().Pitch);
+	UE_LOG(LogTemp, Warning, TEXT("Camera:%f"), CameraComp->GetComponentRotation().Pitch);
+	if (!(CameraComp->GetComponentRotation().Pitch >= 30 && value <= 0))
+		AddControllerPitchInput(value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
+}
+
 
 // Called to bind functionality to input
 void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -81,7 +76,9 @@ void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ATank::Turn);
 
 	PlayerInputComponent->BindAxis(TEXT("LookRightLeft"), this, &ATank::LookRightLeft);
+	PlayerInputComponent->BindAxis(TEXT("LookUpDown"), this, &ATank::LookUpDown);
 }
+
 
 void	ATank::Move(float Value)
 {
@@ -99,37 +96,36 @@ void ATank::Turn(float Value)
 	AddActorLocalRotation(DeltaRotation, true);
 }
 
-void ATank::LookRightLeft(float Value)
+float	LimitRotationAngle(float angle)
 {
-	
+	if (angle > 80)
+		return 80;
+	if (angle < -20)
+		return -20;
+	return angle;
 }
 
-void ATank::RotateTurretAndBarrel(FVector TargetLocation)
+void ATank::RotateTurretAndBarrel()
 {
-	FVector		ToTarget = TargetLocation - TurretMesh->GetComponentLocation();
-	
 	TurretMesh->SetWorldRotation(
 		FMath::RInterpTo(
 			TurretMesh->GetComponentRotation(),
-			FRotator(0, ToTarget.Rotation().Yaw, 0),
+			FRotator(
+				0,
+				CameraComp->GetComponentRotation().Yaw,
+				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
-			3)
+			0.5)
 			);
 
 	BarrelMesh->SetWorldRotation(
 		FMath::RInterpTo(
 			BarrelMesh->GetComponentRotation(),
-			FRotator(ToTarget.Rotation().Pitch, TurretMesh->GetComponentRotation().Yaw, 0),
+			FRotator(
+				LimitRotationAngle(CameraComp->GetComponentRotation().Pitch),
+				TurretMesh->GetComponentRotation().Yaw,
+				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
-			3)
+			0.5)
 			);
-
-	// SpringArmComp->AddRelativeRotation(
-	// 	FRotator(
-	// 		TargetLocation.Rotation().Pitch / 100,
-	// 		TargetLocation.Rotation().Yaw / 100,
-	// 		TargetLocation.Rotation().Roll / 100)
-	// 		);
 }
-
-

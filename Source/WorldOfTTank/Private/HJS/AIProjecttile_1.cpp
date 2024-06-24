@@ -21,7 +21,7 @@ AAIProjecttile_1::AAIProjecttile_1()
 void AAIProjecttile_1::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	ProjecttileComp->OnComponentHit.AddDynamic(this, &AAIProjecttile_1::OnHit);
 }
 
 // Called every frame
@@ -31,3 +31,35 @@ void AAIProjecttile_1::Tick(float DeltaTime)
 
 }
 
+void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	AActor* MyOwner = GetOwner();
+	if (MyOwner == nullptr)
+	{
+		Destroy();
+		return;
+	}
+	//AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
+	//UClass* DamageTypeClass = UDamageType::StaticClass();
+
+	//if (OtherActor != nullptr && OtherActor != this && OtherActor != MyOwner)
+	//{
+	//	UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
+	//	if (HitParticles)
+	//	{
+	//		UGameplayStatics::SpawnEmitterAtLocation(this, HitParticles, GetActorLocation(), GetActorRotation());
+	//	}
+
+	//	if (HitSound)
+	//	{
+	//		UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+	//	}
+
+	//	if (HitCameraShakeClass)
+	//	{
+	//		GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitCameraShakeClass);
+	//	}
+	//}
+	Destroy();
+	return;
+}

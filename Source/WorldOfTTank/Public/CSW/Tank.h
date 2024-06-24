@@ -38,6 +38,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
 	UStaticMeshComponent* BarrelMesh;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
+	UStaticMeshComponent* LeftWheelMesh;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
+	UStaticMeshComponent* RightWheelMesh;
 
 	UPROPERTY(VisibleAnywhere, Category="Componets")
 	class USpringArmComponent* SpringArmComp;
@@ -50,13 +56,15 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float TurnRate = 50;
+
+	UPROPERTY(EditAnywhere, Category="Look")
+	float	ViewRotationRate = 100;
 	
 	void	Move(float Value);
 	void	Turn(float Value);
 	void	LookRightLeft(float Value);
-	
+	void	LookUpDown(float value);
 
-	APlayerController* PlayerControllerRef;
 protected:
-	void	RotateTurretAndBarrel(FVector TargetLocation);
+	void	RotateTurretAndBarrel();
 };

@@ -13,28 +13,16 @@ UBTTask_SearchForTargets::UBTTask_SearchForTargets()
 
 EBTNodeResult::Type UBTTask_SearchForTargets::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	AAIController* AIController = OwnerComp.GetAIOwner();
-	if (AIController == nullptr)
+	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+	if (BlackboardComp == nullptr)
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	AAITankCPU_1* AIPawn = Cast<AAITankCPU_1>(AIController->GetPawn());
-	if (AIPawn == nullptr)
-	{
-		return EBTNodeResult::Failed;
-	}
+	UObject* TargetPlayer = BlackboardComp->GetValueAsObject(FName("TargetPlayer"));
+	UObject* TargetCPU = BlackboardComp->GetValueAsObject(FName("TargetCPU"));
 
-	UPawnSensingComponent* PawnSensingComponent = AIPawn->FindComponentByClass<UPawnSensingComponent>();
-	if (PawnSensingComponent == nullptr)
-	{
-		return EBTNodeResult::Failed;
-	}
-
-	APawn* SensedPawn = nullptr;
-
-	// If the target actor is set in the blackboard, the task is successful
-	if (OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor") != nullptr)
+	if (TargetPlayer || TargetCPU)
 	{
 		return EBTNodeResult::Succeeded;
 	}

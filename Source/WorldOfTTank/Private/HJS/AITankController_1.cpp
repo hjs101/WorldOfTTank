@@ -14,11 +14,6 @@ AAITankController_1::AAITankController_1()
 
 }
 
-UBlackboardComponent* AAITankController_1::GetBlackboard()
-{
-	return BlackboardComponent;
-}
-
 void AAITankController_1::BeginPlay()
 {
 	Super::BeginPlay();

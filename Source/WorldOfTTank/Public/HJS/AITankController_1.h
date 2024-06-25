@@ -15,9 +15,6 @@ class WORLDOFTTANK_API AAITankController_1 : public AAIController
 	GENERATED_BODY()
 public:
 	AAITankController_1();
-	
-	UFUNCTION()
-	UBlackboardComponent* GetBlackboard();
 
 protected:
 	virtual void BeginPlay() override;
@@ -31,4 +28,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UBlackboardComponent* BlackboardComponent;
+
+	// 배열
 };

@@ -22,7 +22,7 @@ AAITank_1::AAITank_1()
 
 	// 스폰 포인트 생성
 	ProjecttileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("AITank_1 Spawn Point"));
-	ProjecttileSpawnPoint->SetupAttachment(HeadMesh);
+	ProjecttileSpawnPoint->SetupAttachment(BarrelMesh);
 
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("AITank_1 MovementComponent"));
 	MovementComponent->SetUpdatedComponent(BodyMesh);
@@ -96,10 +96,29 @@ void AAITank_1::RotateTurret(FVector LookAtTarget)
 {
 	FVector ToTarget = LookAtTarget - HeadMesh->GetComponentLocation();
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
+	// 머리 돌리기
 	HeadMesh->SetWorldRotation(
 		FMath::RInterpTo(HeadMesh->GetComponentRotation(),
 			LookAtRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this)
 			, 2.f)
 	);
+
+	// 포신 각도 설정
+	LookAtRotation.Pitch = ToTarget.Rotation().Pitch;
+	// 포신 각도 제한
+	if (LookAtRotation.Pitch < DownLimit) {
+		LookAtRotation.Pitch = DownLimit;
+	}
+	if (LookAtRotation.Pitch > UpLimit) {
+		LookAtRotation.Pitch = UpLimit;
+	}
+	// 포신 돌리기
+	BarrelMesh->SetWorldRotation(
+		FMath::RInterpTo(BarrelMesh->GetComponentRotation(),
+			LookAtRotation,
+			UGameplayStatics::GetWorldDeltaSeconds(this)
+		, 3.f)
+	);
+
 }

@@ -80,7 +80,7 @@ void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 }
 
 
-void	ATank::Move(float Value)
+void ATank::Move(float Value)
 {
 	FVector	DeltaLocation = FVector::ZeroVector;
 

@@ -59,12 +59,17 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Look")
 	float	ViewRotationRate = 100;
+
+	bool	MoveState = true;
 	
 	void	Move(float Value);
 	void	Turn(float Value);
 	void	LookRightLeft(float Value);
-	void	LookUpDown(float value);
+	void	LookUpDown(float Value);
+	void	ZoomIn();
+	void	ZoomOut();
 
 protected:
 	void	RotateTurretAndBarrel();
+	
 };

@@ -23,8 +23,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
@@ -44,32 +42,19 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
 	UStaticMeshComponent* RightWheelMesh;
-
-	UPROPERTY(VisibleAnywhere, Category="Componets")
-	class USpringArmComponent* SpringArmComp;
-
-	UPROPERTY(VisibleAnywhere, Category="Components")
-	class UCameraComponent* CameraComp;
-
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float Speed = 300;
 	
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float TurnRate = 50;
 
-	UPROPERTY(EditAnywhere, Category="Look")
-	float	ViewRotationRate = 100;
 
 	bool	MoveState = true;
 	
-	void	Move(float Value);
-	void	Turn(float Value);
-	void	LookRightLeft(float Value);
-	void	LookUpDown(float Value);
-	void	ZoomIn();
-	void	ZoomOut();
 
 protected:
-	void	RotateTurretAndBarrel();
-	
+	void	RotateTurret(float Value);
+	void	RotateBarrel(float Value);
+	void	Move(float Value);
+	void	Turn(float Value);
 };

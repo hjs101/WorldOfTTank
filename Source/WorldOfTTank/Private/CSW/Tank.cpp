@@ -29,14 +29,6 @@ ATank::ATank()
 
 	RightWheelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RigthWhell Mesh"));
 	RightWheelMesh->SetupAttachment(BaseMesh);
-
-	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
-	SpringArmComp->SetupAttachment(RootComponent);
-	SpringArmComp->bUsePawnControlRotation = true;
-	SpringArmComp->TargetArmLength = 800;
-
-	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	CameraComp->SetupAttachment(SpringArmComp);
 }
 
 // Called when the game starts or when spawned
@@ -49,41 +41,13 @@ void ATank::BeginPlay()
 void ATank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	RotateTurretAndBarrel();
 }
 
-void	ATank::LookRightLeft(float value)
-{
-	AddControllerYawInput(value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
-}
-
-void ATank::LookUpDown(float value)
-{
-	UE_LOG(LogTemp, Warning, TEXT("View: %f"), GetViewRotation().Pitch);
-	UE_LOG(LogTemp, Warning, TEXT("Camera:%f"), CameraComp->GetComponentRotation().Pitch);
-	if (!(CameraComp->GetComponentRotation().Pitch >= 30 && value <= 0))
-		AddControllerPitchInput(value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
-}
-
-
-// Called to bind functionality to input
-void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ATank::Move);
-	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ATank::Turn);
-
-	PlayerInputComponent->BindAxis(TEXT("LookRightLeft"), this, &ATank::LookRightLeft);
-	PlayerInputComponent->BindAxis(TEXT("LookUpDown"), this, &ATank::LookUpDown);
-}
-
-
-void ATank::Move(float Value)
+void	ATank::Move(float Value)
 {
 	FVector	DeltaLocation = FVector::ZeroVector;
 
+	MoveState = (Value >= 0);
 	DeltaLocation.X = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * Speed;
 	AddActorLocalOffset(DeltaLocation, true);
 }
@@ -92,37 +56,32 @@ void ATank::Turn(float Value)
 {
 	FRotator DeltaRotation = FRotator::ZeroRotator;
 
+	if (!MoveState)
+		Value *= -1;
 	DeltaRotation.Yaw = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * TurnRate;
 	AddActorLocalRotation(DeltaRotation, true);
 }
-
-float	LimitRotationAngle(float angle)
-{
-	if (angle > 80)
-		return 80;
-	if (angle < -20)
-		return -20;
-	return angle;
-}
-
-void ATank::RotateTurretAndBarrel()
+void ATank::RotateTurret(float Value)
 {
 	TurretMesh->SetWorldRotation(
 		FMath::RInterpTo(
 			TurretMesh->GetComponentRotation(),
 			FRotator(
 				0,
-				CameraComp->GetComponentRotation().Yaw,
+				Value,//CameraComp->GetComponentRotation().Yaw,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
 			0.5)
 			);
+}
 
+void	ATank::RotateBarrel(float Value)
+{
 	BarrelMesh->SetWorldRotation(
 		FMath::RInterpTo(
 			BarrelMesh->GetComponentRotation(),
 			FRotator(
-				LimitRotationAngle(CameraComp->GetComponentRotation().Pitch),
+				Value,//CameraComp->GetComponentRotation().Pitch,
 				TurretMesh->GetComponentRotation().Yaw,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),

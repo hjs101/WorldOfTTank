@@ -33,10 +33,11 @@ ATank::ATank()
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->bUsePawnControlRotation = true;
-	SpringArmComp->TargetArmLength = 800;
+	SpringArmComp->TargetArmLength = 1000;
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComp->SetupAttachment(SpringArmComp);
+	CameraComp->FieldOfView = 80;
 }
 
 // Called when the game starts or when spawned
@@ -60,10 +61,10 @@ void	ATank::LookRightLeft(float value)
 
 void ATank::LookUpDown(float value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("View: %f"), GetViewRotation().Pitch);
-	UE_LOG(LogTemp, Warning, TEXT("Camera:%f"), CameraComp->GetComponentRotation().Pitch);
-	if (!(CameraComp->GetComponentRotation().Pitch >= 30 && value <= 0))
-		AddControllerPitchInput(value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
+	if ((CameraComp->GetComponentRotation().Pitch >= 30 && value < 0) ||
+		(CameraComp->GetComponentRotation().Pitch <= -50) && value > 0)
+		return ;
+	AddControllerPitchInput(value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
 }
 
 
@@ -77,6 +78,9 @@ void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAxis(TEXT("LookRightLeft"), this, &ATank::LookRightLeft);
 	PlayerInputComponent->BindAxis(TEXT("LookUpDown"), this, &ATank::LookUpDown);
+
+	PlayerInputComponent->BindAction(TEXT("ZoomIn"), IE_Pressed, this, &ATank::ZoomIn);
+	PlayerInputComponent->BindAction(TEXT("ZoomOut"), IE_Pressed, this, &ATank::ZoomOut);
 }
 
 
@@ -84,6 +88,7 @@ void	ATank::Move(float Value)
 {
 	FVector	DeltaLocation = FVector::ZeroVector;
 
+	MoveState = (Value >= 0);
 	DeltaLocation.X = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * Speed;
 	AddActorLocalOffset(DeltaLocation, true);
 }
@@ -92,9 +97,36 @@ void ATank::Turn(float Value)
 {
 	FRotator DeltaRotation = FRotator::ZeroRotator;
 
+	if (!MoveState)
+		Value *= -1;
 	DeltaRotation.Yaw = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * TurnRate;
 	AddActorLocalRotation(DeltaRotation, true);
 }
+
+void ATank::ZoomIn()
+{
+	if (SpringArmComp->TargetArmLength > -200)
+		SpringArmComp->TargetArmLength -= 300;
+	else if (SpringArmComp->TargetArmLength == -200)
+	{
+		if (CameraComp->FieldOfView > 5)
+			CameraComp->FieldOfView /= 2;
+	}
+}
+
+void ATank::ZoomOut()
+{
+	if (SpringArmComp->TargetArmLength == -200)
+	{
+		if (CameraComp->FieldOfView < 80)
+			CameraComp->FieldOfView *= 2;
+		else
+			SpringArmComp->TargetArmLength += 300;
+	}
+	else if (SpringArmComp->TargetArmLength < 1300)
+		SpringArmComp->TargetArmLength += 300;
+}
+
 
 float	LimitRotationAngle(float angle)
 {

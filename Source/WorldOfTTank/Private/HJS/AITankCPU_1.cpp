@@ -7,6 +7,8 @@
 #include "HJS/AITankCPU_1.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "HJS/AITankController_1.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
 
 AAITankCPU_1::AAITankCPU_1()
 {
@@ -26,6 +28,8 @@ void AAITankCPU_1::BeginPlay()
 
 	GetWorldTimerManager().SetTimer(DetectRateTimerHandle, this, &AAITankCPU_1::CheckDistance, DetectRate, true);
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AAITankCPU_1::OnSeePawn);
+	NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	ai = Cast<AAITankController_1>(GetController());
 }
 
 // Called every frame
@@ -71,7 +75,7 @@ void AAITankCPU_1::SetMoveVector()
 	//		BodyTurn(Value);
 	//	}
 	//}
-
+	// DrawDebugSphere(GetWorld(), Center, Radius, Segments, Color, false, LifeTime);
 }
 
 // 일정 거리 이상 벗어났는 지 확인하는 함수
@@ -189,7 +193,6 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor) const
 	}
 	MyRotation = BarrelMesh->GetComponentRotation();
 	// 2. 고도 확인하기
-	UE_LOG(LogTemp, Warning, TEXT("To : %f , My : %f"), ToTargetRotation.Pitch, MyRotation.Pitch);
 	if (abs(ToTargetRotation.Pitch - MyRotation.Pitch) > 2) {
 
 		// 2-1. 피치가 다르면서 한계고도 안쪽일 경우 false
@@ -234,6 +237,82 @@ void AAITankCPU_1::Fire()
 		bReadyFire = false;
 		GetWorldTimerManager().SetTimer(FireRateTimerHandle, this, &AAITankCPU_1::FireReady, FireRate, false);
 	}
+}
+
+// 공격 유효지점 찾기
+FVector AAITankCPU_1::FindValidAttackPosition(const AActor* TargetActor)
+{
+
+
+	// 시작위치 불러오기
+	FVector StartLocation = GetActorLocation();
+
+	if (TargetActor == nullptr) {
+		return StartLocation;
+	}
+	FVector DestLocation = StartLocation;
+
+	// 라인 트레이스용 변수
+	FHitResult HitResult;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+	CollisionParams.AddIgnoredActor(TargetActor);
+	// 샘플링 지점 설정
+	float SampleRadius = 1500.f; // 샘플링 반경
+	int32 NumSamples = 36; // 샘플링할 지점 수 (360도를 기준으로 10도 간격)
+	
+	for (int32 i = 0; i < NumSamples; i++)
+	{
+		// 각도를 기준으로 샘플링 지점 계산
+		float Angle = (360.0f / NumSamples) * i;
+		FVector SamplePoint = StartLocation + SampleRadius * FVector(FMath::Cos(FMath::DegreesToRadians(Angle)), FMath::Sin(FMath::DegreesToRadians(Angle)), 0);
+		
+		// 라인 트레이스 수행
+		bool bHit = GetWorld()->LineTraceSingleByChannel(
+			HitResult,
+			SamplePoint,
+			TargetActor->GetActorLocation(),
+			ECC_Visibility,
+			CollisionParams
+		);
+		// 충돌이 없고 네비메시에서 유효한 지점인지 확인
+		if (!bHit)
+		{
+			NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+			if (NavSys == nullptr) 
+			{
+				return StartLocation;
+			}
+
+			FPathFindingQuery query;
+			FAIMoveRequest req;
+			req.SetAcceptanceRadius(3);
+			req.SetGoalLocation(SamplePoint);
+			ai->BuildPathfindingQuery(req, query);
+			FPathFindingResult result = NavSys->FindPathSync(query);
+			// 지금 이 if문이 잘 작동을 안함.
+			
+			if (result.Result == ENavigationQueryResult::Success)
+			{
+				DestLocation = SamplePoint;
+				DrawDebugSphere(GetWorld(), SamplePoint, 12.0f, 12, FColor::Green, false, 3.0f);
+				// 타겟과의 거리가 현재 위치보다 더 가까워지지 않는지 체크
+				float CurrentDistance = FVector::Dist(StartLocation, TargetActor->GetActorLocation());
+				float NewDistance = FVector::Dist(SamplePoint, TargetActor->GetActorLocation());
+
+				// 해당 메인 타겟이 사정거리(FireRange) 내에 있는지 체크
+				if (NewDistance <= FireRange && NewDistance >= CurrentDistance)
+				{
+					// 유효한 위치를 찾았을 때 DestLocation 갱신 및 반환
+					DestLocation = SamplePoint;
+					return DestLocation;
+				}
+			}
+		}
+	}
+
+	return DestLocation;
+
 }
 
 void AAITankCPU_1::FireReady()

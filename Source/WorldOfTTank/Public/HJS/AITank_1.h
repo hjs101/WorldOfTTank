@@ -16,6 +16,7 @@ public:
 	AAITank_1();
 	UFUNCTION()
 	void RotateTurret(FVector LookAtTarget);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

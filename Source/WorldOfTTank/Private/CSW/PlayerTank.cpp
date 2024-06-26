@@ -3,6 +3,7 @@
 
 #include "CSW/PlayerTank.h"
 
+#include "FrameTypes.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -52,7 +53,9 @@ void APlayerTank::LookUpDown(float Value)
 void APlayerTank::ZoomIn()
 {
 	if (SpringArmComp->TargetArmLength > -200)
-		SpringArmComp->TargetArmLength -= 300;
+		SpringArmComp->TargetArmLength -= 300;	
+	// FMath::Lerp(SpringArmComp->TargetArmLength, SpringArmComp->TargetArmLength - 300, 0.5);
+	// FMath::Lerp(Sp)
 	else if (SpringArmComp->TargetArmLength == -200)
 	{
 		if (CameraComp->FieldOfView > 5)

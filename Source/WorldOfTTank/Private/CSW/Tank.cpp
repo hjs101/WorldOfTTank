@@ -75,13 +75,22 @@ void ATank::RotateTurret(float Value)
 			);
 }
 
+float	LimitBarrelPitch(float Value)
+{
+	if (30 < Value)
+		return 30;
+	if (-10 > Value)
+		return -10;
+	return Value;
+}
+
 void	ATank::RotateBarrel(float Value)
 {
 	BarrelMesh->SetWorldRotation(
 		FMath::RInterpTo(
 			BarrelMesh->GetComponentRotation(),
 			FRotator(
-				Value,//CameraComp->GetComponentRotation().Pitch,
+				LimitBarrelPitch(Value),//CameraComp->GetComponentRotation().Pitch,
 				TurretMesh->GetComponentRotation().Yaw,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),

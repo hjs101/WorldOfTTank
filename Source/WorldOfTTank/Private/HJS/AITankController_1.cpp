@@ -11,7 +11,6 @@ AAITankController_1::AAITankController_1()
 {
 	// Initialize the BlackboardComponent
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
-
 }
 
 void AAITankController_1::BeginPlay()

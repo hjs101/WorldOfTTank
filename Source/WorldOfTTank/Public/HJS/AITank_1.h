@@ -16,7 +16,7 @@ public:
 	AAITank_1();
 	UFUNCTION()
 	void RotateTurret(FVector LookAtTarget);
-
+	void RotateTank(FVector LookAtTarget);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -46,8 +46,10 @@ protected:
 private:
 	// 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* BodyMesh;
+	class UCapsuleComponent* CapsuleComp;
 	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UStaticMeshComponent* BodyMesh;
+	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* WheelMesh_1;
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* WheelMesh_2;

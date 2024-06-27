@@ -3,14 +3,15 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "HJS/AITankCPU_1.h"
-#include "HJS/BTTask/BTTask_FindPositionToAttack.h"
+#include "HJS/BTTask/BTTask_MoveToAttackRange.h"
 
-UBTTask_FindPositionToAttack::UBTTask_FindPositionToAttack()
+UBTTask_MoveToAttackRange::UBTTask_MoveToAttackRange()
 {
-    NodeName = TEXT("Find Position To Attack");
-    bNotifyTick = true;
+	NodeName = TEXT("Move To Attack Range");
+	bNotifyTick = true;
 }
-EBTNodeResult::Type UBTTask_FindPositionToAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+
+EBTNodeResult::Type UBTTask_MoveToAttackRange::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
     UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
     if (BlackboardComp == nullptr)
@@ -30,21 +31,18 @@ EBTNodeResult::Type UBTTask_FindPositionToAttack::ExecuteTask(UBehaviorTreeCompo
         return EBTNodeResult::Failed;
     }
 
-    // 유효한 공격 위치 찾기
-    AttackPosition = MyTank->FindValidAttackPosition(Target);
-    
-    if (AttackPosition == MyTank->GetActorLocation()) {
+    MovePosition = MyTank->FindValidAttackRange(Target);
+
+    if (MovePosition == MyTank->GetActorLocation()) {
         return EBTNodeResult::Failed;
     }
 
-    // AI를 해당 위치로 이동
-    OwnerComp.GetAIOwner()->MoveToLocation(AttackPosition);
+    OwnerComp.GetAIOwner()->MoveToLocation(MovePosition);
     bIsMoving = true;
-    //UE_LOG(LogTemp, Error, TEXT("1111"));
-    return EBTNodeResult::InProgress;
+	return EBTNodeResult::InProgress;
 }
 
-void UBTTask_FindPositionToAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UBTTask_MoveToAttackRange::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
     if (MyTank == nullptr)
     {
@@ -52,16 +50,17 @@ void UBTTask_FindPositionToAttack::TickTask(UBehaviorTreeComponent& OwnerComp, u
         return;
     }
     CurrentTime += DeltaSeconds;
+
     if (CurrentTime >= FailTime) {
         CurrentTime = 0;
         FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
     }
 
-    MyTank->RotateTank(AttackPosition);
+    MyTank->RotateTank(MovePosition);
 
     if (bIsMoving)
     {
-        if (abs(FVector::Dist(MyTank->GetActorLocation(), AttackPosition)) < 300.f)
+        if (abs(FVector::Dist(MyTank->GetActorLocation(), MovePosition)) < 300.f)
         {
             bIsMoving = false;
             FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);

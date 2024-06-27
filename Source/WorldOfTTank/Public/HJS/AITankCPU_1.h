@@ -38,6 +38,8 @@ public:
 	// 공격 유효 지점을 찾는 함수
 	UFUNCTION()
 	FVector FindValidAttackPosition(const AActor* TargetLocation);
+	UFUNCTION()
+	FVector FindValidAttackRange(const AActor* TargetActor);
 protected:
 virtual void BeginPlay() override;
 
@@ -68,17 +70,10 @@ private:
 	class AAITankController_1* ai;
 
 	// 함수
-	// AI가 이동할 방향을 결정하는 함수, 타이머로 일정 시간마다 호출해보자.
-	UFUNCTION()
-	void SetMoveVector();
-
 	UFUNCTION()
 	void CheckDistance();
-
 	UFUNCTION()
 	void OnSeePawn(APawn* Pawn);
-
-
 	UFUNCTION()
 	void FireReady();
 

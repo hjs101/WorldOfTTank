@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 #include "HJS/AITank_1.h"
 #include "HJS/AIProjecttile_1.h"
 // Sets default values
@@ -8,9 +10,11 @@ AAITank_1::AAITank_1()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Box Comp"));
+	SetRootComponent(CapsuleComp);
 	// 스태틱 메시 컴포넌트(탱크) 생성
 	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AITank_1 Body"));
-	SetRootComponent(BodyMesh);
+	BodyMesh->SetupAttachment(RootComponent);
 	WheelMesh_1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AITank_1 Wheel1"));
 	WheelMesh_1->SetupAttachment(RootComponent);
 	WheelMesh_2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AITank_1 Wheel2"));
@@ -25,14 +29,13 @@ AAITank_1::AAITank_1()
 	ProjecttileSpawnPoint->SetupAttachment(BarrelMesh);
 
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("AITank_1 MovementComponent"));
-	MovementComponent->SetUpdatedComponent(BodyMesh);
+	MovementComponent->SetUpdatedComponent(RootComponent);
 
 	// Tank physics settings
-	if (BodyMesh){
-		BodyMesh->SetMassOverrideInKg(NAME_None, 2000.0f); // 탱크의 질량 증가
-		BodyMesh->SetSimulatePhysics(true);
-		BodyMesh->SetLinearDamping(1.0f); // 선형 감쇠
-		BodyMesh->SetAngularDamping(1.0f); // 각 감쇠
+	if (CapsuleComp){
+		CapsuleComp->SetSimulatePhysics(true);
+		CapsuleComp->SetLinearDamping(1.0f); // 선형 감쇠
+		CapsuleComp->SetAngularDamping(1.0f); // 각 감쇠
 	}
 }
 
@@ -119,6 +122,20 @@ void AAITank_1::RotateTurret(FVector LookAtTarget)
 			LookAtRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this)
 		, 3.f)
+	);
+
+}
+
+void AAITank_1::RotateTank(FVector LookAtTarget)
+{
+	FVector ToTarget = LookAtTarget - CapsuleComp->GetComponentLocation();
+	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
+	// 머리 돌리기
+	CapsuleComp->SetWorldRotation(
+		FMath::RInterpTo(CapsuleComp->GetComponentRotation(),
+			LookAtRotation,
+			UGameplayStatics::GetWorldDeltaSeconds(this)
+			, 3.f)
 	);
 
 }

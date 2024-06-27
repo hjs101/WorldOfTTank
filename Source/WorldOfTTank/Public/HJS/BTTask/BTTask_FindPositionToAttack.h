@@ -25,4 +25,6 @@ private:
     bool bIsMoving;
     UPROPERTY()
     class AAITankCPU_1* MyTank;
+    float CurrentTime = 0;
+    float FailTime = 5;
 };

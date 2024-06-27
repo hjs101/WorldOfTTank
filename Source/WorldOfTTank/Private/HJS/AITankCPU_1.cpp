@@ -36,46 +36,6 @@ void AAITankCPU_1::BeginPlay()
 void AAITankCPU_1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//if(TargetActor != nullptr)
-	//{
-	//	if (!IsTurretRotationComplete()) 
-	//	{
-	//		RotateTurret(TargetActor->GetActorLocation());
-	//	}
-	//}
-}
-
-void AAITankCPU_1::SetMoveVector()
-{
-
-	// 1. 플레이어의 위치를 받아오기
-	//if (PlayerTank) {
-	//	// 2. 플레이어가 사정거리에 있다면, 이동은 하지 않고 플레이어와 일직선 방향으로 회전
-	//	if (InFireRange()) {
-	//		RotateTurret(PlayerTank->GetActorLocation());
-	//	}
-	//	else {
-	//		// 3. 플레이어가 사정거리 바깥에 있다면, 플레이어 방향으로 회전하며 이동
-	//		// 3-1 플레이어 위치 방향 구하기
-	//		FVector DestinationVector = PlayerTank->GetActorLocation() - GetActorLocation();
-	//		DestinationVector.Normalize();
-	//		
-	//		Move(1);
-
-	//		// 현재 위치에서 플레이어 위치까지의 벡터와 현재 전방 벡터를 사용하여 회전 방향 결정
-	//		FVector ForwardVector = GetActorForwardVector();
-	//		float DotProduct = FVector::DotProduct(ForwardVector, DestinationVector);
-	//		FVector CrossProduct = FVector::CrossProduct(ForwardVector, DestinationVector);
-
-	//		// 오른쪽으로 회전해야 하면 1, 왼쪽으로 회전해야 하면 -1
-	//		float Value = (CrossProduct.Z > 0) ? 1 : -1;
-	//		if (CrossProduct.Z == 0) {
-	//			Value = 0;
-	//		}
-	//		BodyTurn(Value);
-	//	}
-	//}
-	// DrawDebugSphere(GetWorld(), Center, Radius, Segments, Color, false, LifeTime);
 }
 
 // 일정 거리 이상 벗어났는 지 확인하는 함수
@@ -258,7 +218,7 @@ FVector AAITankCPU_1::FindValidAttackPosition(const AActor* TargetActor)
 	CollisionParams.AddIgnoredActor(this);
 	CollisionParams.AddIgnoredActor(TargetActor);
 	// 샘플링 지점 설정
-	float SampleRadius = 1500.f; // 샘플링 반경
+	float SampleRadius = 1000.f; // 샘플링 반경
 	int32 NumSamples = 36; // 샘플링할 지점 수 (360도를 기준으로 10도 간격)
 	
 	for (int32 i = 0; i < NumSamples; i++)
@@ -315,8 +275,62 @@ FVector AAITankCPU_1::FindValidAttackPosition(const AActor* TargetActor)
 
 }
 
+FVector AAITankCPU_1::FindValidAttackRange(const AActor* TargetActor)
+{
+
+
+	// 시작위치 불러오기
+	FVector StartLocation = GetActorLocation();
+
+	if (TargetActor == nullptr) {
+		return StartLocation;
+	}
+	FVector DestLocation = StartLocation;
+	// 샘플링 지점 설정
+	// 샘플링 반경 = 타겟 - 나의 거리에서 사정거리만큼 거리를 빼고, 여기에 일정 텀(300)을 더하기.
+	float SampleRadius = FVector::Dist(StartLocation,TargetActor->GetActorLocation()) - FireRange + 200.f; 
+	int32 NumSamples = 36; // 샘플링할 지점 수 (360도를 기준으로 10도 간격)
+	float MinDist = FVector::Dist(StartLocation, TargetActor->GetActorLocation());
+	for (int32 i = 0; i < NumSamples; i++)
+	{
+		// 각도를 기준으로 샘플링 지점 계산
+		float Angle = (360.0f / NumSamples) * i;
+		FVector SamplePoint = StartLocation + SampleRadius * FVector(FMath::Cos(FMath::DegreesToRadians(Angle)), FMath::Sin(FMath::DegreesToRadians(Angle)), 0);
+		// 충돌이 없고 네비메시에서 유효한 지점인지 확인
+		NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+		if (NavSys == nullptr)
+		{
+			return StartLocation;
+		}
+
+		FPathFindingQuery query;
+		FAIMoveRequest req;
+		req.SetAcceptanceRadius(3);
+		req.SetGoalLocation(SamplePoint);
+		ai->BuildPathfindingQuery(req, query);
+		FPathFindingResult result = NavSys->FindPathSync(query);
+		// 지금 이 if문이 잘 작동을 안함.
+		if (result.Result == ENavigationQueryResult::Success)
+		{
+			DrawDebugSphere(GetWorld(), SamplePoint, 12.0f, 12, FColor::Green, false, 3.0f);
+			// 타겟과의 거리가 현재 위치보다 더 가까워지지 않는지 체크
+			float NewDistance = FVector::Dist(SamplePoint, TargetActor->GetActorLocation());
+
+			// 해당 메인 타겟이 가까워지는지
+			if (MinDist > NewDistance)
+			{
+				// 유효한 위치를 찾았을 때 DestLocation 갱신 및 반환
+				DestLocation = SamplePoint;
+				MinDist = NewDistance;
+			}
+		}
+	}
+
+	return DestLocation;
+
+}
+
 void AAITankCPU_1::FireReady()
 {
 	bReadyFire = true;
 }
-

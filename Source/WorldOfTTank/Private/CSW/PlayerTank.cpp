@@ -33,6 +33,8 @@ void APlayerTank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction(TEXT("ZoomIn"), IE_Pressed, this, &APlayerTank::ZoomIn);
 	PlayerInputComponent->BindAction(TEXT("ZoomOut"), IE_Pressed, this, &APlayerTank::ZoomOut);
+
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &APlayerTank::Fire);
 }
 
 void	APlayerTank::LookRightLeft(float Value)
@@ -52,7 +54,13 @@ void APlayerTank::LookUpDown(float Value)
 
 void APlayerTank::ZoomIn()
 {
-	if (SpringArmComp->TargetArmLength > -200)
+	if (SpringArmComp->TargetArmLength > 1300)
+	{
+		SpringArmComp->TargetArmLength -= 500;
+		SpringArmComp->SetRelativeLocation(FVector(0, 0, 200));
+		
+	}
+	else if (SpringArmComp->TargetArmLength > -200)
 		SpringArmComp->TargetArmLength -= 300;	
 	// FMath::Lerp(SpringArmComp->TargetArmLength, SpringArmComp->TargetArmLength - 300, 0.5);
 	// FMath::Lerp(Sp)
@@ -74,4 +82,11 @@ void APlayerTank::ZoomOut()
 	}
 	else if (SpringArmComp->TargetArmLength < 1300)
 		SpringArmComp->TargetArmLength += 300;
+	else if (SpringArmComp->TargetArmLength >= 1300)
+	{
+		SpringArmComp->TargetArmLength += 500;
+		SpringArmComp->SetRelativeLocation(FVector(0, 0, 800));
+	}
+		
+	
 }

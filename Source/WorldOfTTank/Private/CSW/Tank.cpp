@@ -5,6 +5,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "CSW/Projectile.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/UnitConversion.h"
@@ -29,6 +30,9 @@ ATank::ATank()
 
 	RightWheelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RigthWhell Mesh"));
 	RightWheelMesh->SetupAttachment(BaseMesh);
+
+	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
+	ProjectileSpawnPoint->SetupAttachment(BarrelMesh);
 }
 
 // Called when the game starts or when spawned
@@ -68,7 +72,7 @@ void ATank::RotateTurret(float Value)
 			TurretMesh->GetComponentRotation(),
 			FRotator(
 				0,
-				Value,//CameraComp->GetComponentRotation().Yaw,
+				Value,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
 			0.5)
@@ -90,10 +94,18 @@ void	ATank::RotateBarrel(float Value)
 		FMath::RInterpTo(
 			BarrelMesh->GetComponentRotation(),
 			FRotator(
-				LimitBarrelPitch(Value),//CameraComp->GetComponentRotation().Pitch,
+				LimitBarrelPitch(Value),
 				TurretMesh->GetComponentRotation().Yaw,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
 			0.5)
 			);
+}
+
+void ATank::Fire()
+{
+	GetWorld()->SpawnActor<AProjectile>(
+		ProjectileClass,
+		ProjectileSpawnPoint->GetComponentLocation(),
+		ProjectileSpawnPoint->GetComponentRotation());
 }

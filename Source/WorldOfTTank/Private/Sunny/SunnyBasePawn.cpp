@@ -25,24 +25,13 @@ ASunnyBasePawn::ASunnyBasePawn()
 	ProjectileSpawnPoint->SetupAttachment(HeadMesh);
 }
 
-// Called when the game starts or when spawned
-void ASunnyBasePawn::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
+
 
 // Called every frame
 void ASunnyBasePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-}
 
-// Called to bind functionality to input
-void ASunnyBasePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-

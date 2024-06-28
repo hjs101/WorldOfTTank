@@ -9,6 +9,9 @@
 #include "HJS/AITankController_1.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "DrawDebugHelpers.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Engine/OverlapResult.h"
 
 AAITankCPU_1::AAITankCPU_1()
 {
@@ -100,16 +103,20 @@ bool AAITankCPU_1::GetFireState()
 	return bReadyFire;
 }
 
+FVector AAITankCPU_1::GetHeadMeshLocation()
+{
+	return HeadMesh->GetComponentLocation();
+}
+
 // 레이저 쏴서 일직선 상에 있는지 확인하는 함수
-bool AAITankCPU_1::HasLineOfSightToTarget(AActor* TargetActor) const
+bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AActor* TargetActor) const
 {
 	// 타겟이 없으면 false 리턴
 	if (!TargetActor)
 	{
 		return false;
 	}
-	// 시작 위치는 포신의 끝 점으로 하고 싶은데....
-	FVector StartLocation = ProjecttileSpawnPoint->GetComponentLocation();
+
 	// 종료 위치는 타겟의 Vector
 	FVector EndLocation = TargetActor->GetActorLocation();
 
@@ -121,16 +128,17 @@ bool AAITankCPU_1::HasLineOfSightToTarget(AActor* TargetActor) const
 	CollisionParams.AddIgnoredActor(this);
 	// 타겟도 무시
 	CollisionParams.AddIgnoredActor(TargetActor);
-
+	float SphereRadius = 30.f;
 	// 라인트레이싱 실행
-	bool bHit = GetWorld()->LineTraceSingleByChannel(
+	bool bHit = GetWorld()->SweepSingleByChannel(
 		HitResult,
 		StartLocation,
 		EndLocation,
-		ECC_Visibility, // 가시성 채널 사용
+		FQuat::Identity,
+		ECC_Visibility, // 가시성 채널 사용 
+		FCollisionShape::MakeSphere(SphereRadius),
 		CollisionParams
 	);
-
 	return bHit;
 }
 
@@ -147,13 +155,15 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor) const
 	FVector ToTarget = TargetActor->GetActorLocation() - HeadMesh->GetComponentLocation();
 	FRotator ToTargetRotation = ToTarget.Rotation();
 	FRotator MyRotation = HeadMesh->GetComponentRotation();
-	//1. yaw 각도는 무조건 일치 해야함. // 아예 안될수도 있으니 오차범위 +-2도정도 생각해두기
-	if (abs(ToTargetRotation.Yaw - MyRotation.Yaw) > 2) {
+	//1. yaw 각도는 무조건 일치 해야함. // 아예 안될수도 있으니 오차범위 +-1도정도 생각해두기
+	if (abs(ToTargetRotation.Yaw - MyRotation.Yaw) > 0.5) {
 		return false;
 	}
+	ToTarget = TargetActor->GetActorLocation() - BarrelMesh->GetComponentLocation();
+	ToTargetRotation = ToTarget.Rotation();
 	MyRotation = BarrelMesh->GetComponentRotation();
 	// 2. 고도 확인하기
-	if (abs(ToTargetRotation.Pitch - MyRotation.Pitch) > 2) {
+	if (abs(ToTargetRotation.Pitch - MyRotation.Pitch) > 1) {
 
 		// 2-1. 피치가 다르면서 한계고도 안쪽일 경우 false
 		if (ToTargetRotation.Pitch < UpLimit && ToTargetRotation.Pitch > DownLimit) {
@@ -200,7 +210,7 @@ void AAITankCPU_1::Fire()
 }
 
 // 공격 유효지점 찾기
-FVector AAITankCPU_1::FindValidAttackPosition(const AActor* TargetActor)
+FVector AAITankCPU_1::FindValidAttackPosition(float SampleRadius,const AActor* TargetActor)
 {
 
 
@@ -218,7 +228,7 @@ FVector AAITankCPU_1::FindValidAttackPosition(const AActor* TargetActor)
 	CollisionParams.AddIgnoredActor(this);
 	CollisionParams.AddIgnoredActor(TargetActor);
 	// 샘플링 지점 설정
-	float SampleRadius = 1000.f; // 샘플링 반경
+	// 샘플링 반경은 매개변수로 받아오기 (1000에서 100단위로 2000까지 탐색해보자)
 	int32 NumSamples = 36; // 샘플링할 지점 수 (360도를 기준으로 10도 간격)
 	
 	for (int32 i = 0; i < NumSamples; i++)
@@ -228,13 +238,7 @@ FVector AAITankCPU_1::FindValidAttackPosition(const AActor* TargetActor)
 		FVector SamplePoint = StartLocation + SampleRadius * FVector(FMath::Cos(FMath::DegreesToRadians(Angle)), FMath::Sin(FMath::DegreesToRadians(Angle)), 0);
 		
 		// 라인 트레이스 수행
-		bool bHit = GetWorld()->LineTraceSingleByChannel(
-			HitResult,
-			SamplePoint,
-			TargetActor->GetActorLocation(),
-			ECC_Visibility,
-			CollisionParams
-		);
+		bool bHit = AAITankCPU_1::HasLineOfSightToTarget(SamplePoint, TargetActor);
 		// 충돌이 없고 네비메시에서 유효한 지점인지 확인
 		if (!bHit)
 		{
@@ -250,12 +254,10 @@ FVector AAITankCPU_1::FindValidAttackPosition(const AActor* TargetActor)
 			req.SetGoalLocation(SamplePoint);
 			ai->BuildPathfindingQuery(req, query);
 			FPathFindingResult result = NavSys->FindPathSync(query);
-			// 지금 이 if문이 잘 작동을 안함.
 			
 			if (result.Result == ENavigationQueryResult::Success)
 			{
 				DestLocation = SamplePoint;
-				DrawDebugSphere(GetWorld(), SamplePoint, 12.0f, 12, FColor::Green, false, 3.0f);
 				// 타겟과의 거리가 현재 위치보다 더 가까워지지 않는지 체크
 				float CurrentDistance = FVector::Dist(StartLocation, TargetActor->GetActorLocation());
 				float NewDistance = FVector::Dist(SamplePoint, TargetActor->GetActorLocation());
@@ -287,8 +289,14 @@ FVector AAITankCPU_1::FindValidAttackRange(const AActor* TargetActor)
 	}
 	FVector DestLocation = StartLocation;
 	// 샘플링 지점 설정
+	float Distnation = FVector::Dist(StartLocation, TargetActor->GetActorLocation());
 	// 샘플링 반경 = 타겟 - 나의 거리에서 사정거리만큼 거리를 빼고, 여기에 일정 텀(300)을 더하기.
-	float SampleRadius = FVector::Dist(StartLocation,TargetActor->GetActorLocation()) - FireRange + 200.f; 
+	float SampleRadius = Distnation - FireRange + 200.f;
+	
+	// 일단 하드코딩으로 막아둔 반대편으로 가기
+	if (abs(SampleRadius) > Distnation){
+		SampleRadius = Distnation - 2000.f;
+	}
 	int32 NumSamples = 36; // 샘플링할 지점 수 (360도를 기준으로 10도 간격)
 	float MinDist = FVector::Dist(StartLocation, TargetActor->GetActorLocation());
 	for (int32 i = 0; i < NumSamples; i++)
@@ -312,7 +320,6 @@ FVector AAITankCPU_1::FindValidAttackRange(const AActor* TargetActor)
 		// 지금 이 if문이 잘 작동을 안함.
 		if (result.Result == ENavigationQueryResult::Success)
 		{
-			DrawDebugSphere(GetWorld(), SamplePoint, 12.0f, 12, FColor::Green, false, 3.0f);
 			// 타겟과의 거리가 현재 위치보다 더 가까워지지 않는지 체크
 			float NewDistance = FVector::Dist(SamplePoint, TargetActor->GetActorLocation());
 
@@ -328,6 +335,94 @@ FVector AAITankCPU_1::FindValidAttackRange(const AActor* TargetActor)
 
 	return DestLocation;
 
+}
+
+bool AAITankCPU_1::CheckForNearbyObstacle()
+{
+	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
+
+	if (AIController == nullptr)
+	{
+		return false;
+	}
+	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+	if (BlackboardComp == nullptr)
+	{
+		return false;
+	}
+
+	// 현재 위치를 기준으로 탐색 반경 설정
+	FVector StartLocation = GetActorLocation();
+	float SearchRadius = 2000.f;  // 예시로 반경 1000 설정
+
+	// 탐색 결과를 저장할 배열
+	TArray<FOverlapResult> OverlapResults;
+
+	// 충돌 설정
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(SearchRadius);
+	// 충돌 필터 설정
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);  // 자신은 무시
+
+	// Sphere Overlap을 사용하여 주변 액터 탐색
+	bool bHasObstacle = GetWorld()->OverlapMultiByChannel(
+		OverlapResults,
+		StartLocation,
+		FQuat::Identity,
+		ECC_WorldStatic,
+		Sphere,
+		QueryParams
+	);
+	bool isDetected = false;
+	AActor* DetectedActor = nullptr;
+	float MinObstacleDist = INT32_MAX;
+	// 탐색된 결과를 분석하여 장애물이 있는지 확인
+	for (const FOverlapResult& Result : OverlapResults)
+	{
+		AActor* OverlappedActor = Result.GetActor();
+		if (OverlappedActor)
+		{
+			// 장애물로 간주할 조건을 추가 (예: 태그 확인 등)
+			if (OverlappedActor->ActorHasTag(FName("Obstacle")))
+			{
+				float CurrentDist = FVector::Dist(GetActorLocation(), OverlappedActor->GetActorLocation());
+				if (MinObstacleDist > CurrentDist) {
+					CurrentDist = MinObstacleDist;
+					DetectedActor = OverlappedActor;
+				}
+				// 장애물이 발견되면 true 반환
+				isDetected = true;
+			}
+		}
+	}
+	if(DetectedActor != nullptr)
+	{
+		BlackboardComp->SetValueAsObject(FName("DetectedObstacle"), DetectedActor);
+	}
+	return isDetected;
+}
+
+bool AAITankCPU_1::CheckForNavSystem(FVector MovePoint)
+{
+	NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	if (NavSys == nullptr)
+	{
+		return false;
+	}
+
+	FPathFindingQuery query;
+	FAIMoveRequest req;
+	req.SetAcceptanceRadius(3);
+	req.SetGoalLocation(MovePoint);
+	ai->BuildPathfindingQuery(req, query);
+	FPathFindingResult result = NavSys->FindPathSync(query);
+
+	if (result.Result == ENavigationQueryResult::Success) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 void AAITankCPU_1::FireReady()

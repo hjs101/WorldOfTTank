@@ -9,6 +9,8 @@ UBTTask_FindPositionToAttack::UBTTask_FindPositionToAttack()
 {
     NodeName = TEXT("Find Position To Attack");
     bNotifyTick = true;
+    MyTank = nullptr;
+    bIsMoving = false;
 }
 EBTNodeResult::Type UBTTask_FindPositionToAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -29,18 +31,25 @@ EBTNodeResult::Type UBTTask_FindPositionToAttack::ExecuteTask(UBehaviorTreeCompo
     {
         return EBTNodeResult::Failed;
     }
-
-    // 유효한 공격 위치 찾기
-    AttackPosition = MyTank->FindValidAttackPosition(Target);
+  
+    for (int32 i = 10; i <= 30; i++) {
+        float SampleRadius = i * 100;
+        AttackPosition = MyTank->FindValidAttackPosition(SampleRadius,Target);
+        // 유효한 공격 위치 찾기
+        if (AttackPosition != MyTank->GetActorLocation()) {
+            break;
+        }
+    }
     
     if (AttackPosition == MyTank->GetActorLocation()) {
         return EBTNodeResult::Failed;
     }
-
+    CurrentTime = 0;
     // AI를 해당 위치로 이동
+    DrawDebugSphere(GetWorld(), AttackPosition, 50, 12, FColor::Green, false, 5.0f);
     OwnerComp.GetAIOwner()->MoveToLocation(AttackPosition);
     bIsMoving = true;
-    //UE_LOG(LogTemp, Error, TEXT("1111"));
+    //
     return EBTNodeResult::InProgress;
 }
 

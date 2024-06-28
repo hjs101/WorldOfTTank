@@ -39,6 +39,7 @@ EBTNodeResult::Type UBTTask_MoveToAttackRange::ExecuteTask(UBehaviorTreeComponen
 
     OwnerComp.GetAIOwner()->MoveToLocation(MovePosition);
     bIsMoving = true;
+    CurrentTime = 0;
 	return EBTNodeResult::InProgress;
 }
 

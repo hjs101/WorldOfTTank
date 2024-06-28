@@ -3,6 +3,7 @@
 
 #include "CSW/Tank.h"
 
+#include "CollisionDebugDrawingPublic.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "CSW/Projectile.h"
@@ -68,14 +69,14 @@ void ATank::Turn(float Value)
 void ATank::RotateTurret(float Value)
 {
 	TurretMesh->SetWorldRotation(
-		FMath::RInterpTo(
+		FMath::RInterpConstantTo(
 			TurretMesh->GetComponentRotation(),
 			FRotator(
 				0,
 				Value,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
-			0.5)
+			35)
 			);
 }
 
@@ -88,17 +89,17 @@ float	LimitBarrelPitch(float Value)
 	return Value;
 }
 
-void	ATank::RotateBarrel(float Value)
+void	ATank::RotateBarrel(FVector Target)
 {
 	BarrelMesh->SetWorldRotation(
-		FMath::RInterpTo(
+		FMath::RInterpConstantTo(
 			BarrelMesh->GetComponentRotation(),
 			FRotator(
-				LimitBarrelPitch(Value),
+				LimitBarrelPitch((Target - BarrelMesh->GetComponentLocation()).Rotation().Pitch),
 				TurretMesh->GetComponentRotation().Yaw,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
-			0.5)
+			35)
 			);
 }
 

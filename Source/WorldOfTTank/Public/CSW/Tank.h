@@ -47,10 +47,10 @@ private:
 	USceneComponent* ProjectileSpawnPoint;
 	
 	UPROPERTY(EditAnywhere, Category="Movement")
-	float Speed = 300;
+	float Speed = 150;
 	
 	UPROPERTY(EditAnywhere, Category="Movement")
-	float TurnRate = 50;
+	float TurnRate = 30;
 
 
 	UPROPERTY(EditAnywhere)
@@ -61,7 +61,7 @@ private:
 
 protected:
 	void	RotateTurret(float Value);
-	void	RotateBarrel(float Value);
+	void	RotateBarrel(FVector Target);
 	void	Move(float Value);
 	void	Turn(float Value);
 	void	Fire();

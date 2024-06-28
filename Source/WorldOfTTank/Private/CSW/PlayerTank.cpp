@@ -3,6 +3,7 @@
 
 #include "CSW/PlayerTank.h"
 
+#include "CollisionDebugDrawingPublic.h"
 #include "FrameTypes.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -18,6 +19,22 @@ APlayerTank::APlayerTank()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->FieldOfView = 80;
+}
+
+void APlayerTank::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+
+void APlayerTank::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
+	FHitResult	Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, CameraComp->GetComponentLocation(), End, ECollisionChannel::ECC_GameTraceChannel1))
+		DrawDebugPoint(GetWorld(), Hit.Location, 1, FColor::Red, false, -1);
 }
 
 // Called to bind functionality to input
@@ -49,21 +66,17 @@ void APlayerTank::LookUpDown(float Value)
 		(CameraComp->GetComponentRotation().Pitch <= -50) && Value > 0)
 		return ;
 	AddControllerPitchInput(Value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
-	RotateBarrel(CameraComp->GetComponentRotation().Pitch);
+	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
+	FHitResult	Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, CameraComp->GetComponentLocation(), End, ECollisionChannel::ECC_GameTraceChannel1))
+		RotateBarrel(FVector(Hit.Location.X, Hit.Location.Y, Hit.Location.Z));
 }
 
 void APlayerTank::ZoomIn()
 {
-	if (SpringArmComp->TargetArmLength > 1300)
-	{
-		SpringArmComp->TargetArmLength -= 500;
-		SpringArmComp->SetRelativeLocation(FVector(0, 0, 200));
-		
-	}
-	else if (SpringArmComp->TargetArmLength > -200)
-		SpringArmComp->TargetArmLength -= 300;	
-	// FMath::Lerp(SpringArmComp->TargetArmLength, SpringArmComp->TargetArmLength - 300, 0.5);
-	// FMath::Lerp(Sp)
+	if (SpringArmComp->TargetArmLength > -200)
+		// SpringArmComp->TargetArmLength -= 300;	
+		SpringArmComp->TargetArmLength = FMath::Lerp(SpringArmComp->TargetArmLength, SpringArmComp->TargetArmLength - 300, 0.3);
 	else if (SpringArmComp->TargetArmLength == -200)
 	{
 		if (CameraComp->FieldOfView > 5)
@@ -82,11 +95,6 @@ void APlayerTank::ZoomOut()
 	}
 	else if (SpringArmComp->TargetArmLength < 1300)
 		SpringArmComp->TargetArmLength += 300;
-	else if (SpringArmComp->TargetArmLength >= 1300)
-	{
-		SpringArmComp->TargetArmLength += 500;
-		SpringArmComp->SetRelativeLocation(FVector(0, 0, 800));
-	}
 		
 	
 }

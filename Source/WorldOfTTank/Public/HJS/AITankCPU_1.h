@@ -26,9 +26,13 @@ public:
 	// 공격가능 상태 확인 함수
 	UFUNCTION()
 	bool GetFireState();
+
+	UFUNCTION()
+	FVector GetHeadMeshLocation();
+
 	// 특정 액터 방향으로 라인트레이싱 사용 함수
 	UFUNCTION()
-	bool HasLineOfSightToTarget(AActor* TargetActor) const;
+	bool HasLineOfSightToTarget(const FVector StartLocation, const AActor* TargetActor) const;
 	
 	// 터렛 회전 종료 확인 함수
 	UFUNCTION()
@@ -37,9 +41,15 @@ public:
 	virtual void Fire() override;
 	// 공격 유효 지점을 찾는 함수
 	UFUNCTION()
-	FVector FindValidAttackPosition(const AActor* TargetLocation);
+	FVector FindValidAttackPosition(float SampleRadius,const AActor* TargetLocation);
+	// 사정거리 안으로 이동하도록 위치를 잡는 함수
 	UFUNCTION()
 	FVector FindValidAttackRange(const AActor* TargetActor);
+	// 가까이에 장애물이 있는 지 체크하는 함수
+	bool CheckForNearbyObstacle();
+
+	bool CheckForNavSystem(FVector MovePoint);
+
 protected:
 virtual void BeginPlay() override;
 
@@ -56,7 +66,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "combat")
 	float DetectRate = 1.f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float DetectRange = 5000.f;
+	float DetectRange = 10000.f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float FireRate = 4.f;
 	UPROPERTY(VisibleAnywhere, Category = "Combat")

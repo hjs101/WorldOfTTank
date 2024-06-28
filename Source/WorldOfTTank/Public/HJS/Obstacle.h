@@ -14,9 +14,7 @@ class WORLDOFTTANK_API AObstacle : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AObstacle();
-
-	UPROPERTY(EditAnywhere, Category = "Map", BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TArray<USceneComponent*> HiddenPointArr;
+	TArray<FVector> GetLocationArr();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -24,4 +22,7 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
+
+	UPROPERTY()
+	TArray<USceneComponent*> HiddenPointArr;
 };

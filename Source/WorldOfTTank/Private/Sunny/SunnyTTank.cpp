@@ -5,6 +5,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/InputComponent.h"
+#include "DrawDebugHelpers.h"
 
 ASunnyTTank::ASunnyTTank()
 {
@@ -15,6 +17,32 @@ ASunnyTTank::ASunnyTTank()
 	Camera->SetupAttachment(SpringArm);
 }
 
+void ASunnyTTank::BeginPlay()
+{
+	Super::BeginPlay();
+
+	TankPlayerController = Cast<APlayerController>(GetController());
+}
+
+void ASunnyTTank::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (TankPlayerController)
+	{
+		FHitResult HitResult;
+		TankPlayerController->GetHitResultUnderCursor(
+			ECollisionChannel::ECC_Visibility,
+			false,
+			HitResult);
+
+		// 디버그 구체 만드는 법
+		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 25.f, 12, FColor::Red, false, -1.f);
+
+		RotateTurret(HitResult.ImpactPoint);
+	}
+}
+
 void ASunnyTTank::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -23,14 +51,6 @@ void ASunnyTTank::SetupPlayerInputComponent(class UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ASunnyTTank::Turn);
 
 	//PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ASunnyTTank::Fire);
-}
-
-// Called when the game starts or when spawned
-void ASunnyTTank::BeginPlay()
-{
-	Super::BeginPlay();
-
-	TankPlayerController = Cast<APlayerController>(GetController());
 }
 
 void ASunnyTTank::Move(float Value)

@@ -14,7 +14,10 @@ class WORLDOFTTANK_API ASunnyBasePawn : public APawn
 public:
 	// Sets default values for this pawn's properties
 	ASunnyBasePawn();
-	
+
+protected:
+	void RotateTurret(FVector LookAtTarget);
+	void Fire();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
@@ -28,10 +31,4 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* ProjectileSpawnPoint;
-
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 };

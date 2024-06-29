@@ -5,6 +5,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 ASunnyBasePawn::ASunnyBasePawn()
@@ -25,13 +27,24 @@ ASunnyBasePawn::ASunnyBasePawn()
 	ProjectileSpawnPoint->SetupAttachment(HeadMesh);
 }
 
-
-
-// Called every frame
-void ASunnyBasePawn::Tick(float DeltaTime)
+void ASunnyBasePawn::RotateTurret(FVector LookAtTarget)
 {
-	Super::Tick(DeltaTime);
+	FVector ToTarget = LookAtTarget - HeadMesh->GetComponentLocation();
+	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 
-
-
+	HeadMesh->SetWorldRotation(
+		FMath::RInterpTo(
+			HeadMesh->GetComponentRotation(),
+			LookAtRotation,
+			UGameplayStatics::GetWorldDeltaSeconds(this),
+			10.f)
+	);
 }
+
+
+//void ASunnyBasePawn::Fire()
+//{
+//	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
+//	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();
+//
+//}

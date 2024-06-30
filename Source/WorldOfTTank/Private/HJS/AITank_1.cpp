@@ -130,12 +130,12 @@ void AAITank_1::RotateTank(FVector LookAtTarget)
 {
 	FVector ToTarget = LookAtTarget - CapsuleComp->GetComponentLocation();
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
-	// 머리 돌리기
+	// 몸체 돌리기
 	CapsuleComp->SetWorldRotation(
 		FMath::RInterpTo(CapsuleComp->GetComponentRotation(),
 			LookAtRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this)
-			, 3.f)
+			, 5.f)
 	);
 
 }

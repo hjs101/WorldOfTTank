@@ -77,7 +77,7 @@ private:
 	UPROPERTY()
 	FTimerHandle FireRateTimerHandle;
 
-	class AAITankController_1* ai;
+	class AAITankController_1* TankAIController;
 
 	// 함수
 	UFUNCTION()

@@ -32,7 +32,7 @@ void AAITankCPU_1::BeginPlay()
 	GetWorldTimerManager().SetTimer(DetectRateTimerHandle, this, &AAITankCPU_1::CheckDistance, DetectRate, true);
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AAITankCPU_1::OnSeePawn);
 	NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-	ai = Cast<AAITankController_1>(GetController());
+	TankAIController = Cast<AAITankController_1>(GetController());
 }
 
 // Called every frame
@@ -252,7 +252,7 @@ FVector AAITankCPU_1::FindValidAttackPosition(float SampleRadius,const AActor* T
 			FAIMoveRequest req;
 			req.SetAcceptanceRadius(3);
 			req.SetGoalLocation(SamplePoint);
-			ai->BuildPathfindingQuery(req, query);
+			TankAIController->BuildPathfindingQuery(req, query);
 			FPathFindingResult result = NavSys->FindPathSync(query);
 			
 			if (result.Result == ENavigationQueryResult::Success)
@@ -315,7 +315,7 @@ FVector AAITankCPU_1::FindValidAttackRange(const AActor* TargetActor)
 		FAIMoveRequest req;
 		req.SetAcceptanceRadius(3);
 		req.SetGoalLocation(SamplePoint);
-		ai->BuildPathfindingQuery(req, query);
+		TankAIController->BuildPathfindingQuery(req, query);
 		FPathFindingResult result = NavSys->FindPathSync(query);
 		// 지금 이 if문이 잘 작동을 안함.
 		if (result.Result == ENavigationQueryResult::Success)
@@ -375,7 +375,7 @@ bool AAITankCPU_1::CheckForNearbyObstacle()
 	);
 	bool isDetected = false;
 	AActor* DetectedActor = nullptr;
-	float MinObstacleDist = INT32_MAX;
+	float MinObstacleDist = (float)INT32_MAX;
 	// 탐색된 결과를 분석하여 장애물이 있는지 확인
 	for (const FOverlapResult& Result : OverlapResults)
 	{
@@ -414,7 +414,7 @@ bool AAITankCPU_1::CheckForNavSystem(FVector MovePoint)
 	FAIMoveRequest req;
 	req.SetAcceptanceRadius(3);
 	req.SetGoalLocation(MovePoint);
-	ai->BuildPathfindingQuery(req, query);
+	TankAIController->BuildPathfindingQuery(req, query);
 	FPathFindingResult result = NavSys->FindPathSync(query);
 
 	if (result.Result == ENavigationQueryResult::Success) {

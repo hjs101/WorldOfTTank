@@ -16,9 +16,9 @@ UBTTask_HideBehindObstacle::UBTTask_HideBehindObstacle()
 
 EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    MyTank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
+    AITank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
 
-    if (MyTank == nullptr)
+    if (AITank == nullptr)
     {
         return EBTNodeResult::Failed;
     }
@@ -41,13 +41,13 @@ EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeCompone
         return EBTNodeResult::Failed;
     }
 
-    APawn* MainTarget = Cast<APawn>(BlackboardComp->GetValueAsObject(FName("TargetPlayer")));
+    APawn* MainTarget = Cast<APawn>(BlackboardComp->GetValueAsObject(FName("MainTarget")));
     if (MainTarget == nullptr)
     {
         return EBTNodeResult::Failed;
     }
 
-    FVector HideLocation = FVector::ZeroVector;
+    HideLocation = FVector::ZeroVector;
     bool bFoundHideLocation = false;
     TArray<FVector> HiddenArr = Obstacle->GetLocationArr();
 
@@ -62,7 +62,7 @@ EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeCompone
 
         FHitResult HitResult;
         FCollisionQueryParams CollisionParams;
-        CollisionParams.AddIgnoredActor(MyTank);
+        CollisionParams.AddIgnoredActor(AITank);
         CollisionParams.AddIgnoredActor(MainTarget);
         float SphereRadius = 30.f;
 
@@ -82,7 +82,7 @@ EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeCompone
         }
         else
         {
-            if(MyTank->CheckForNavSystem(SamplePoint)){
+            if(AITank->CheckForNavSystem(SamplePoint)){
 				HideLocation = SamplePoint;
 				bFoundHideLocation = true;
 				break;
@@ -102,7 +102,7 @@ EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeCompone
 
 void UBTTask_HideBehindObstacle::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-    if (MyTank == nullptr)
+    if (AITank == nullptr)
     {
         FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
         return;
@@ -111,16 +111,19 @@ void UBTTask_HideBehindObstacle::TickTask(UBehaviorTreeComponent& OwnerComp, uin
     if (CurrentTime >= FailTime) {
         CurrentTime = 0;
         FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+        return;
     }
 
-    MyTank->RotateTank(HidePosition);
+    AITank->RotateTank(HideLocation);
 
     if (bIsMoving)
     {
-        if (abs(FVector::Dist(MyTank->GetActorLocation(), HidePosition)) < 300.f)
+        if (abs(FVector::Dist(AITank->GetActorLocation(), HideLocation)) < 250.f)
         {
             bIsMoving = false;
             FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+            return;
         }
     }
+    return;
 }

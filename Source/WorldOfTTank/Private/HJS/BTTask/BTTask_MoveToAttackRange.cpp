@@ -25,15 +25,15 @@ EBTNodeResult::Type UBTTask_MoveToAttackRange::ExecuteTask(UBehaviorTreeComponen
         return EBTNodeResult::Failed;
     }
 
-    MyTank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
-    if (MyTank == nullptr)
+    AITank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
+    if (AITank == nullptr)
     {
         return EBTNodeResult::Failed;
     }
 
-    MovePosition = MyTank->FindValidAttackRange(Target);
+    MovePosition = AITank->FindValidAttackRange(Target);
 
-    if (MovePosition == MyTank->GetActorLocation()) {
+    if (MovePosition == AITank->GetActorLocation()) {
         return EBTNodeResult::Failed;
     }
 
@@ -45,7 +45,7 @@ EBTNodeResult::Type UBTTask_MoveToAttackRange::ExecuteTask(UBehaviorTreeComponen
 
 void UBTTask_MoveToAttackRange::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-    if (MyTank == nullptr)
+    if (AITank == nullptr)
     {
         FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
         return;
@@ -55,16 +55,18 @@ void UBTTask_MoveToAttackRange::TickTask(UBehaviorTreeComponent& OwnerComp, uint
     if (CurrentTime >= FailTime) {
         CurrentTime = 0;
         FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+        return;
     }
 
-    MyTank->RotateTank(MovePosition);
+    AITank->RotateTank(MovePosition);
 
     if (bIsMoving)
     {
-        if (abs(FVector::Dist(MyTank->GetActorLocation(), MovePosition)) < 300.f)
+        if (abs(FVector::Dist(AITank->GetActorLocation(), MovePosition)) < 300.f)
         {
             bIsMoving = false;
             FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+            return;
         }
     }
 }

@@ -24,7 +24,7 @@ private:
     FVector AttackPosition;
     bool bIsMoving;
     UPROPERTY()
-    class AAITankCPU_1* MyTank;
+    class AAITankCPU_1* AITank;
     float CurrentTime = 0.f;
     float FailTime = 3.f;
 };

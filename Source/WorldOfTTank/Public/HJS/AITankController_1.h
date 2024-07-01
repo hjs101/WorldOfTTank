@@ -18,7 +18,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void Tick(float DeltaTime) override;
 private:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	class UBehaviorTree* BehaviorTree;
@@ -29,5 +29,8 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UBlackboardComponent* BlackboardComponent;
 
+	//FVector CurrentTargetLocation;
+	//bool bHasTarget;
+	//FNavPathSharedPtr CurrentPath;
 	// 배열
 };

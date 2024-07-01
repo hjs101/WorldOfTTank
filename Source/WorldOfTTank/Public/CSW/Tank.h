@@ -45,6 +45,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
 	USceneComponent* ProjectileSpawnPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
+	class UFloatingPawnMovement* MoveComp;
 	
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float Speed = 150;
@@ -65,4 +68,5 @@ protected:
 	void	Move(float Value);
 	void	Turn(float Value);
 	void	Fire();
+	void	Brake();
 };

@@ -10,7 +10,7 @@ UBTTask_RotateTurretToTarget::UBTTask_RotateTurretToTarget()
 	NodeName = TEXT("Rotate Turret To Target");
 	bNotifyTick = true;
 	TargetActor = nullptr;
-	MyTank = nullptr;
+	AITank = nullptr;
 }
 
 EBTNodeResult::Type UBTTask_RotateTurretToTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -27,27 +27,40 @@ EBTNodeResult::Type UBTTask_RotateTurretToTarget::ExecuteTask(UBehaviorTreeCompo
 		return EBTNodeResult::Failed;
 	}
 
-	MyTank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
-	if (MyTank == nullptr)
+	AITank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
+	if (AITank == nullptr)
 	{
 		return EBTNodeResult::Failed;
 	}
-
+	CurrentTime = 0;
 	return EBTNodeResult::InProgress; // 회전 중
 }
 
 void UBTTask_RotateTurretToTarget::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	if (MyTank == nullptr || TargetActor == nullptr)
+	if (AITank == nullptr || TargetActor == nullptr)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
+	CurrentTime += DeltaSeconds;
+
+	if (CurrentTime >= FailTime) {
+		CurrentTime = 0;
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		return;
+	}
+
 	// 포신 회전 시작
-	MyTank->RotateTurret(TargetActor->GetActorLocation());
+	AITank->RotateTurret(TargetActor->GetActorLocation());
 	// 포신 회전 완료 여부 확인
-	if (MyTank->IsTurretRotationComplete(TargetActor))
+	if (AITank->IsTurretRotationComplete(TargetActor))
 	{
+		for (int32 i = 0; i < 10; i++) 
+		{
+			AITank->RotateTurret(TargetActor->GetActorLocation());
+		}
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // 회전 완료
+		return;
 	}
 }

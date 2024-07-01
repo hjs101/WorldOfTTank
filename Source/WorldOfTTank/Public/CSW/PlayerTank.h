@@ -18,6 +18,8 @@ public:
 	APlayerTank();
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void BeginPlay() override;
 
 private:
 	void	LookRightLeft(float Value);
@@ -37,4 +39,13 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Look")
 	float	ViewRotationRate = 100;
+
+	UPROPERTY(VisibleAnywhere)
+	AController* ControllerRef;
+
+	float	ArmLength[6] = {-200, 100, 400, 700, 1000, 1300};
+	int		ArmLengthIdx;
+
+	int		GetZoomIndex(float Arm);
+	void	ZoomWithArmLength();
 };

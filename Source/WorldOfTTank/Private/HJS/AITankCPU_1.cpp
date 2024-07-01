@@ -7,6 +7,11 @@
 #include "HJS/AITankCPU_1.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "HJS/AITankController_1.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
+#include "DrawDebugHelpers.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Engine/OverlapResult.h"
 
 AAITankCPU_1::AAITankCPU_1()
 {
@@ -26,52 +31,14 @@ void AAITankCPU_1::BeginPlay()
 
 	GetWorldTimerManager().SetTimer(DetectRateTimerHandle, this, &AAITankCPU_1::CheckDistance, DetectRate, true);
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AAITankCPU_1::OnSeePawn);
+	NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	TankAIController = Cast<AAITankController_1>(GetController());
 }
 
 // Called every frame
 void AAITankCPU_1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//if(TargetActor != nullptr)
-	//{
-	//	if (!IsTurretRotationComplete()) 
-	//	{
-	//		RotateTurret(TargetActor->GetActorLocation());
-	//	}
-	//}
-}
-
-void AAITankCPU_1::SetMoveVector()
-{
-
-	// 1. 플레이어의 위치를 받아오기
-	//if (PlayerTank) {
-	//	// 2. 플레이어가 사정거리에 있다면, 이동은 하지 않고 플레이어와 일직선 방향으로 회전
-	//	if (InFireRange()) {
-	//		RotateTurret(PlayerTank->GetActorLocation());
-	//	}
-	//	else {
-	//		// 3. 플레이어가 사정거리 바깥에 있다면, 플레이어 방향으로 회전하며 이동
-	//		// 3-1 플레이어 위치 방향 구하기
-	//		FVector DestinationVector = PlayerTank->GetActorLocation() - GetActorLocation();
-	//		DestinationVector.Normalize();
-	//		
-	//		Move(1);
-
-	//		// 현재 위치에서 플레이어 위치까지의 벡터와 현재 전방 벡터를 사용하여 회전 방향 결정
-	//		FVector ForwardVector = GetActorForwardVector();
-	//		float DotProduct = FVector::DotProduct(ForwardVector, DestinationVector);
-	//		FVector CrossProduct = FVector::CrossProduct(ForwardVector, DestinationVector);
-
-	//		// 오른쪽으로 회전해야 하면 1, 왼쪽으로 회전해야 하면 -1
-	//		float Value = (CrossProduct.Z > 0) ? 1 : -1;
-	//		if (CrossProduct.Z == 0) {
-	//			Value = 0;
-	//		}
-	//		BodyTurn(Value);
-	//	}
-	//}
-
 }
 
 // 일정 거리 이상 벗어났는 지 확인하는 함수
@@ -136,16 +103,20 @@ bool AAITankCPU_1::GetFireState()
 	return bReadyFire;
 }
 
+FVector AAITankCPU_1::GetHeadMeshLocation()
+{
+	return HeadMesh->GetComponentLocation();
+}
+
 // 레이저 쏴서 일직선 상에 있는지 확인하는 함수
-bool AAITankCPU_1::HasLineOfSightToTarget(AActor* TargetActor) const
+bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AActor* TargetActor) const
 {
 	// 타겟이 없으면 false 리턴
 	if (!TargetActor)
 	{
 		return false;
 	}
-	// 시작 위치는 포신의 끝 점으로 하고 싶은데....
-	FVector StartLocation = ProjecttileSpawnPoint->GetComponentLocation();
+
 	// 종료 위치는 타겟의 Vector
 	FVector EndLocation = TargetActor->GetActorLocation();
 
@@ -157,16 +128,17 @@ bool AAITankCPU_1::HasLineOfSightToTarget(AActor* TargetActor) const
 	CollisionParams.AddIgnoredActor(this);
 	// 타겟도 무시
 	CollisionParams.AddIgnoredActor(TargetActor);
-
+	float SphereRadius = 30.f;
 	// 라인트레이싱 실행
-	bool bHit = GetWorld()->LineTraceSingleByChannel(
+	bool bHit = GetWorld()->SweepSingleByChannel(
 		HitResult,
 		StartLocation,
 		EndLocation,
-		ECC_Visibility, // 가시성 채널 사용
+		FQuat::Identity,
+		ECC_Visibility, // 가시성 채널 사용 
+		FCollisionShape::MakeSphere(SphereRadius),
 		CollisionParams
 	);
-
 	return bHit;
 }
 
@@ -183,13 +155,14 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor) const
 	FVector ToTarget = TargetActor->GetActorLocation() - HeadMesh->GetComponentLocation();
 	FRotator ToTargetRotation = ToTarget.Rotation();
 	FRotator MyRotation = HeadMesh->GetComponentRotation();
-	//1. yaw 각도는 무조건 일치 해야함. // 아예 안될수도 있으니 오차범위 +-2도정도 생각해두기
+	//1. yaw 각도는 무조건 일치 해야함. // 아예 안될수도 있으니 오차범위 +-1도정도 생각해두기
 	if (abs(ToTargetRotation.Yaw - MyRotation.Yaw) > 2) {
 		return false;
 	}
+	ToTarget = TargetActor->GetActorLocation() - BarrelMesh->GetComponentLocation();
+	ToTargetRotation = ToTarget.Rotation();
 	MyRotation = BarrelMesh->GetComponentRotation();
 	// 2. 고도 확인하기
-	UE_LOG(LogTemp, Warning, TEXT("To : %f , My : %f"), ToTargetRotation.Pitch, MyRotation.Pitch);
 	if (abs(ToTargetRotation.Pitch - MyRotation.Pitch) > 2) {
 
 		// 2-1. 피치가 다르면서 한계고도 안쪽일 경우 false
@@ -236,8 +209,224 @@ void AAITankCPU_1::Fire()
 	}
 }
 
+// 공격 유효지점 찾기
+FVector AAITankCPU_1::FindValidAttackPosition(float SampleRadius,const AActor* TargetActor)
+{
+
+
+	// 시작위치 불러오기
+	FVector StartLocation = GetActorLocation();
+
+	if (TargetActor == nullptr) {
+		return StartLocation;
+	}
+	FVector DestLocation = StartLocation;
+
+	// 라인 트레이스용 변수
+	FHitResult HitResult;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+	CollisionParams.AddIgnoredActor(TargetActor);
+	// 샘플링 지점 설정
+	// 샘플링 반경은 매개변수로 받아오기 (1000에서 100단위로 2000까지 탐색해보자)
+	int32 NumSamples = 36; // 샘플링할 지점 수 (360도를 기준으로 10도 간격)
+	
+	for (int32 i = 0; i < NumSamples; i++)
+	{
+		// 각도를 기준으로 샘플링 지점 계산
+		float Angle = (360.0f / NumSamples) * i;
+		FVector SamplePoint = StartLocation + SampleRadius * FVector(FMath::Cos(FMath::DegreesToRadians(Angle)), FMath::Sin(FMath::DegreesToRadians(Angle)), 0);
+		
+		// 라인 트레이스 수행
+		bool bHit = AAITankCPU_1::HasLineOfSightToTarget(SamplePoint, TargetActor);
+		// 충돌이 없고 네비메시에서 유효한 지점인지 확인
+		if (!bHit)
+		{
+			NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+			if (NavSys == nullptr) 
+			{
+				return StartLocation;
+			}
+
+			FPathFindingQuery query;
+			FAIMoveRequest req;
+			req.SetAcceptanceRadius(3);
+			req.SetGoalLocation(SamplePoint);
+			TankAIController->BuildPathfindingQuery(req, query);
+			FPathFindingResult result = NavSys->FindPathSync(query);
+			
+			if (result.Result == ENavigationQueryResult::Success)
+			{
+				DestLocation = SamplePoint;
+				// 타겟과의 거리가 현재 위치보다 더 가까워지지 않는지 체크
+				float CurrentDistance = FVector::Dist(StartLocation, TargetActor->GetActorLocation());
+				float NewDistance = FVector::Dist(SamplePoint, TargetActor->GetActorLocation());
+
+				// 해당 메인 타겟이 사정거리(FireRange) 내에 있는지 체크
+				if (NewDistance <= FireRange && NewDistance >= CurrentDistance)
+				{
+					// 유효한 위치를 찾았을 때 DestLocation 갱신 및 반환
+					DestLocation = SamplePoint;
+					return DestLocation;
+				}
+			}
+		}
+	}
+
+	return DestLocation;
+
+}
+
+FVector AAITankCPU_1::FindValidAttackRange(const AActor* TargetActor)
+{
+
+
+	// 시작위치 불러오기
+	FVector StartLocation = GetActorLocation();
+
+	if (TargetActor == nullptr) {
+		return StartLocation;
+	}
+	FVector DestLocation = StartLocation;
+	// 샘플링 지점 설정
+	float Distnation = FVector::Dist(StartLocation, TargetActor->GetActorLocation());
+	// 샘플링 반경 = 타겟 - 나의 거리에서 사정거리만큼 거리를 빼고, 여기에 일정 텀(300)을 더하기.
+	float SampleRadius = Distnation - FireRange + 200.f;
+	
+	// 일단 하드코딩으로 막아둔 반대편으로 가기
+	if (abs(SampleRadius) > Distnation){
+		SampleRadius = Distnation - 2000.f;
+	}
+	int32 NumSamples = 36; // 샘플링할 지점 수 (360도를 기준으로 10도 간격)
+	float MinDist = FVector::Dist(StartLocation, TargetActor->GetActorLocation());
+	for (int32 i = 0; i < NumSamples; i++)
+	{
+		// 각도를 기준으로 샘플링 지점 계산
+		float Angle = (360.0f / NumSamples) * i;
+		FVector SamplePoint = StartLocation + SampleRadius * FVector(FMath::Cos(FMath::DegreesToRadians(Angle)), FMath::Sin(FMath::DegreesToRadians(Angle)), 0);
+		// 충돌이 없고 네비메시에서 유효한 지점인지 확인
+		NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+		if (NavSys == nullptr)
+		{
+			return StartLocation;
+		}
+
+		FPathFindingQuery query;
+		FAIMoveRequest req;
+		req.SetAcceptanceRadius(3);
+		req.SetGoalLocation(SamplePoint);
+		TankAIController->BuildPathfindingQuery(req, query);
+		FPathFindingResult result = NavSys->FindPathSync(query);
+		// 지금 이 if문이 잘 작동을 안함.
+		if (result.Result == ENavigationQueryResult::Success)
+		{
+			// 타겟과의 거리가 현재 위치보다 더 가까워지지 않는지 체크
+			float NewDistance = FVector::Dist(SamplePoint, TargetActor->GetActorLocation());
+
+			// 해당 메인 타겟이 가까워지는지
+			if (MinDist > NewDistance)
+			{
+				// 유효한 위치를 찾았을 때 DestLocation 갱신 및 반환
+				DestLocation = SamplePoint;
+				MinDist = NewDistance;
+			}
+		}
+	}
+
+	return DestLocation;
+
+}
+
+bool AAITankCPU_1::CheckForNearbyObstacle()
+{
+	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
+
+	if (AIController == nullptr)
+	{
+		return false;
+	}
+	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+	if (BlackboardComp == nullptr)
+	{
+		return false;
+	}
+
+	// 현재 위치를 기준으로 탐색 반경 설정
+	FVector StartLocation = GetActorLocation();
+	float SearchRadius = 2000.f;  // 예시로 반경 1000 설정
+
+	// 탐색 결과를 저장할 배열
+	TArray<FOverlapResult> OverlapResults;
+
+	// 충돌 설정
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(SearchRadius);
+	// 충돌 필터 설정
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);  // 자신은 무시
+
+	// Sphere Overlap을 사용하여 주변 액터 탐색
+	bool bHasObstacle = GetWorld()->OverlapMultiByChannel(
+		OverlapResults,
+		StartLocation,
+		FQuat::Identity,
+		ECC_WorldStatic,
+		Sphere,
+		QueryParams
+	);
+	bool isDetected = false;
+	AActor* DetectedActor = nullptr;
+	float MinObstacleDist = (float)INT32_MAX;
+
+	// 탐색된 결과를 분석하여 장애물이 있는지 확인
+	for (const FOverlapResult& Result : OverlapResults)
+	{
+		AActor* OverlappedActor = Result.GetActor();
+		if (OverlappedActor)
+		{
+			// 장애물로 간주할 조건을 추가 (예: 태그 확인 등)
+			if (OverlappedActor->ActorHasTag(FName("Obstacle")))
+			{
+				float CurrentDist = FVector::Dist(GetActorLocation(), OverlappedActor->GetActorLocation());
+				if (MinObstacleDist > CurrentDist) {
+					CurrentDist = MinObstacleDist;
+					DetectedActor = OverlappedActor;
+				}
+				// 장애물이 발견되면 true 반환
+				isDetected = true;
+			}
+		}
+	}
+	if(DetectedActor != nullptr)
+	{
+		BlackboardComp->SetValueAsObject(FName("DetectedObstacle"), DetectedActor);
+	}
+	return isDetected;
+}
+
+bool AAITankCPU_1::CheckForNavSystem(FVector MovePoint)
+{
+	NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	if (NavSys == nullptr)
+	{
+		return false;
+	}
+
+	FPathFindingQuery query;
+	FAIMoveRequest req;
+	req.SetAcceptanceRadius(3);
+	req.SetGoalLocation(MovePoint);
+	TankAIController->BuildPathfindingQuery(req, query);
+	FPathFindingResult result = NavSys->FindPathSync(query);
+
+	if (result.Result == ENavigationQueryResult::Success) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 void AAITankCPU_1::FireReady()
 {
 	bReadyFire = true;
 }
-

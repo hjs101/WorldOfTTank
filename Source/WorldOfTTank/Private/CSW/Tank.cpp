@@ -3,9 +3,12 @@
 
 #include "CSW/Tank.h"
 
+#include "CollisionDebugDrawingPublic.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "CSW/Projectile.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/UnitConversion.h"
 
@@ -17,6 +20,8 @@ ATank::ATank()
 
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base Mesh"));
 	RootComponent = BaseMesh;
+	BaseMesh->SetSimulatePhysics(true);
+	BaseMesh->SetLinearDamping(0.8f);
 
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Turret Mesh"));
 	TurretMesh->SetupAttachment(BaseMesh);
@@ -29,6 +34,12 @@ ATank::ATank()
 
 	RightWheelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RigthWhell Mesh"));
 	RightWheelMesh->SetupAttachment(BaseMesh);
+
+	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
+	ProjectileSpawnPoint->SetupAttachment(BarrelMesh);
+
+	MoveComp = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("Move Comp"));
+	MoveComp->SetUpdatedComponent(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -45,17 +56,14 @@ void ATank::Tick(float DeltaTime)
 
 void	ATank::Move(float Value)
 {
-	FVector	DeltaLocation = FVector::ZeroVector;
-
 	MoveState = (Value >= 0);
-	DeltaLocation.X = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * Speed;
-	AddActorLocalOffset(DeltaLocation, true);
+	MoveComp->AddInputVector(GetActorForwardVector() * Value);
 }
 
 void ATank::Turn(float Value)
 {
 	FRotator DeltaRotation = FRotator::ZeroRotator;
-
+	
 	if (!MoveState)
 		Value *= -1;
 	DeltaRotation.Yaw = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * TurnRate;
@@ -64,14 +72,14 @@ void ATank::Turn(float Value)
 void ATank::RotateTurret(float Value)
 {
 	TurretMesh->SetWorldRotation(
-		FMath::RInterpTo(
+		FMath::RInterpConstantTo(
 			TurretMesh->GetComponentRotation(),
 			FRotator(
 				0,
-				Value,//CameraComp->GetComponentRotation().Yaw,
+				Value,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
-			0.5)
+			35)
 			);
 }
 
@@ -84,16 +92,30 @@ float	LimitBarrelPitch(float Value)
 	return Value;
 }
 
-void	ATank::RotateBarrel(float Value)
+void	ATank::RotateBarrel(FVector Target)
 {
 	BarrelMesh->SetWorldRotation(
-		FMath::RInterpTo(
+		FMath::RInterpConstantTo(
 			BarrelMesh->GetComponentRotation(),
 			FRotator(
-				LimitBarrelPitch(Value),//CameraComp->GetComponentRotation().Pitch,
+				LimitBarrelPitch((Target - BarrelMesh->GetComponentLocation()).Rotation().Pitch),
 				TurretMesh->GetComponentRotation().Yaw,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
-			0.5)
+			35)
 			);
 }
+
+void ATank::Fire()
+{
+	GetWorld()->SpawnActor<AProjectile>(
+		ProjectileClass,
+		ProjectileSpawnPoint->GetComponentLocation(),
+		ProjectileSpawnPoint->GetComponentRotation());
+}
+
+void ATank::Brake()
+{
+	MoveComp->Velocity /= 2;
+}
+

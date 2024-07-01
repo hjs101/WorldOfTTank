@@ -42,19 +42,31 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
 	UStaticMeshComponent* RightWheelMesh;
-	UPROPERTY(EditAnywhere, Category="Movement")
-	float Speed = 300;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
+	USceneComponent* ProjectileSpawnPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
+	class UFloatingPawnMovement* MoveComp;
 	
 	UPROPERTY(EditAnywhere, Category="Movement")
-	float TurnRate = 50;
+	float Speed = 150;
+	
+	UPROPERTY(EditAnywhere, Category="Movement")
+	float TurnRate = 30;
 
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AProjectile> ProjectileClass;
 
 	bool	MoveState = true;
 	
 
 protected:
 	void	RotateTurret(float Value);
-	void	RotateBarrel(float Value);
+	void	RotateBarrel(FVector Target);
 	void	Move(float Value);
 	void	Turn(float Value);
+	void	Fire();
+	void	Brake();
 };

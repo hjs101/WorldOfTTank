@@ -27,7 +27,15 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 
-	   UFUNCTION()
-   void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+    UFUNCTION()
+    void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+
+    UPROPERTY(EditAnywhere, Category = "Physics")
+    float FallImpulse;
+
+    UPROPERTY(EditAnywhere, Category = "Physics")
+    FVector TopOffset; // 나무의 윗부분 위치 오프셋
+
+	bool bFalling = false;
 };

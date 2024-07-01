@@ -13,13 +13,16 @@ AFallingObj::AFallingObj()
 
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->SetNotifyRigidBodyCollision(true);
+
+	FallImpulse = 500.0f;
+	TopOffset = FVector(0.0f, 0.0f, 500.0f); // 기본 오프셋 값, 필요에 따라 조정 가능
 }
 
 // Called when the game starts or when spawned
 void AFallingObj::BeginPlay()
 {
 	Super::BeginPlay();
-	MeshComp->OnComponentHit.AddDynamic(this, &AFallingObj::OnHit);
+	MeshComp->OnComponentBeginOverlap.AddDynamic(this, &AFallingObj::OnOverlapBegin);
 	
 }
 
@@ -30,12 +33,17 @@ void AFallingObj::Tick(float DeltaTime)
 
 }
 
-void AFallingObj::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AFallingObj::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && (OtherActor != this) && Cast<AAITank_1>(OtherActor))
+	if (!bFalling && OtherActor && Cast<AAITank_1>(OtherActor))
 	{
-		FVector Impulse = Hit.ImpactNormal * 10000.0f;
-		MeshComp->AddImpulseAtLocation(Impulse, Hit.ImpactPoint);
+		bFalling = true;
+		FVector Impulse = SweepResult.ImpactNormal * FallImpulse;
+
+		// 나무의 윗부분 위치 계산
+		FVector TopLocation = MeshComp->GetComponentLocation() + TopOffset;
+
+		// 나무의 윗부분에 임펄스 부여
+		MeshComp->AddImpulseAtLocation(Impulse, TopLocation);
 	}
 }
-

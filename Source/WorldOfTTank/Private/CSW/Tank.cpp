@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "CSW/Projectile.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/UnitConversion.h"
 
@@ -19,6 +20,8 @@ ATank::ATank()
 
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base Mesh"));
 	RootComponent = BaseMesh;
+	BaseMesh->SetSimulatePhysics(true);
+	BaseMesh->SetLinearDamping(0.8f);
 
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Turret Mesh"));
 	TurretMesh->SetupAttachment(BaseMesh);
@@ -34,6 +37,9 @@ ATank::ATank()
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
 	ProjectileSpawnPoint->SetupAttachment(BarrelMesh);
+
+	MoveComp = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("Move Comp"));
+	MoveComp->SetUpdatedComponent(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -50,17 +56,14 @@ void ATank::Tick(float DeltaTime)
 
 void	ATank::Move(float Value)
 {
-	FVector	DeltaLocation = FVector::ZeroVector;
-
 	MoveState = (Value >= 0);
-	DeltaLocation.X = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * Speed;
-	AddActorLocalOffset(DeltaLocation, true);
+	MoveComp->AddInputVector(GetActorForwardVector() * Value);
 }
 
 void ATank::Turn(float Value)
 {
 	FRotator DeltaRotation = FRotator::ZeroRotator;
-
+	
 	if (!MoveState)
 		Value *= -1;
 	DeltaRotation.Yaw = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * TurnRate;
@@ -110,3 +113,9 @@ void ATank::Fire()
 		ProjectileSpawnPoint->GetComponentLocation(),
 		ProjectileSpawnPoint->GetComponentRotation());
 }
+
+void ATank::Brake()
+{
+	MoveComp->Velocity /= 2;
+}
+

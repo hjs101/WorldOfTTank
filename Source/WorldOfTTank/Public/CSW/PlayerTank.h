@@ -42,4 +42,10 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	AController* ControllerRef;
+
+	float	ArmLength[6] = {-200, 100, 400, 700, 1000, 1300};
+	int		ArmLengthIdx;
+
+	int		GetZoomIndex(float Arm);
+	void	ZoomWithArmLength();
 };

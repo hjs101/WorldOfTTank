@@ -110,7 +110,7 @@ void UBTTask_HideBehindObstacle::TickTask(UBehaviorTreeComponent& OwnerComp, uin
     CurrentTime += DeltaSeconds;
     if (CurrentTime >= FailTime) {
         CurrentTime = 0;
-        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+        FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
         return;
     }
 

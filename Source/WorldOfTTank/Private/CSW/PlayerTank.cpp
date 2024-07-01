@@ -37,6 +37,10 @@ void APlayerTank::Tick(float DeltaSeconds)
 	FHitResult	Hit;
 	if (GetWorld()->LineTraceSingleByChannel(Hit, CameraComp->GetComponentLocation(), End, ECollisionChannel::ECC_GameTraceChannel1))
 		DrawDebugPoint(GetWorld(), Hit.Location, 1, FColor::Red, false, -1);
+	if (CamDist[CamIdx] != SpringArmComp->TargetArmLength)
+		LerpZoom(DeltaSeconds);
+		
+		
 }
 
 // Called to bind functionality to input
@@ -75,63 +79,31 @@ void APlayerTank::LookUpDown(float Value)
 		RotateBarrel(FVector(Hit.Location.X, Hit.Location.Y, Hit.Location.Z));
 }
 
-void APlayerTank::ZoomWithArmLength()
+void APlayerTank::LerpZoom(float DeltaSeconds)
 {
-	// float pre = SpringArmComp->TargetArmLength;
-	// SpringArmComp->TargetArmLength = FMath::FInterpTo(
-	// 	SpringArmComp->TargetArmLength,
-	// 	EndCamValue,
-	// 	GetWorld()->GetDeltaSeconds(),
-	// 	10);
-	// UE_LOG(LogTemp, Warning, TEXT("%f"), SpringArmComp->TargetArmLength);
-	// if (pre == SpringArmComp->TargetArmLength)
-	// {
-	// 	SpringArmComp->TargetArmLength = EndCamValue;
-	// 	return ;
-	// }
-	// FTimerHandle TimerHandle;
-	// GetWorldTimerManager().SetTimer(TimerHandle, this, &APlayerTank::ZoomWithArmLength, 0.01f, false);
-}
-
-
-int	APlayerTank::GetZoomIndex(float Arm)
-{
-	int i = 0;
-	while (Arm != ArmLength[i])
-		i++;
-	return i == 6 ? -1 : i;
+	float pre = SpringArmComp->TargetArmLength;
+	SpringArmComp->TargetArmLength = FMath::FInterpTo(
+		SpringArmComp->TargetArmLength,
+		CamDist[CamIdx],
+		DeltaSeconds,
+		10);
+	if (pre == SpringArmComp->TargetArmLength)
+		SpringArmComp->TargetArmLength = CamDist[CamIdx];
 }
 
 void APlayerTank::ZoomIn()
 {
-	int idx = GetZoomIndex(SpringArmComp->TargetArmLength);
-	if (idx < 0)
-		return ;
-	if (SpringArmComp->TargetArmLength > -200)
-	{
-		ArmLengthIdx = idx;
-		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &APlayerTank::ZoomWithArmLength, 0.1f, false);
-	}
-	else if (SpringArmComp->TargetArmLength == -200)
-	{
-		if (CameraComp->FieldOfView > 5)
-			CameraComp->FieldOfView /= 2;
-	}
+	if (CamIdx == 0 && CameraComp->FieldOfView > 5)
+		CameraComp->FieldOfView /= 2;
+	else
+		CamIdx--;
 }
 
 
 void APlayerTank::ZoomOut()
 {
-	if (SpringArmComp->TargetArmLength == -200)
-	{
-		if (CameraComp->FieldOfView < 80)
-			CameraComp->FieldOfView *= 2;
-		else
-			SpringArmComp->TargetArmLength += 300;
-	}
-	else if (SpringArmComp->TargetArmLength < 1300)
-		SpringArmComp->TargetArmLength += 300;
-		
-	
+	if (CamIdx == 0 && CameraComp->FieldOfView < 80)
+		CameraComp->FieldOfView *= 2;
+	else if (CamIdx < 5)
+		CamIdx++;
 }

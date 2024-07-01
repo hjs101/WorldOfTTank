@@ -50,7 +50,6 @@ void AAITank_1::BeginPlay()
 void AAITank_1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AAITank_1::Move(float value)
@@ -101,10 +100,10 @@ void AAITank_1::RotateTurret(FVector LookAtTarget)
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 	// 머리 돌리기
 	HeadMesh->SetWorldRotation(
-		FMath::RInterpTo(HeadMesh->GetComponentRotation(),
+		FMath::RInterpConstantTo(HeadMesh->GetComponentRotation(),
 			LookAtRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this)
-			, 2.f)
+			, 120.f)
 	);
 
 	// 포신 각도 설정
@@ -118,10 +117,10 @@ void AAITank_1::RotateTurret(FVector LookAtTarget)
 	}
 	// 포신 돌리기
 	BarrelMesh->SetWorldRotation(
-		FMath::RInterpTo(BarrelMesh->GetComponentRotation(),
+		FMath::RInterpConstantTo(BarrelMesh->GetComponentRotation(),
 			LookAtRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this)
-		, 3.f)
+		, 80.f)
 	);
 
 }
@@ -135,7 +134,7 @@ void AAITank_1::RotateTank(FVector LookAtTarget)
 		FMath::RInterpTo(CapsuleComp->GetComponentRotation(),
 			LookAtRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this)
-			, 5.f)
+			, 2.f)
 	);
 
 }

@@ -16,6 +16,7 @@ AObstacle::AObstacle()
 TArray<FVector> AObstacle::GetLocationArr()
 {
     TArray<FVector> ResponseLocations;
+    ResponseLocations.Empty(HiddenPointArr.Num() - 1);
 
     for (USceneComponent* PointObj : HiddenPointArr) {
         ResponseLocations.Add(PointObj->GetComponentLocation());

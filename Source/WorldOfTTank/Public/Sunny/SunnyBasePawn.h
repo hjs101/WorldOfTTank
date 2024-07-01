@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "SunnyBasePawn.generated.h"
 
+
 UCLASS()
 class WORLDOFTTANK_API ASunnyBasePawn : public APawn
 {

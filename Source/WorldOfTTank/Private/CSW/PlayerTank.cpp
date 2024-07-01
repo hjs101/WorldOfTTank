@@ -77,20 +77,20 @@ void APlayerTank::LookUpDown(float Value)
 
 void APlayerTank::ZoomWithArmLength()
 {
-	float pre = SpringArmComp->TargetArmLength;
-	SpringArmComp->TargetArmLength = FMath::FInterpTo(
-		SpringArmComp->TargetArmLength,
-		EndCamValue,
-		GetWorld()->GetDeltaSeconds(),
-		10);
-	UE_LOG(LogTemp, Warning, TEXT("%f"), SpringArmComp->TargetArmLength);
-	if (pre == SpringArmComp->TargetArmLength)
-	{
-		SpringArmComp->TargetArmLength = EndCamValue;
-		return ;
-	}
-	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &APlayerTank::ZoomWithArmLength, 0.01f, false);
+	// float pre = SpringArmComp->TargetArmLength;
+	// SpringArmComp->TargetArmLength = FMath::FInterpTo(
+	// 	SpringArmComp->TargetArmLength,
+	// 	EndCamValue,
+	// 	GetWorld()->GetDeltaSeconds(),
+	// 	10);
+	// UE_LOG(LogTemp, Warning, TEXT("%f"), SpringArmComp->TargetArmLength);
+	// if (pre == SpringArmComp->TargetArmLength)
+	// {
+	// 	SpringArmComp->TargetArmLength = EndCamValue;
+	// 	return ;
+	// }
+	// FTimerHandle TimerHandle;
+	// GetWorldTimerManager().SetTimer(TimerHandle, this, &APlayerTank::ZoomWithArmLength, 0.01f, false);
 }
 
 

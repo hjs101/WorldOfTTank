@@ -156,14 +156,14 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor) const
 	FRotator ToTargetRotation = ToTarget.Rotation();
 	FRotator MyRotation = HeadMesh->GetComponentRotation();
 	//1. yaw 각도는 무조건 일치 해야함. // 아예 안될수도 있으니 오차범위 +-1도정도 생각해두기
-	if (abs(ToTargetRotation.Yaw - MyRotation.Yaw) > 0.5) {
+	if (abs(ToTargetRotation.Yaw - MyRotation.Yaw) > 2) {
 		return false;
 	}
 	ToTarget = TargetActor->GetActorLocation() - BarrelMesh->GetComponentLocation();
 	ToTargetRotation = ToTarget.Rotation();
 	MyRotation = BarrelMesh->GetComponentRotation();
 	// 2. 고도 확인하기
-	if (abs(ToTargetRotation.Pitch - MyRotation.Pitch) > 1) {
+	if (abs(ToTargetRotation.Pitch - MyRotation.Pitch) > 2) {
 
 		// 2-1. 피치가 다르면서 한계고도 안쪽일 경우 false
 		if (ToTargetRotation.Pitch < UpLimit && ToTargetRotation.Pitch > DownLimit) {
@@ -376,6 +376,7 @@ bool AAITankCPU_1::CheckForNearbyObstacle()
 	bool isDetected = false;
 	AActor* DetectedActor = nullptr;
 	float MinObstacleDist = (float)INT32_MAX;
+
 	// 탐색된 결과를 분석하여 장애물이 있는지 확인
 	for (const FOverlapResult& Result : OverlapResults)
 	{

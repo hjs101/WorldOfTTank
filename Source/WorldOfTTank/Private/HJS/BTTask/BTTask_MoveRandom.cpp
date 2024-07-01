@@ -50,6 +50,10 @@ EBTNodeResult::Type UBTTask_MoveRandom::ExecuteTask(UBehaviorTreeComponent& Owne
         }
     }
 
+    if (SuccessPoints.IsEmpty()) {
+        return EBTNodeResult::Failed;
+    }
+
     int32 RandomNumber = FMath::RandRange(0, SuccessPoints.Num()-1);
     MoveLocation = SuccessPoints[RandomNumber];
     OwnerComp.GetAIOwner()->MoveToLocation(MoveLocation);

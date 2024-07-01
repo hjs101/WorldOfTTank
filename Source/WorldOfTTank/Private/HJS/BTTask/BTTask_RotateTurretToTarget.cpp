@@ -56,6 +56,10 @@ void UBTTask_RotateTurretToTarget::TickTask(UBehaviorTreeComponent& OwnerComp, u
 	// 포신 회전 완료 여부 확인
 	if (AITank->IsTurretRotationComplete(TargetActor))
 	{
+		for (int32 i = 0; i < 10; i++) 
+		{
+			AITank->RotateTurret(TargetActor->GetActorLocation());
+		}
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // 회전 완료
 		return;
 	}

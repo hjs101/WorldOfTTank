@@ -3,7 +3,18 @@
 
 #include "Sunny/SunnyEnemy.h"
 #include "Sunny/SunnyTTank.h"
-#include "Kismet/GameplayStatics.h"
+#include "Sunny/SunnyEnemyFSM.h"
+#include <Kismet/GameplayStatics.h>
+#include <GameFramework/FloatingPawnMovement.h>
+
+ASunnyEnemy::ASunnyEnemy()
+{
+	// EnemyFSM 컴포넌트 추가
+	Fsm = CreateDefaultSubobject<USunnyEnemyFSM>(TEXT("FSM"));
+
+	// Pawn Move 컴포넌트 추가
+	EnemyMove = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MOVEMENT"));
+}
 
 void ASunnyEnemy::Tick(float DeltaTime)
 {

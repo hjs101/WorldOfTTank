@@ -112,6 +112,16 @@ void USunnyEnemyFSM::AttackState()
 		// 경과 시간 초기화
 		CurrentTime = 0;
 	}	
+
+	// 목표 : 타깃이 공격 범위를 벗어나면 상태를 이동으로 전환하고 싶다
+	// 1. 타깃과의 거리가 필요하다
+	float distance = FVector::Distance(Target->GetActorLocation(), Me->GetActorLocation());
+	// 2. 타깃과의 거리가 공격 범위를 벗어났으니까
+	if (distance > AttackRange)
+	{
+		// 3. 상태를 이동으로 전환하고 싶다
+		mState = EEnemyState::Move;
+	}
 }
 
 // 피격 상태

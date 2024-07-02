@@ -38,7 +38,7 @@ public:
 public:
 	// 상태 변수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=FSM)
-	EEnemyState mState = EEnemyState::Idle;
+	EEnemyState EnemyState = EEnemyState::Idle;
 
 	// 대기 상태
 	void IdleState();

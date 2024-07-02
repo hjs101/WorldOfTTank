@@ -38,11 +38,11 @@ void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// 실행창에 상태 메세지 출력하기
-	FString logMsg = UEnum::GetValueAsString(mState);
+	FString logMsg = UEnum::GetValueAsString(EnemyState);
 	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
 
-	switch (mState)
+	switch (EnemyState)
 	{
 	case EEnemyState::Idle:
 		IdleState();
@@ -73,7 +73,7 @@ void USunnyEnemyFSM::IdleState()
 	if (CurrentTime > IdleDelayTime)
 	{
 		// 3. 이동 상태로 전환하고 싶다
-		mState = EEnemyState::Move;
+		EnemyState = EEnemyState::Move;
 		// 경과 시간 초기화
 		CurrentTime = 0;
 	}
@@ -94,7 +94,7 @@ void USunnyEnemyFSM::MoveState()
 	if (dir.Size() < AttackRange)
 	{
 		// 2. 공격 사애로 전환하고 싶다
-		mState = EEnemyState::Attack;
+		EnemyState = EEnemyState::Attack;
 	}
 }
 
@@ -120,13 +120,14 @@ void USunnyEnemyFSM::AttackState()
 	if (distance > AttackRange)
 	{
 		// 3. 상태를 이동으로 전환하고 싶다
-		mState = EEnemyState::Move;
+		EnemyState = EEnemyState::Move;
 	}
 }
 
 // 피격 상태
 void USunnyEnemyFSM::DamageState() 
 {
+
 
 }
 

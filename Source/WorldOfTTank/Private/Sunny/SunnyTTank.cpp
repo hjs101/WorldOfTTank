@@ -43,14 +43,14 @@ void ASunnyTTank::Tick(float DeltaTime)
 	}
 }
 
+//Input 매핑에 바인딩
 void ASunnyTTank::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ASunnyTTank::Move);
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ASunnyTTank::Turn);
-
-	//PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ASunnyTTank::Fire);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ASunnyTTank::Fire);
 }
 
 void ASunnyTTank::Move(float Value)

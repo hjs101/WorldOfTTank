@@ -2,10 +2,12 @@
 
 
 #include "Sunny/SunnyBasePawn.h"
+#include "Sunny/SunnyProjectile.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 
 // Sets default values
@@ -42,9 +44,15 @@ void ASunnyBasePawn::RotateTurret(FVector LookAtTarget)
 }
 
 
-//void ASunnyBasePawn::Fire()
-//{
-//	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
-//	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();
-//
-//}
+void ASunnyBasePawn::Fire()
+{
+	// 총알스폰점에 총알 생성 위치 + 방향 할당
+	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
+	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();
+
+	ASunnyProjectile* Projectile = GetWorld()->SpawnActor<ASunnyProjectile>(ProjectileClass, Location, Rotation);
+	Projectile->SetOwner(this);
+
+	// 디버그 구체로 확인
+	//DrawDebugSphere(GetWorld(), ProjectileSpawnPointLocation, 25.f, 12, FColor::Green, false, 3.f);		
+}

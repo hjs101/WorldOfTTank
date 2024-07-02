@@ -14,7 +14,18 @@ class WORLDOFTTANK_API ASunnyGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
-public: 
-	ASunnyGameMode();
+public:
+
+	void ActorDied(AActor* DeadActor);
+
+protected:
+
+	virtual void BeginPlay() override;
+
+
+private:
+
+	class ASunnyTTank* TTank;
+	class ASunnyPlayerController* TTanksPlayerController;
 	
 };

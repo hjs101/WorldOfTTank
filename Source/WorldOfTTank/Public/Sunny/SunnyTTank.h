@@ -23,10 +23,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-
 	void HandleDestruction();
 
-	APlayerController* GetTankPlayerController() const { return TankPlayerController; }
+	APlayerController* GetTankPlayerController() const { return TTankPlayerController; }
 
 	bool TTankAlive = true;
 
@@ -51,5 +50,7 @@ private:
 	void Move(float Value);
 	void Turn(float Value);
 
-	APlayerController* TankPlayerController;
+	APlayerController* TTankPlayerController;
+
+	class ASunnyEnemyFSM* obj;
 };

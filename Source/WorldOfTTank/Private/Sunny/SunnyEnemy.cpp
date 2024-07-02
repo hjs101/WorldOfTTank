@@ -51,14 +51,6 @@ void ASunnyEnemy::BeginPlay()
 // 발사할지 여부 확인
 void ASunnyEnemy::CheckFireCondition()
 {
-	/*if (TTank == nullptr)
-	{
-		return;
-	}
-	if (InFireRange() && TTank->TTankAlive)
-	{
-		Fire();
-	}*/
 
 	if (InFireRange())
 	{
@@ -80,4 +72,12 @@ bool ASunnyEnemy::InFireRange()
 	}
 
 	return false;
+}
+
+
+// Enemy Delete
+void ASunnyEnemy::HandleDestruction()
+{
+	Super::HandleDestruction();
+	Destroy();
 }

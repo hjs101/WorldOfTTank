@@ -17,7 +17,6 @@ enum class EEnemyState : uint8
 	Die,
 };
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class WORLDOFTTANK_API USunnyEnemyFSM : public UActorComponent
 {
@@ -75,4 +74,16 @@ public:
 	// 공격 대기 시간
 	UPROPERTY(EditAnywhere, Category = FSM)
 	float AttackDelayTime = 2.0f;
+
+
+	// 피격 알림 이벤트 함수
+	void OnDamageProcess();
+
+	// 체력
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = FSM)
+	int32 hp = 3;
+
+	// 피격 대기 시간
+	UPROPERTY(EditAnywhere, Category = FSM)
+	float DamageDelayTime = 2.0f;
 };

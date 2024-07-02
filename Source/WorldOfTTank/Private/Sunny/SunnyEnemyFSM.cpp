@@ -5,6 +5,7 @@
 #include "Sunny/SunnyEnemy.h"
 #include "Sunny/SunnyTTank.h"
 #include <Kismet/GameplayStatics.h>
+//#include <Components/CapsuleComponent.h>
 
 // Sets default values for this component's properties
 USunnyEnemyFSM::USunnyEnemyFSM()
@@ -115,18 +116,56 @@ void USunnyEnemyFSM::AttackState()
 
 	// 목표 : 타깃이 공격 범위를 벗어나면 상태를 이동으로 전환하고 싶다
 	// 1. 타깃과의 거리가 필요하다
-	float distance = FVector::Distance(Target->GetActorLocation(), Me->GetActorLocation());
+	float Distance = FVector::Distance(Target->GetActorLocation(), Me->GetActorLocation());
 	// 2. 타깃과의 거리가 공격 범위를 벗어났으니까
-	if (distance > AttackRange)
+	if (Distance > AttackRange)
 	{
 		// 3. 상태를 이동으로 전환하고 싶다
 		EnemyState = EEnemyState::Move;
 	}
 }
 
+
+// 피격 알림 이벤트 함수
+void USunnyEnemyFSM::OnDamageProcess()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Damage!!!!"));
+	Me->Destroy();
+
+	// 체력 감소
+	hp--;
+	// 만약 체력이 남아있다면
+	if (hp > 0)
+	{
+		// 상태를 피격으로  전환
+		EnemyState = EEnemyState::Damage;
+	}
+	// 그렇지 않다면
+	else
+	{
+		// 상태를 죽음으로 전환
+		EnemyState = EEnemyState::Die;
+
+		// 캡슐 충돌체 비활성화
+		//Me->GetCapsuleComponent()->SetcollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+
 // 피격 상태
 void USunnyEnemyFSM::DamageState() 
 {
+	// 1. 시간이 흘렀으니까
+	CurrentTime += GetWorld()->DeltaRealTimeSeconds;
+	// 2. 만약 경과 시간이 대기 시간을 초과했다면
+	if (CurrentTime > DamageDelayTime)
+	{
+		//3. 대기 상태로 전환하고 싶다
+		EnemyState = EEnemyState::Idle;
+		// 경과 시간 초기화
+		CurrentTime = 0;
+
+	}
 
 
 }
@@ -136,3 +175,5 @@ void USunnyEnemyFSM::DieState()
 {
 
 }
+
+

@@ -16,6 +16,9 @@ public:
 	// Sets default values for this pawn's properties
 	ASunnyBasePawn();
 
+	// 특정 폰 파괴
+	void HandleDestruction();
+
 protected:
 	void RotateTurret(FVector LookAtTarget);
 	void Fire();

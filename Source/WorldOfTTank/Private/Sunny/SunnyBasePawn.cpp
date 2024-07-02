@@ -29,6 +29,7 @@ ASunnyBasePawn::ASunnyBasePawn()
 	ProjectileSpawnPoint->SetupAttachment(HeadMesh);
 }
 
+// 터렛 회전
 void ASunnyBasePawn::RotateTurret(FVector LookAtTarget)
 {
 	FVector ToTarget = LookAtTarget - HeadMesh->GetComponentLocation();
@@ -43,7 +44,7 @@ void ASunnyBasePawn::RotateTurret(FVector LookAtTarget)
 	);
 }
 
-
+// 발사
 void ASunnyBasePawn::Fire()
 {
 	// 총알스폰점에 총알 생성 위치 + 방향 할당
@@ -55,4 +56,11 @@ void ASunnyBasePawn::Fire()
 
 	// 디버그 구체로 확인
 	//DrawDebugSphere(GetWorld(), ProjectileSpawnPointLocation, 25.f, 12, FColor::Green, false, 3.f);		
+}
+
+
+// 폰 파괴
+void ASunnyBasePawn::HandleDestruction()
+{
+	// 할일 : 비주얼 사운드 
 }

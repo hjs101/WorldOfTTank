@@ -15,7 +15,12 @@ class WORLDOFTTANK_API AAITankController_1 : public AAIController
 	GENERATED_BODY()
 public:
 	AAITankController_1();
+	void SetNavPath(FNavPathSharedPtr Path);
+	UFUNCTION()
+	void SetCurrentTask(UBTTaskNode* Task);
 
+	UFUNCTION()
+	void StopBTT();
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -29,8 +34,21 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UBlackboardComponent* BlackboardComponent;
 
-	//FVector CurrentTargetLocation;
-	//bool bHasTarget;
-	//FNavPathSharedPtr CurrentPath;
-	// 배열
+	UFUNCTION()
+	void MoveAlongPath(float DeltaTime);
+
+	UFUNCTION()
+	void FinishMove();
+
+	FVector CurrentTargetLocation;
+	bool bHasTarget;
+	FNavPathSharedPtr CurrentPath;
+	int32 CurrentPathPointIndex = 0;
+	float AcceptanceRadius = 100.f;
+
+	float CurrentTime = 0.f;
+	float EndTime = 5.f;
+
+	UPROPERTY()
+    UBTTaskNode* CurrentTask;
 };

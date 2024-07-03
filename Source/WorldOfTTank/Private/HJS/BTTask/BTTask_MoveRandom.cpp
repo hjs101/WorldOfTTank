@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "HJS/BTTask/BTTask_MoveRandom.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "AIController.h"
+#include "HJS/AITankController_1.h"
 #include "NavigationSystem.h"
 #include "HJS/AITankCPU_1.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -9,12 +9,11 @@
 UBTTask_MoveRandom::UBTTask_MoveRandom()
 {
     NodeName = "Move Random";
-    bNotifyTick = true;
 }
 
 EBTNodeResult::Type UBTTask_MoveRandom::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    AITank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
+    AAITankCPU_1* AITank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
 
     if (AITank == nullptr)
     {
@@ -55,39 +54,25 @@ EBTNodeResult::Type UBTTask_MoveRandom::ExecuteTask(UBehaviorTreeComponent& Owne
     }
 
     int32 RandomNumber = FMath::RandRange(0, SuccessPoints.Num()-1);
-    MoveLocation = SuccessPoints[RandomNumber];
-    OwnerComp.GetAIOwner()->MoveToLocation(MoveLocation);
-    CurrentTime = 0;
-    bIsMoving = true;
-    return EBTNodeResult::InProgress;
-}
-
-void UBTTask_MoveRandom::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-    if (AITank == nullptr)
+    FVector MoveLocation = SuccessPoints[RandomNumber];
+    AAITankController_1* AIController = Cast<AAITankController_1>(OwnerComp.GetAIOwner());
+    if (AIController != nullptr)
     {
-        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-        return;
-    }
+        AIController->SetCurrentTask(this);
+        FPathFindingQuery Query;
+        FAIMoveRequest req;
+        req.SetAcceptanceRadius(3);
+        req.SetGoalLocation(MoveLocation);
+        AIController->BuildPathfindingQuery(req, Query);
 
-    CurrentTime += DeltaSeconds;
+        FPathFindingResult Result = NavSys->FindPathSync(Query);
 
-    if (CurrentTime >= FailTime) {
-        CurrentTime = 0;
-        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-        return;
-    }
-
-    AITank->RotateTank(MoveLocation);
-
-    if (bIsMoving)
-    {
-        if (abs(FVector::Dist(AITank->GetActorLocation(), MoveLocation)) < 250.f)
+        if (Result.IsSuccessful())
         {
-            bIsMoving = false;
-            FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-            return;
+            AIController->SetNavPath(Result.Path);
+            return EBTNodeResult::InProgress;
         }
     }
-    return;
+
+    return EBTNodeResult::Failed;
 }

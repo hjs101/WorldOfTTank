@@ -33,6 +33,8 @@ void AAITankCPU_1::BeginPlay()
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AAITankCPU_1::OnSeePawn);
 	NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 	TankAIController = Cast<AAITankController_1>(GetController());
+	
+	CurrentHp = MaxHP;
 }
 
 // Called every frame
@@ -103,6 +105,11 @@ bool AAITankCPU_1::GetFireState()
 	return bReadyFire;
 }
 
+bool AAITankCPU_1::IsDie()
+{
+	return bDie;
+}
+
 FVector AAITankCPU_1::GetHeadMeshLocation()
 {
 	return HeadMesh->GetComponentLocation();
@@ -128,7 +135,7 @@ bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AAc
 	CollisionParams.AddIgnoredActor(this);
 	// 타겟도 무시
 	CollisionParams.AddIgnoredActor(TargetActor);
-	float SphereRadius = 30.f;
+	float SphereRadius = 20.f;
 	// 라인트레이싱 실행
 	bool bHit = GetWorld()->SweepSingleByChannel(
 		HitResult,
@@ -163,10 +170,10 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor) const
 	ToTargetRotation = ToTarget.Rotation();
 	MyRotation = BarrelMesh->GetComponentRotation();
 	// 2. 고도 확인하기
-	if (abs(ToTargetRotation.Pitch - MyRotation.Pitch) > 2) {
+	if (abs(LookPitch - MyRotation.Pitch) > 2) {
 
 		// 2-1. 피치가 다르면서 한계고도 안쪽일 경우 false
-		if (ToTargetRotation.Pitch < UpLimit && ToTargetRotation.Pitch > DownLimit) {
+		if (LookPitch < UpLimit && LookPitch > DownLimit) {
 			return false;
 		}
 
@@ -194,7 +201,9 @@ void AAITankCPU_1::OnSeePawn(APawn* Pawn)
 	}
 	else 
 	{
-		BlackboardComp->SetValueAsObject(FName("TargetCPU"), Pawn);
+		if(Cast<AAITankCPU_1>(Pawn) && !Cast<AAITankCPU_1>(Pawn)->bDie){
+			BlackboardComp->SetValueAsObject(FName("TargetCPU"), Pawn);
+		}
 	}
 	
 }
@@ -423,6 +432,53 @@ bool AAITankCPU_1::CheckForNavSystem(FVector MovePoint)
 	}
 	else {
 		return false;
+	}
+}
+
+void AAITankCPU_1::HealthDown(int Damage)
+{
+	CurrentHp -= Damage;
+	
+	if (CurrentHp <= 0) {
+		Die();
+	}
+
+}
+
+void AAITankCPU_1::Die()
+{
+	if(!bDie)
+	{
+		// 머리를 날려버리기 위한 로직
+		if (HeadMesh)
+		{
+			// 머리 메쉬를 분리하여 날림
+			HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+			HeadMesh->SetSimulatePhysics(true);  // 물리 시뮬레이션 활성화
+			HeadMesh->AddImpulse(FVector(0, 0, 5000), NAME_None, true);  // 위로 날아가게 임펄스 추가
+		}
+
+		// 모든 기능 정지
+		bReadyFire = false;  // 발사 불가
+		GetWorldTimerManager().ClearTimer(FireRateTimerHandle);  // 타이머 정지
+		GetWorldTimerManager().ClearTimer(DetectRateTimerHandle);  // 탐지 타이머 정지
+
+		// 움직임 및 AI 컨트롤러 정지
+		AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
+		if (AIController)
+		{
+			AIController->StopMovement();
+			AIController->StopBTT();
+		}
+
+		// PawnSensingComponent 비활성화
+		if (PawnSensingComponent)
+		{
+			PawnSensingComponent->SetActive(false);
+		}
+
+		// bDie 활성화
+		bDie = true;
 	}
 }
 

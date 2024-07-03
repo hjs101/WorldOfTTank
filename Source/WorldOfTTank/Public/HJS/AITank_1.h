@@ -43,6 +43,8 @@ protected:
 	float DownLimit = -10;
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float UpLimit = 30;
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	float LookPitch = 0.f;
 private:
 	// 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -60,16 +62,18 @@ private:
 
 	// 변수
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	float Speed = 500;
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	float TurnRate = 125;
+	float TurnRate = 125.f;
 	int MoveState = 0;
 
+	// 탄 쏘는 속도 : m/s 단위이기 때문에 ProjectTile Speed를 100으로 나눔
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float FireSpeed = 80.f;
 
 	// class 변수
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class AAIProjecttile_1> ProjecttileClass;
 
 	// 함수
-
+	UFUNCTION()
+	float CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, float TargetHeight);
 };

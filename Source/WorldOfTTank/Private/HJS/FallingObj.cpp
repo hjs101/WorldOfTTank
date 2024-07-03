@@ -14,8 +14,8 @@ AFallingObj::AFallingObj()
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->SetNotifyRigidBodyCollision(true);
 
-	FallImpulse = 500.0f;
-	TopOffset = FVector(0.0f, 0.0f, 500.0f); // 기본 오프셋 값, 필요에 따라 조정 가능
+	FallImpulse = 1000.0f;
+	TopOffset = FVector(0.0f, 0.0f, 800.0f); // 기본 오프셋 값, 필요에 따라 조정 가능
 }
 
 // Called when the game starts or when spawned
@@ -38,7 +38,7 @@ void AFallingObj::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	if (!bFalling && OtherActor && Cast<AAITank_1>(OtherActor))
 	{
 		bFalling = true;
-		FVector Impulse = SweepResult.ImpactNormal * FallImpulse;
+		FVector Impulse = FVector(1.0f, 0.0f, 0.0f) * FallImpulse;
 
 		// 나무의 윗부분 위치 계산
 		FVector TopLocation = MeshComp->GetComponentLocation() + TopOffset;

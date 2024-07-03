@@ -13,10 +13,4 @@ UCLASS()
 class WORLDOFTTANK_API UPlayerUserWidjet : public UUserWidget
 {
 	GENERATED_BODY()
-
-private:
-	virtual void NativeConstruct() override;
-
-	UPROPERTY(meta= (BindWidget))
-	class UImage* Crosshair;
 };

@@ -24,10 +24,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
-	class UCapsuleComponent* CapsuleComp;
-
+private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
 	UStaticMeshComponent* BaseMesh;
 
@@ -55,13 +52,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float TurnRate = 30;
 
-
+	bool	MoveState = true;
+public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> ProjectileClass;
 
-	bool	MoveState = true;
-
-public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float	ReloadTime = 3.62;
 
@@ -75,5 +70,5 @@ protected:
 	void	Turn(float Value);
 	void	Fire();
 	void	Brake();
-
+	FVector	GetCurrentHitPoint() const;
 };

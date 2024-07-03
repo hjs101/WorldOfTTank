@@ -22,9 +22,8 @@ APlayerTank::APlayerTank()
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->FieldOfView = 80;
 
-	CrosshairWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("CrosshairWidgetComp"));
-	CrosshairWidgetComp->SetupAttachment(RootComponent);
-	
+	ChasingAim = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChasingAim"));
+	ChasingAim->SetupAttachment(RootComponent);
 }
 
 
@@ -32,8 +31,9 @@ void APlayerTank::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CrosshairUI = Cast<UPlayerUserWidjet>(CrosshairWidgetComp->GetWidget());
-
+	TpsAim = CreateWidget<UUserWidget>(GetWorld(), TpsAimClass);
+	TpsAim->AddToViewport();
+	FpsAim = CreateWidget<UUserWidget>(GetWorld(), FpsAimClass);
 }
 
 
@@ -43,16 +43,7 @@ void APlayerTank::Tick(float DeltaSeconds)
 
 	if (CamDist[CamIdx] != SpringArmComp->TargetArmLength)
 		LerpZoom(DeltaSeconds);
-	FVector Start = ProjectileSpawnPoint->GetComponentLocation() ;
-	FVector End = Start + BarrelMesh->GetForwardVector() * 100000000000;
-	FHitResult	Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_GameTraceChannel1))
-	{
-		// DrawDebugPoint(GetWorld(), Hit.Location, 10, FColor::Red, false, -1);
-		CrosshairWidgetComp->SetWorldLocation(Hit.Location);
-		
-	}
-		
+	ChasingAim->SetWorldLocation(GetCurrentHitPoint());
 }
 
 // Called to bind functionality to input
@@ -89,10 +80,7 @@ void APlayerTank::LookUpDown(float Value)
 	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
 	FHitResult	Hit;
 	if (GetWorld()->LineTraceSingleByChannel(Hit, Start , End, ECollisionChannel::ECC_GameTraceChannel1))
-	{
 		RotateBarrel(FVector(Hit.Location.X, Hit.Location.Y, Hit.Location.Z));
-	}
-	
 }
 
 void APlayerTank::LerpZoom(float DeltaSeconds)
@@ -112,7 +100,8 @@ void APlayerTank::ZoomIn()
 	if (CamIdx == 0 && CameraComp->FieldOfView == 80)
 	{
 		CameraComp->FieldOfView /= 2;
-		ChangeToFps();
+		TpsAim->RemoveFromParent();
+		FpsAim->AddToViewport();
 	}
 	else if (CamIdx == 0 && CameraComp->FieldOfView > 5)
 		CameraComp->FieldOfView /= 2;
@@ -126,8 +115,9 @@ void APlayerTank::ZoomOut()
 		CameraComp->FieldOfView *= 2;
 	else if (CamIdx == 0 && CameraComp->FieldOfView == 40)
 	{
-		ChangeToTps();
 		CameraComp->FieldOfView *= 2;
+		FpsAim->RemoveFromParent();
+		TpsAim->AddToViewport();
 	}
 	else if (CamIdx < 5)
 		CamIdx++;

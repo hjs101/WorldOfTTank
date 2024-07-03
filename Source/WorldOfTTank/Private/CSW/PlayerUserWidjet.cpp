@@ -3,8 +3,3 @@
 
 #include "CSW/PlayerUserWidjet.h"
 
-void UPlayerUserWidjet::NativeConstruct()
-{
-	Super::NativeConstruct();
-
-}

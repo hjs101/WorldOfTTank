@@ -21,12 +21,6 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void	ChangeToTps();
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void	ChangeToFps();
-
 private:
 	void	LookRightLeft(float Value);
 	void	LookUpDown(float Value);
@@ -55,8 +49,14 @@ private:
 	void LerpZoom(float DeltaSeconds);
 
 	UPROPERTY(EditDefaultsOnly)
-	class UWidgetComponent* CrosshairWidgetComp;
+	class UWidgetComponent* ChasingAim;
 
-	UPROPERTY()
-	class UPlayerUserWidjet* CrosshairUI;
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> TpsAimClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> FpsAimClass;
+
+	UUserWidget* TpsAim;
+	UUserWidget* FpsAim;
 };

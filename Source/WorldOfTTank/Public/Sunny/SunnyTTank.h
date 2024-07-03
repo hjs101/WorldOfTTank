@@ -27,7 +27,7 @@ public:
 
 	APlayerController* GetTankPlayerController() const { return TTankPlayerController; }
 
-	bool TTankAlive = true;
+	//bool TTankAlive = true;
 
 protected:
 	// Called when the game starts or when spawned
@@ -46,11 +46,20 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float TurnRate = 45.f;
 
-	// Functing Declaration for Tank Movement 
+	// Function Declaration for Tank Movement 
 	void Move(float Value);
 	void Turn(float Value);
 
 	APlayerController* TTankPlayerController;
 
-	class ASunnyEnemyFSM* obj;
+	//class ASunnyEnemyFSM* obj;
+
+	// 라인 트레이스 길이
+	float LineDistance = 500.f;
+
+
+
+
+	// Enemy 여부 판단
+	//void CheckEnemy();
 };

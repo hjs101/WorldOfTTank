@@ -52,14 +52,6 @@ private:
 
 	APlayerController* TTankPlayerController;
 
-	//class ASunnyEnemyFSM* obj;
-
-	// 라인 트레이스 길이
-	float LineDistance = 500.f;
-
-
-
-
-	// Enemy 여부 판단
-	//void CheckEnemy();
+	
+	
 };

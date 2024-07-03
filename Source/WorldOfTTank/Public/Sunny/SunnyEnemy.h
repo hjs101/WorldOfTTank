@@ -30,13 +30,19 @@ private:
 	class ASunnyTTank* TTank;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
-	float FireRange = 300.f;
+	float FireRange = 1000.f;
 
 	FTimerHandle FireRateTimerHandle;
 	float FireRate = 2.f;
 	void CheckFireCondition();
-
 	bool InFireRange();
+
+	//// 체력
+	//int32 Health = 3;
+	//int32 Damage = 1;
+
+	//class ASunnyGameMode* TTankGameMode;
+	
 
 public:
 
@@ -47,4 +53,15 @@ public:
 	// 적 움직임 (플레이어 움직임에 따라 폰 반응 : 중력 고려 x)
 	UPROPERTY(VisibleAnywhere, BlueprintreadOnly, Category = Movement)
 	class UFloatingPawnMovement* EnemyMove;
+
+	// 공격 타이머 설정
+	void SetFireTimer();
+	// 공격 타이머 해제
+	void ClearFIreTimer();
+
+	//  죽음 상태 호출
+	void OnDie();
+
+
+
 };

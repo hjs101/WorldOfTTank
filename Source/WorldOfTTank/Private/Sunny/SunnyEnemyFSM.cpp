@@ -4,8 +4,11 @@
 #include "Sunny/SunnyEnemyFSM.h"
 #include "Sunny/SunnyEnemy.h"
 #include "Sunny/SunnyTTank.h"
-#include <Kismet/GameplayStatics.h>
-//#include <Components/CapsuleComponent.h>
+
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/FloatingPawnMovement.h"
+#include "AIController.h"
+
 
 // Sets default values for this component's properties
 USunnyEnemyFSM::USunnyEnemyFSM()
@@ -14,7 +17,7 @@ USunnyEnemyFSM::USunnyEnemyFSM()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	
 }
 
 
@@ -29,6 +32,10 @@ void USunnyEnemyFSM::BeginPlay()
 	Target = Cast<ASunnyTTank>(actor);
 	// 소유 객체 가져오기
 	Me = Cast<ASunnyEnemy>(GetOwner());
+
+
+	// AAiController 할당
+	Ai = Cast<AAIController>(Me->GetController());
 	
 }
 
@@ -92,27 +99,23 @@ void USunnyEnemyFSM::MoveState()
 
 	// 타깃과 가까워지면 공격 상태로 전환하고 싶다
 	// 1. 만약 거리가 공격 범위 안에 들어오면
-	if (dir.Size() < AttackRange)
+	if (FVector::Dist(destination, Me->GetActorLocation()) <= AttackRange)
 	{
 		// 2. 공격 사애로 전환하고 싶다
 		EnemyState = EEnemyState::Attack;
+		Me->EnemyMove->StopMovementImmediately();
 	}
 }
 
 // 공격 상태
 void USunnyEnemyFSM::AttackState() 
 {
-	// 목표 : 일정 시간에 한 번씩 공격하고 싶다
-	// 1. 시간이 흘러야 한다
-	CurrentTime += GetWorld()->DeltaTimeSeconds;
-	// 2. 공격 시간이 됐으니까
-	if (CurrentTime > AttackDelayTime)
+	if (isTimerSeted == false)
 	{
-		// 3. 공격하고 싶다
 		UE_LOG(LogTemp, Warning, TEXT("Attack!!!!"));
-		// 경과 시간 초기화
-		CurrentTime = 0;
-	}	
+		Me->SetFireTimer();
+		isTimerSeted = true;
+	}
 
 	// 목표 : 타깃이 공격 범위를 벗어나면 상태를 이동으로 전환하고 싶다
 	// 1. 타깃과의 거리가 필요하다
@@ -122,6 +125,8 @@ void USunnyEnemyFSM::AttackState()
 	{
 		// 3. 상태를 이동으로 전환하고 싶다
 		EnemyState = EEnemyState::Move;
+		Me->ClearFIreTimer();
+		isTimerSeted = false;
 	}
 }
 
@@ -173,6 +178,11 @@ void USunnyEnemyFSM::DamageState()
 // 죽음 상태
 void USunnyEnemyFSM::DieState() 
 {
+	UE_LOG(LogTemp, Warning, TEXT("Die!!!!"));
+	Me->OnDie();
+
+	// Tick Enabled
+	SetComponentTickEnabled(false);
 
 }
 

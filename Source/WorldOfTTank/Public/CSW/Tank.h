@@ -60,7 +60,13 @@ private:
 	TSubclassOf<class AProjectile> ProjectileClass;
 
 	bool	MoveState = true;
-	
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float	ReloadTime = 3.62;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float	CurrentReloadTime = 0;
 
 protected:
 	void	RotateTurret(float Value);
@@ -69,4 +75,5 @@ protected:
 	void	Turn(float Value);
 	void	Fire();
 	void	Brake();
+
 };

@@ -52,6 +52,19 @@ void ATank::BeginPlay()
 void ATank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (CurrentReloadTime < ReloadTime)
+	{
+		if (CurrentReloadTime + DeltaTime > ReloadTime)
+			CurrentReloadTime = ReloadTime;
+		else
+			CurrentReloadTime += DeltaTime;
+	}
+	FVector Start = ProjectileSpawnPoint->GetComponentLocation() ;
+	FVector End = Start + BarrelMesh->GetForwardVector() * 100000000000;
+	FHitResult	Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_GameTraceChannel1))
+		DrawDebugPoint(GetWorld(), Hit.Location, 10, FColor::Red, false, -1);
 }
 
 void	ATank::Move(float Value)
@@ -108,10 +121,13 @@ void	ATank::RotateBarrel(FVector Target)
 
 void ATank::Fire()
 {
+	if (CurrentReloadTime != ReloadTime)
+		return ;
 	GetWorld()->SpawnActor<AProjectile>(
 		ProjectileClass,
 		ProjectileSpawnPoint->GetComponentLocation(),
 		ProjectileSpawnPoint->GetComponentRotation());
+	CurrentReloadTime = 0;
 }
 
 void ATank::Brake()

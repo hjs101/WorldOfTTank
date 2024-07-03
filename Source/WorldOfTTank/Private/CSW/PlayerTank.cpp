@@ -19,13 +19,13 @@ APlayerTank::APlayerTank()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->FieldOfView = 80;
-
 }
+
 
 void APlayerTank::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 
@@ -33,10 +33,6 @@ void APlayerTank::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
-	FHitResult	Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, CameraComp->GetComponentLocation(), End, ECollisionChannel::ECC_GameTraceChannel1))
-		DrawDebugPoint(GetWorld(), Hit.Location, 1, FColor::Red, false, -1);
 	if (CamDist[CamIdx] != SpringArmComp->TargetArmLength)
 		LerpZoom(DeltaSeconds);
 		
@@ -93,17 +89,26 @@ void APlayerTank::LerpZoom(float DeltaSeconds)
 
 void APlayerTank::ZoomIn()
 {
-	if (CamIdx == 0 && CameraComp->FieldOfView > 5)
+	if (CamIdx == 0 && CameraComp->FieldOfView == 80)
+	{
 		CameraComp->FieldOfView /= 2;
-	else
+		ChangeToFps();
+	}
+	else if (CamIdx == 0 && CameraComp->FieldOfView > 5)
+		CameraComp->FieldOfView /= 2;
+	else if (CamIdx > 0)
 		CamIdx--;
 }
 
-
 void APlayerTank::ZoomOut()
 {
-	if (CamIdx == 0 && CameraComp->FieldOfView < 80)
+	if (CamIdx == 0 && CameraComp->FieldOfView < 40)
 		CameraComp->FieldOfView *= 2;
+	else if (CamIdx == 0 && CameraComp->FieldOfView == 40)
+	{
+		ChangeToTps();
+		CameraComp->FieldOfView *= 2;
+	}
 	else if (CamIdx < 5)
 		CamIdx++;
 }

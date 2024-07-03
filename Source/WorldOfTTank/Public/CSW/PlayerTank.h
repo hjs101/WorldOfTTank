@@ -21,6 +21,12 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void	ChangeToTps();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void	ChangeToFps();
+
 private:
 	void	LookRightLeft(float Value);
 	void	LookUpDown(float Value);
@@ -36,7 +42,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	class UCameraComponent* CameraComp;
-
+	
 	UPROPERTY(EditAnywhere, Category="Look")
 	float	ViewRotationRate = 100;
 

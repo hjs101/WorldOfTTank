@@ -24,7 +24,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-private:
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
 	class UCapsuleComponent* CapsuleComp;
 

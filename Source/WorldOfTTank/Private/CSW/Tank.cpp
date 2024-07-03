@@ -60,11 +60,6 @@ void ATank::Tick(float DeltaTime)
 		else
 			CurrentReloadTime += DeltaTime;
 	}
-	FVector Start = ProjectileSpawnPoint->GetComponentLocation() ;
-	FVector End = Start + BarrelMesh->GetForwardVector() * 100000000000;
-	FHitResult	Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_GameTraceChannel1))
-		DrawDebugPoint(GetWorld(), Hit.Location, 10, FColor::Red, false, -1);
 }
 
 void	ATank::Move(float Value)

@@ -53,4 +53,10 @@ private:
 	int		CamIdx = 5;
 
 	void LerpZoom(float DeltaSeconds);
+
+	UPROPERTY(EditDefaultsOnly)
+	class UWidgetComponent* CrosshairWidgetComp;
+
+	UPROPERTY()
+	class UPlayerUserWidjet* CrosshairUI;
 };

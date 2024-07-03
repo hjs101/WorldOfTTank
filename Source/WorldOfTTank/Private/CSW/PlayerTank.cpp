@@ -6,6 +6,8 @@
 #include "CollisionDebugDrawingPublic.h"
 #include "FrameTypes.h"
 #include "Camera/CameraComponent.h"
+#include "Components/WidgetComponent.h"
+#include "CSW/PlayerUserWidjet.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,12 +21,18 @@ APlayerTank::APlayerTank()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->FieldOfView = 80;
+
+	CrosshairWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("CrosshairWidgetComp"));
+	CrosshairWidgetComp->SetupAttachment(RootComponent);
+	
 }
 
 
 void APlayerTank::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CrosshairUI = Cast<UPlayerUserWidjet>(CrosshairWidgetComp->GetWidget());
 
 }
 
@@ -35,7 +43,15 @@ void APlayerTank::Tick(float DeltaSeconds)
 
 	if (CamDist[CamIdx] != SpringArmComp->TargetArmLength)
 		LerpZoom(DeltaSeconds);
+	FVector Start = ProjectileSpawnPoint->GetComponentLocation() ;
+	FVector End = Start + BarrelMesh->GetForwardVector() * 100000000000;
+	FHitResult	Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_GameTraceChannel1))
+	{
+		// DrawDebugPoint(GetWorld(), Hit.Location, 10, FColor::Red, false, -1);
+		CrosshairWidgetComp->SetWorldLocation(Hit.Location);
 		
+	}
 		
 }
 
@@ -69,10 +85,14 @@ void APlayerTank::LookUpDown(float Value)
 		(CameraComp->GetComponentRotation().Pitch <= -50) && Value > 0)
 		return ;
 	AddControllerPitchInput(Value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
+	FVector Start = CameraComp->GetComponentLocation();
 	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
 	FHitResult	Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, CameraComp->GetComponentLocation(), End, ECollisionChannel::ECC_GameTraceChannel1))
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start , End, ECollisionChannel::ECC_GameTraceChannel1))
+	{
 		RotateBarrel(FVector(Hit.Location.X, Hit.Location.Y, Hit.Location.Z));
+	}
+	
 }
 
 void APlayerTank::LerpZoom(float DeltaSeconds)

@@ -54,17 +54,11 @@ void AAITank_1::Tick(float DeltaTime)
 
 void AAITank_1::Move(float value)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("%f"),value);
-	//FVector DeltaLocation = FVector::ZeroVector;
-	//// X = Value * DeltaTime * Speed
-	//DeltaLocation.X = value * UGameplayStatics::GetWorldDeltaSeconds(this) * Speed;
-	//AddActorLocalOffset(DeltaLocation, true);
 	MoveState = value;
 	if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent))
 	{
 		MovementComponent->AddInputVector(GetActorForwardVector() * value);
 	}
-
 }
 
 void AAITank_1::BodyTurn(float value)
@@ -106,8 +100,12 @@ void AAITank_1::RotateTurret(FVector LookAtTarget)
 			, 120.f)
 	);
 
-	// 포신 각도 설정
-	LookAtRotation.Pitch = ToTarget.Rotation().Pitch;
+	//LookAtRotation.Pitch = ToTarget.Rotation().Pitch;
+	// 포신 각도 설정 : 탄도학 적용 버전
+	float TargetDistance = ToTarget.Size2D()/100.f; // 수평 거리
+	float TargetHeight = ToTarget.Z/100.f; // 높이 차이
+	LookAtRotation.Pitch = CalculateLaunchAngle(FireSpeed, TargetDistance, TargetHeight);
+	LookPitch = LookAtRotation.Pitch;
 	// 포신 각도 제한
 	if (LookAtRotation.Pitch < DownLimit) {
 		LookAtRotation.Pitch = DownLimit;
@@ -137,4 +135,26 @@ void AAITank_1::RotateTank(FVector LookAtTarget)
 			, 2.f)
 	);
 
+}
+
+float AAITank_1::CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, float TargetHeight)
+{
+	const float Gravity = 9.8f;
+	float LaunchSpeedSquared = LaunchSpeed * LaunchSpeed;
+	float Term1 = LaunchSpeedSquared * LaunchSpeedSquared - Gravity * (Gravity * TargetDistance * TargetDistance + 2 * TargetHeight * LaunchSpeedSquared);
+
+	if (Term1 < 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No valid solution exists for the given parameters."));
+		return 0.0f;
+	}
+
+	Term1 = sqrt(Term1);
+	float Term2 = Gravity * TargetDistance;
+
+	float Angle1 = atan((LaunchSpeedSquared + Term1) / Term2);
+	float Angle2 = atan((LaunchSpeedSquared - Term1) / Term2);
+
+	// 선택: 두 개의 각도 중 하나를 선택 (낮은 각도 또는 높은 각도)
+	return FMath::RadiansToDegrees(Angle2); // 또는 FMath::RadiansToDegrees(Angle2)
 }

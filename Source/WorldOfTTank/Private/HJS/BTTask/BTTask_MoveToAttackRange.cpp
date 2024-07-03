@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BehaviorTree/BlackboardComponent.h"
-#include "AIController.h"
+#include "HJS/AITankController_1.h"
 #include "HJS/AITankCPU_1.h"
+#include "NavigationSystem.h"
 #include "HJS/BTTask/BTTask_MoveToAttackRange.h"
 
 UBTTask_MoveToAttackRange::UBTTask_MoveToAttackRange()
 {
 	NodeName = TEXT("Move To Attack Range");
-	bNotifyTick = true;
 }
 
 EBTNodeResult::Type UBTTask_MoveToAttackRange::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -25,48 +25,39 @@ EBTNodeResult::Type UBTTask_MoveToAttackRange::ExecuteTask(UBehaviorTreeComponen
         return EBTNodeResult::Failed;
     }
 
-    AITank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
+    AAITankCPU_1* AITank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
     if (AITank == nullptr)
     {
         return EBTNodeResult::Failed;
     }
 
-    MovePosition = AITank->FindValidAttackRange(Target);
+    FVector MovePosition = AITank->FindValidAttackRange(Target);
 
     if (MovePosition == AITank->GetActorLocation()) {
         return EBTNodeResult::Failed;
     }
 
-    OwnerComp.GetAIOwner()->MoveToLocation(MovePosition);
-    bIsMoving = true;
-    CurrentTime = 0;
-	return EBTNodeResult::InProgress;
-}
-
-void UBTTask_MoveToAttackRange::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-    if (AITank == nullptr)
+    AAITankController_1* AIController = Cast<AAITankController_1>(OwnerComp.GetAIOwner());
+    if (AIController != nullptr)
     {
-        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-        return;
-    }
-    CurrentTime += DeltaSeconds;
-
-    if (CurrentTime >= FailTime) {
-        CurrentTime = 0;
-        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-        return;
-    }
-
-    AITank->RotateTank(MovePosition);
-
-    if (bIsMoving)
-    {
-        if (abs(FVector::Dist(AITank->GetActorLocation(), MovePosition)) < 300.f)
+        AIController->SetCurrentTask(this);
+        UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
+        if (NavSys != nullptr)
         {
-            bIsMoving = false;
-            FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-            return;
+            FPathFindingQuery Query;
+            FAIMoveRequest req;
+            req.SetAcceptanceRadius(3);
+            req.SetGoalLocation(MovePosition);
+            AIController->BuildPathfindingQuery(req, Query);
+
+            FPathFindingResult Result = NavSys->FindPathSync(Query);
+
+            if (Result.IsSuccessful())
+            {
+                AIController->SetNavPath(Result.Path);
+                return EBTNodeResult::InProgress;
+            }
         }
     }
+	return EBTNodeResult::Failed;
 }

@@ -28,6 +28,9 @@ public:
 	bool GetFireState();
 
 	UFUNCTION()
+	bool IsDie();
+
+	UFUNCTION()
 	FVector GetHeadMeshLocation();
 
 	// 특정 액터 방향으로 라인트레이싱 사용 함수
@@ -46,9 +49,16 @@ public:
 	UFUNCTION()
 	FVector FindValidAttackRange(const AActor* TargetActor);
 	// 가까이에 장애물이 있는 지 체크하는 함수
+	UFUNCTION()
 	bool CheckForNearbyObstacle();
-
+	UFUNCTION()
 	bool CheckForNavSystem(FVector MovePoint);
+
+	UFUNCTION()
+	void HealthDown(int Damage);
+
+	UFUNCTION()
+	void Die();
 
 protected:
 virtual void BeginPlay() override;
@@ -71,6 +81,11 @@ private:
 	float FireRate = 4.f;
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	bool bReadyFire = true;
+
+	UPROPERTY()
+	int MaxHP = 400;
+	int CurrentHp = 0;
+	bool bDie = false;
 	// Handle
 	UPROPERTY()
 	FTimerHandle DetectRateTimerHandle;

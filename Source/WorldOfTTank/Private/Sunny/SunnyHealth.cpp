@@ -5,6 +5,8 @@
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sunny/SunnyGameMode.h"
+#include "Sunny/SunnyEnemy.h"
+#include "Sunny/SunnyEnemyFSM.h"
 
 // Sets default values for this component's properties
 USunnyHealth::USunnyHealth()
@@ -25,7 +27,7 @@ void USunnyHealth::BeginPlay()
 	Health = MaxHealth;
 
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &USunnyHealth::DamageTaken);
-	TTankGameMode = Cast<ASunnyGameMode>(UGameplayStatics::GetGameMode(this));
+	//TTankGameMode = Cast<ASunnyGameMode>(UGameplayStatics::GetGameMode(this));
 	
 }
 
@@ -46,9 +48,19 @@ void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamage
 	Health -= Damage;
 	UE_LOG(LogTemp, Warning, TEXT("Health: %f"), Health);
 
-	if (Health <= 0.f && TTankGameMode)
+	if (Health <= 0.f)
 	{
-		TTankGameMode->ActorDied(DamagedActor);
+		ASunnyEnemy* enemy = Cast<ASunnyEnemy>(DamagedActor);
+		
+		if (enemy)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DamageTaken()"));
+			USunnyEnemyFSM* fsm = Cast<USunnyEnemyFSM>(enemy->Fsm);
+			if (fsm)
+			{
+				fsm->EnemyState = EEnemyState::Die;
+			}
+		}
 	}
 }
 

@@ -69,7 +69,7 @@ public:
 
 	// 공격 범위
 	UPROPERTY(EditAnywhere, Category=FSM)
-	float AttackRange = 150.0f;
+	float AttackRange = 1000.f;
 
 	// 공격 대기 시간
 	UPROPERTY(EditAnywhere, Category = FSM)
@@ -86,4 +86,13 @@ public:
 	// 피격 대기 시간
 	UPROPERTY(EditAnywhere, Category = FSM)
 	float DamageDelayTime = 2.0f;
+
+
+	// 타이머 호출 여부 확인
+	bool isTimerSeted = false;
+
+
+	// Enemy를 소유하고 있는 AIContoller
+	UPROPERTY()
+	class AAIController* Ai;
 };

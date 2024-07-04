@@ -26,9 +26,6 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
-	class UCapsuleComponent* CapsuleComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
 	UStaticMeshComponent* BaseMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
@@ -55,12 +52,21 @@ private:
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float TurnRate = 30;
 
-
+	bool	MoveState = true;
+public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> ProjectileClass;
 
-	bool	MoveState = true;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float	ReloadTime = 3.62;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float	CurrentReloadTime = 0;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="State")
+	float	HP = 700;
+
+	void SetPlayerTankDamage(float Damage);
 
 protected:
 	void	RotateTurret(float Value);
@@ -69,4 +75,5 @@ protected:
 	void	Turn(float Value);
 	void	Fire();
 	void	Brake();
+	FVector	GetCurrentHitPoint() const;
 };

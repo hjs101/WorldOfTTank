@@ -6,6 +6,8 @@
 #include "CollisionDebugDrawingPublic.h"
 #include "FrameTypes.h"
 #include "Camera/CameraComponent.h"
+#include "Components/WidgetComponent.h"
+#include "CSW/PlayerUserWidjet.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -20,12 +22,16 @@ APlayerTank::APlayerTank()
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->FieldOfView = 80;
 
+	ChasingAim = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChasingAim"));
+	ChasingAim->SetupAttachment(RootComponent);
 }
+
 
 void APlayerTank::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	ChangeToTps();
 }
 
 
@@ -33,14 +39,9 @@ void APlayerTank::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
-	FHitResult	Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, CameraComp->GetComponentLocation(), End, ECollisionChannel::ECC_GameTraceChannel1))
-		DrawDebugPoint(GetWorld(), Hit.Location, 1, FColor::Red, false, -1);
 	if (CamDist[CamIdx] != SpringArmComp->TargetArmLength)
 		LerpZoom(DeltaSeconds);
-		
-		
+	ChasingAim->SetWorldLocation(GetCurrentHitPoint());
 }
 
 // Called to bind functionality to input
@@ -73,9 +74,10 @@ void APlayerTank::LookUpDown(float Value)
 		(CameraComp->GetComponentRotation().Pitch <= -50) && Value > 0)
 		return ;
 	AddControllerPitchInput(Value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
+	FVector Start = CameraComp->GetComponentLocation();
 	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
 	FHitResult	Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, CameraComp->GetComponentLocation(), End, ECollisionChannel::ECC_GameTraceChannel1))
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start , End, ECollisionChannel::ECC_GameTraceChannel1))
 		RotateBarrel(FVector(Hit.Location.X, Hit.Location.Y, Hit.Location.Z));
 }
 
@@ -91,19 +93,53 @@ void APlayerTank::LerpZoom(float DeltaSeconds)
 		SpringArmComp->TargetArmLength = CamDist[CamIdx];
 }
 
-void APlayerTank::ZoomIn()
+void APlayerTank::ChangeToFps()
 {
-	if (CamIdx == 0 && CameraComp->FieldOfView > 5)
-		CameraComp->FieldOfView /= 2;
-	else
-		CamIdx--;
+	if (CurrentAim.IsValid())
+	{
+		CurrentAim->RemoveFromParent();
+		CurrentAim.Reset();
+	}
+	UUserWidget* NewWidget = CreateWidget<UUserWidget>(GetWorld(), FpsAimClass);
+	if (NewWidget)
+		(CurrentAim = TStrongObjectPtr<UUserWidget>(NewWidget))->AddToViewport();
+}
+
+void APlayerTank::ChangeToTps()
+{
+	if (CurrentAim.IsValid())
+	{
+		CurrentAim->RemoveFromParent();
+		CurrentAim.Reset();
+	}
+	UUserWidget* NewWidget = CreateWidget<UUserWidget>(GetWorld(), TpsAimClass);
+	if (NewWidget)
+		(CurrentAim = TStrongObjectPtr<UUserWidget>(NewWidget))->AddToViewport();
 }
 
 
+void APlayerTank::ZoomIn()
+{
+	if (CamIdx == 0 && CameraComp->FieldOfView == 80)
+	{
+		CameraComp->FieldOfView /= 2;
+		ChangeToFps();
+	}
+	else if (CamIdx == 0 && CameraComp->FieldOfView > 5)
+		CameraComp->FieldOfView /= 2;
+	else if (CamIdx > 0)
+		CamIdx--;
+}
+
 void APlayerTank::ZoomOut()
 {
-	if (CamIdx == 0 && CameraComp->FieldOfView < 80)
+	if (CamIdx == 0 && CameraComp->FieldOfView < 40)
 		CameraComp->FieldOfView *= 2;
+	else if (CamIdx == 0 && CameraComp->FieldOfView == 40)
+	{
+		CameraComp->FieldOfView *= 2;
+		ChangeToTps();
+	}
 	else if (CamIdx < 5)
 		CamIdx++;
 }

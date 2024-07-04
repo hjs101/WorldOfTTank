@@ -1,22 +1,22 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BehaviorTree/BlackboardComponent.h"
-#include "AIController.h"
+#include "HJS/AITankController_1.h"
 #include "HJS/AITankCPU_1.h"
 #include "HJS/Obstacle.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "NavigationSystem.h"
 #include "HJS/BTTask/BTTask_HideBehindObstacle.h"
 
 UBTTask_HideBehindObstacle::UBTTask_HideBehindObstacle()
 {
 	NodeName = "Hide Behind Obstacle";
-    bNotifyTick = true;
 }
 
 EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    AITank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
+    AAITankCPU_1* AITank = Cast<AAITankCPU_1>(OwnerComp.GetAIOwner()->GetPawn());
 
     if (AITank == nullptr)
     {
@@ -47,7 +47,7 @@ EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeCompone
         return EBTNodeResult::Failed;
     }
 
-    HideLocation = FVector::ZeroVector;
+    FVector HideLocation = FVector::ZeroVector;
     bool bFoundHideLocation = false;
     TArray<FVector> HiddenArr = Obstacle->GetLocationArr();
 
@@ -91,39 +91,29 @@ EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeCompone
     }
     if (bFoundHideLocation)
     {
-        CurrentTime = 0;
-        bIsMoving = true;
-        OwnerComp.GetAIOwner()->MoveToLocation(HideLocation);
-        return EBTNodeResult::InProgress;
+        AAITankController_1* AIController = Cast<AAITankController_1>(OwnerComp.GetAIOwner());
+        if (AIController != nullptr)
+        {
+            AIController->SetCurrentTask(this);
+            UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
+            if (NavSys != nullptr)
+            {
+                FPathFindingQuery Query;
+                FAIMoveRequest req;
+                req.SetAcceptanceRadius(3);
+                req.SetGoalLocation(HideLocation);
+                AIController->BuildPathfindingQuery(req, Query);
+
+                FPathFindingResult Result = NavSys->FindPathSync(Query);
+
+                if (Result.IsSuccessful())
+                {
+                    AIController->SetNavPath(Result.Path);
+                    return EBTNodeResult::InProgress;
+                }
+            }
+        }
     }
 
     return EBTNodeResult::Failed;
-}
-
-void UBTTask_HideBehindObstacle::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-    if (AITank == nullptr)
-    {
-        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-        return;
-    }
-    CurrentTime += DeltaSeconds;
-    if (CurrentTime >= FailTime) {
-        CurrentTime = 0;
-        FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-        return;
-    }
-
-    AITank->RotateTank(HideLocation);
-
-    if (bIsMoving)
-    {
-        if (abs(FVector::Dist(AITank->GetActorLocation(), HideLocation)) < 250.f)
-        {
-            bIsMoving = false;
-            FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-            return;
-        }
-    }
-    return;
 }

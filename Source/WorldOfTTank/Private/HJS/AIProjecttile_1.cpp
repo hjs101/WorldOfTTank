@@ -2,6 +2,8 @@
 
 #include "GameFrameWork/ProjectileMovementComponent.h"
 #include "HJS/AIProjecttile_1.h"
+#include "HJS/AITankCPU_1.h"
+#include "HJS/Obstacle.h"
 #include "HJS/FractureWall.h"
 // Sets default values
 AAIProjecttile_1::AAIProjecttile_1()
@@ -40,12 +42,20 @@ void AAIProjecttile_1::Tick(float DeltaTime)
 void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 
-	
+	// 안부서지는 장애물일 때
+	AObstacle* ObstacleComp = Cast<AObstacle>(OtherActor);
+	if (ObstacleComp != nullptr) {
+		ObstacleComp->AddDecalAtLocation(Hit.ImpactPoint, Hit.ImpactNormal);
+	}
+
+	// 부서지는 장애물일때
 	AFractureWall* FractureComp = Cast<AFractureWall>(OtherActor);
 
-	if (FractureComp != nullptr) {
+	if (FractureComp != nullptr) 
+	{
 		
-		if (!FractureComp->HpDown()) {
+		if (!FractureComp->HpDown())
+		{
 			FTransform HitTransform;
 			HitTransform.SetLocation(Hit.Location);
 			HitTransform.SetRotation(FRotator(GetActorRotation().Pitch - 90.f, GetActorRotation().Yaw, GetActorRotation().Roll).Quaternion());
@@ -56,8 +66,13 @@ void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		}
 	}
 	
+	// AICPU일때
+	AAITankCPU_1* AITank = Cast<AAITankCPU_1>(OtherActor);
 
-
+	if (AITank != nullptr) 
+	{
+		AITank->HealthDown(50);
+	}
 
 	AActor* MyOwner = GetOwner();
 	if (MyOwner == nullptr)
@@ -66,6 +81,7 @@ void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		return;
 	}
 
+	
 	//AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
 	//UClass* DamageTypeClass = UDamageType::StaticClass();
 

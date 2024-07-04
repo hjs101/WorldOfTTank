@@ -41,9 +41,22 @@ private:
 	// 부서졌는지 체크
 	bool bBroken = false;
 
+	// 머티리얼 인터페이스 포인터
+    UPROPERTY(EditAnywhere)
+    UMaterialInterface* FadeMaterial;
+
+	// 머티리얼 인스턴스
+	UPROPERTY()
+    UMaterialInstanceDynamic* DynamicMaterial;
+	// FadeOut 시간 설정
+    UPROPERTY(EditAnywhere)
+    float FadeDuration = 5.f;
+	// 현재 진행 시간
+	float CurrentTime = 0.f;
 	UPROPERTY()
 	FTimerHandle DestroyTimerHandle;
 
 	UFUNCTION()
 	void DestroySelf();
+	
 };

@@ -22,6 +22,10 @@ EBTNodeResult::Type UBTTask_SearchForTargets::ExecuteTask(UBehaviorTreeComponent
 	UObject* TargetPlayer = BlackboardComp->GetValueAsObject(FName("TargetPlayer"));
 	UObject* TargetCPU = BlackboardComp->GetValueAsObject(FName("TargetCPU"));
 
+	if (TargetCPU && Cast<AAITankCPU_1>(TargetCPU)->IsDie()) {
+		BlackboardComp->SetValueAsObject(FName("TargetCPU"), nullptr);
+	}
+
 	if (TargetPlayer || TargetCPU)
 	{
 		return EBTNodeResult::Succeeded;

@@ -8,6 +8,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "AIController.h"
+#include "NavigationSystem.h"
+#include "Navigation/PathFollowingComponent.h"
+
 
 
 // Sets default values for this component's properties
@@ -49,7 +52,6 @@ void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	FString logMsg = UEnum::GetValueAsString(EnemyState);
 	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
-
 	switch (EnemyState)
 	{
 	case EEnemyState::Idle:
@@ -84,6 +86,9 @@ void USunnyEnemyFSM::IdleState()
 		EnemyState = EEnemyState::Move;
 		// 경과 시간 초기화
 		CurrentTime = 0;
+
+		// 최초 램덤한 위치 정해주기
+		GetRandomPositionInNavMesh(Me->GetActorLocation(), 500, RandomPos);
 	}
 }
 
@@ -95,13 +100,55 @@ void USunnyEnemyFSM::MoveState()
 	// 2. 방향이 필요하다
 	FVector dir = destination - Me->GetActorLocation();
 	// 3. 방향으로 이동하고 싶다
-	Me->AddMovementInput(dir.GetSafeNormal());
+	//Me->AddMovementInput(dir.GetSafeNormal());
+	Ai->MoveToLocation(destination);
+
+
+	// NavigationSystem 객체 얻어오기
+	auto ns = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	// 목적지 길 찾기 경로 데이터 검색
+	FPathFindingQuery query;
+	FAIMoveRequest req;
+	// 목적지에서 인지할 수 있는 범위
+	req.SetAcceptanceRadius(3);
+	req.SetGoalLocation(destination);
+	// 길 찾기를 위한 쿼리 생성
+	Ai->BuildPathfindingQuery(req, query);
+	// 길 찾기 결과 가져오기
+	FPathFindingResult r = ns->FindPathSync(query);
+
+	// 목적지까지의 길 찾기 성공 여부 확인
+	if (r.Result == ENavigationQueryResult::Success)
+	{
+		// 타깃쪽으로 이동
+		Ai->MoveToLocation(destination);
+	}
+	else
+	{
+		// 랜덤 위치로 이동
+		auto result = Ai->MoveToLocation(RandomPos);
+		// 목적지에 도착하면
+		if (result == EPathFollowingRequestResult::AlreadyAtGoal)
+		{
+			// 새로운 랜덤 위치 가져오기
+			GetRandomPositionInNavMesh(Me->GetActorLocation(), 500, RandomPos);
+		}
+
+
+	}
+
+
+
 
 	// 타깃과 가까워지면 공격 상태로 전환하고 싶다
 	// 1. 만약 거리가 공격 범위 안에 들어오면
 	if (FVector::Dist(destination, Me->GetActorLocation()) <= AttackRange)
 	{
-		// 2. 공격 사애로 전환하고 싶다
+		// 길찾기 기능 정지
+		Ai->StopMovement();
+		
+
+		// 2. 공격 상태로 전환하고 싶다
 		EnemyState = EEnemyState::Attack;
 		Me->EnemyMove->StopMovementImmediately();
 	}
@@ -127,6 +174,9 @@ void USunnyEnemyFSM::AttackState()
 		EnemyState = EEnemyState::Move;
 		Me->ClearFIreTimer();
 		isTimerSeted = false;
+
+		// 최초 램덤한 위치 정해주기
+		GetRandomPositionInNavMesh(Me->GetActorLocation(), 500, RandomPos);
 	}
 }
 
@@ -169,10 +219,7 @@ void USunnyEnemyFSM::DamageState()
 		EnemyState = EEnemyState::Idle;
 		// 경과 시간 초기화
 		CurrentTime = 0;
-
 	}
-
-
 }
 
 // 죽음 상태
@@ -183,7 +230,15 @@ void USunnyEnemyFSM::DieState()
 
 	// Tick Enabled
 	SetComponentTickEnabled(false);
-
 }
 
 
+// 랜덤 위치 가져오기
+bool USunnyEnemyFSM::GetRandomPositionInNavMesh(FVector centerLocation, float radius, FVector& dest)
+{
+	auto ns = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	FNavLocation loc;
+	bool result = ns->GetRandomReachablePointInRadius(centerLocation, radius, loc);
+	dest = loc.Location;
+	return result;
+}

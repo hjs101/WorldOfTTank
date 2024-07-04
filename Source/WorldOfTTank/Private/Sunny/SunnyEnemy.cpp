@@ -82,6 +82,7 @@ void ASunnyEnemy::CheckFireCondition()
 // 사정 거리 여부 확인 함수
 bool ASunnyEnemy::InFireRange()
 {
+	//UE_LOG(LogTemp, Warning, TEXT("InFireRange()"));
 	if (TTank)
 	{
 		float Distance = FVector::Dist(GetActorLocation(), TTank->GetActorLocation());
@@ -99,6 +100,7 @@ bool ASunnyEnemy::InFireRange()
 
 void ASunnyEnemy::OnDie()
 {
+	UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
 	// 머리 날리기
 	HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	HeadMesh->SetSimulatePhysics(true);

@@ -47,6 +47,7 @@ void ASunnyBasePawn::RotateTurret(FVector LookAtTarget)
 // 발사
 void ASunnyBasePawn::Fire()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Fire()"));
 	// 총알스폰점에 총알 생성 위치 + 방향 할당
 	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
 	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();

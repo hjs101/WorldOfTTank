@@ -54,10 +54,10 @@ void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamage
 		
 		if (enemy)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("DamageTaken()"));
 			USunnyEnemyFSM* fsm = Cast<USunnyEnemyFSM>(enemy->Fsm);
 			if (fsm)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("DamageTaken()"));
 				fsm->EnemyState = EEnemyState::Die;
 			}
 		}

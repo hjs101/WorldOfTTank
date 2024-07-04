@@ -15,8 +15,6 @@ public:
 	// Sets default values for this actor's properties
 	AObstacle();
 	TArray<FVector> GetLocationArr();
-	UFUNCTION()
-	void AddDecalAtLocation(FVector Location, FVector Normal);
 
 protected:
 	// Called when the game starts or when spawned
@@ -29,6 +27,4 @@ private:
 	UPROPERTY()
 	TArray<USceneComponent*> HiddenPointArr;
 
-	UPROPERTY(EditAnywhere, Category="Decal")
-	UMaterial* DecalMaterial = nullptr;
 };

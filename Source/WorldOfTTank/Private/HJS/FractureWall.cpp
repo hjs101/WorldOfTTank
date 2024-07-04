@@ -32,6 +32,9 @@ void AFractureWall::BeginPlay()
 			}
 		}
 	}
+	// 충돌 이벤트 바인딩
+	FracturedMeshComp->OnComponentHit.AddDynamic(this, &AFractureWall::OnComponentHit);
+
 }
 
 // Called every frame
@@ -80,4 +83,22 @@ void AFractureWall::SetDestroyTimer()
 void AFractureWall::DestroySelf()
 {
 	Destroy();
+}
+
+void AFractureWall::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	// 충돌한 액터가 탱크인지 확인
+	//if (OtherActor && OtherActor->IsA(APawn::StaticClass()))
+	//{
+	//	// 탱크의 이동 방향과 속도 가져오기
+	//	//FVector TankVelocity = OtherActor->GetVelocity();
+	//	FVector TankDirection = OtherActor->GetActorForwardVector().GetSafeNormal(); // 방향 벡터 노멀라이즈
+
+	//	// 힘의 크기 설정 (탱크 속도에 비례하게 설정)
+	//	float ForceMagnitude = 5000.f; // ForceMultiplier는 적절히 설정
+
+	//	// 충돌한 조각에 힘을 가함
+	//	FVector Force = TankDirection * ForceMagnitude;
+	//	HitComponent->AddImpulse(Force);
+	//}
 }

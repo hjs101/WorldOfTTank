@@ -2,7 +2,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/BoxComponent.h"
 #include "HJS/AITank_1.h"
 #include "HJS/AIProjecttile_1.h"
 // Sets default values
@@ -10,7 +9,7 @@ AAITank_1::AAITank_1()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Box Comp"));
+	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Comp"));
 	SetRootComponent(CapsuleComp);
 	// 스태틱 메시 컴포넌트(탱크) 생성
 	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AITank_1 Body"));
@@ -55,26 +54,26 @@ void AAITank_1::Tick(float DeltaTime)
 void AAITank_1::Move(float value)
 {
 	MoveState = value;
-	if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent))
-	{
-		MovementComponent->AddInputVector(GetActorForwardVector() * value);
-	}
+	//if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent))
+	//{
+	//	MovementComponent->AddInputVector(GetActorForwardVector() * value);
+	//}
+	CapsuleComp->AddForce((GetActorForwardVector()*1000000.f*value));
 }
 
 void AAITank_1::BodyTurn(float value)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("BodyTurn!!"));
 	FRotator DeltaRotation = FRotator::ZeroRotator;
-	
-	if (MoveState== -1) {
-		value = -1*value;
+	if (MoveState == -1) {
+		value = -1 * value;
 	}
-	
+
 	DeltaRotation.Yaw = value * TurnRate * UGameplayStatics::GetWorldDeltaSeconds(this);
 	AddActorLocalRotation(DeltaRotation, true);
 	if (MoveState == 0 && MovementComponent && (MovementComponent->UpdatedComponent == RootComponent))
 	{
-		MovementComponent->AddInputVector(GetActorForwardVector()/2 * abs(value));
+		MovementComponent->AddInputVector(GetActorForwardVector() / 2 * abs(value));
 	}
 }
 
@@ -125,6 +124,10 @@ void AAITank_1::RotateTurret(FVector LookAtTarget)
 
 void AAITank_1::RotateTank(FVector LookAtTarget)
 {
+
+	if (LookAtTarget == FVector::ZeroVector) {
+		return;
+	}
 	FVector ToTarget = LookAtTarget - CapsuleComp->GetComponentLocation();
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 	// 몸체 돌리기

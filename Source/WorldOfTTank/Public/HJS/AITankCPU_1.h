@@ -65,9 +65,21 @@ virtual void BeginPlay() override;
 
 private:
 
+	// 나이아가라 시스템
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* NiagaraSystem;
+	void LaserBeamSetting();
+	void LaserBeam(FVector Start, FVector End);
+
+
 	// 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UPawnSensingComponent* PawnSensingComponent;
+	
+	// 위젯 컴포넌트
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	class UWidgetComponent* HpBar;
+
 	UPROPERTY(VisibleAnywhere)
 	class UNavigationSystemV1* NavSys;
 	// 변수
@@ -82,9 +94,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	bool bReadyFire = true;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Health", meta=(AllowPrivateAccess = "true"))
 	int MaxHP = 400;
-	int CurrentHp = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Health", meta=(AllowPrivateAccess = "true"))
+	int CurrentHP = 0;
 	bool bDie = false;
 	// Handle
 	UPROPERTY()
@@ -101,5 +114,8 @@ private:
 	void OnSeePawn(APawn* Pawn);
 	UFUNCTION()
 	void FireReady();
-
+	UFUNCTION()
+	void UpdateHealthBar() const;
+	UFUNCTION()
+	void RotateTurretToMainTarget();
 };

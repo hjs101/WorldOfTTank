@@ -9,9 +9,14 @@
 #include "HJS/AITankController_1.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "HJS/HpBarWidget.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/OverlapResult.h"
+#include "Components/WidgetComponent.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 AAITankCPU_1::AAITankCPU_1()
 {
@@ -22,6 +27,15 @@ AAITankCPU_1::AAITankCPU_1()
 
 	// Create and initialize the Pawn Sensing Component
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
+
+	HpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("HpBar"));
+	HpBar->SetupAttachment(RootComponent);
+	HpBar->SetWidgetSpace(EWidgetSpace::Screen);
+	ConstructorHelpers::FClassFinder<UUserWidget> WidgetClass(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/HJS/UI/WBP_AIHpBarWidget.WBP_AIHpBarWidget'")); // 위젯 블루프린트 경로 설정
+	if (WidgetClass.Succeeded())
+	{
+		HpBar->SetWidgetClass(WidgetClass.Class);
+	}
 
 }
 
@@ -34,13 +48,65 @@ void AAITankCPU_1::BeginPlay()
 	NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 	TankAIController = Cast<AAITankController_1>(GetController());
 	
-	CurrentHp = MaxHP;
+	CurrentHP = MaxHP;
+
+	UpdateHealthBar();
+}
+
+void AAITankCPU_1::LaserBeamSetting()
+{
+	FVector TraceStart = HeadMesh->GetComponentLocation();
+	FVector ForwardVector = HeadMesh->GetForwardVector();
+	FVector TraceEnd = ((ForwardVector * 10000.f) + TraceStart);
+
+	FHitResult HitResult;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		TraceStart,
+		TraceEnd,
+		ECC_Visibility,
+		CollisionParams
+	);
+	if (bHit)
+	{
+		// 히트된 경우 끝점 업데이트
+		TraceEnd = HitResult.Location;
+	}
+
+	LaserBeam(TraceStart, TraceEnd);
+
+}
+
+void AAITankCPU_1::LaserBeam(FVector Start, FVector End)
+{
+	if (NiagaraSystem)
+	{
+		// 나이아가라 시스템 생성 및 설정
+		UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(), NiagaraSystem, Start, FRotator::ZeroRotator);
+
+		if (NiagaraComponent)
+		{
+			// 빔의 끝점 설정
+			NiagaraComponent->SetVectorParameter(TEXT("Beam End"), End);
+		}
+	}
 }
 
 // Called every frame
 void AAITankCPU_1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PlayerController)
+	{
+		FRotator NewRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+		HpBar->SetWorldRotation(NewRotation);
+	}
+	LaserBeamSetting();
+	RotateTurretToMainTarget();
 }
 
 // 일정 거리 이상 벗어났는 지 확인하는 함수
@@ -185,7 +251,6 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor) const
 void AAITankCPU_1::OnSeePawn(APawn* Pawn)
 {
 	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
-
 	if (AIController == nullptr)
 	{
 		return;
@@ -201,7 +266,7 @@ void AAITankCPU_1::OnSeePawn(APawn* Pawn)
 	}
 	else 
 	{
-		if(Cast<AAITankCPU_1>(Pawn) && !Cast<AAITankCPU_1>(Pawn)->bDie){
+		if(Cast<AAITankCPU_1>(Pawn)){
 			BlackboardComp->SetValueAsObject(FName("TargetCPU"), Pawn);
 		}
 	}
@@ -437,10 +502,11 @@ bool AAITankCPU_1::CheckForNavSystem(FVector MovePoint)
 
 void AAITankCPU_1::HealthDown(int Damage)
 {
-	CurrentHp -= Damage;
-	
-	if (CurrentHp <= 0) {
+	CurrentHP -= Damage;
+	UpdateHealthBar();
+	if (CurrentHP <= 0) {
 		Die();
+		HpBar->SetVisibility(false, true);
 	}
 
 }
@@ -485,4 +551,37 @@ void AAITankCPU_1::Die()
 void AAITankCPU_1::FireReady()
 {
 	bReadyFire = true;
+}
+
+void AAITankCPU_1::UpdateHealthBar() const
+{
+	if (UUserWidget* UserWidget = HpBar->GetUserWidgetObject())
+	{
+		if (UHpBarWidget* Widget = Cast<UHpBarWidget>(UserWidget))
+		{
+			Widget->UpdateHpBar((float)CurrentHP / MaxHP);
+			Widget->UpdateHpText(FText::FromString(FString::Printf(TEXT("%d / %d"), CurrentHP, MaxHP)));
+
+		}
+	}
+}
+
+void AAITankCPU_1::RotateTurretToMainTarget()
+{
+	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
+
+	if (AIController == nullptr)
+	{
+		return;
+	}
+	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+	if (BlackboardComp == nullptr)
+	{
+		return;
+	}
+	APawn* MainTarget = Cast<APawn>(BlackboardComp->GetValueAsObject("MainTarget"));
+	if(MainTarget != nullptr){
+		RotateTurret(MainTarget->GetActorLocation());
+	}
+	return;
 }

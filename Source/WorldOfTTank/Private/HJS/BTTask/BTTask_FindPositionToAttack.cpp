@@ -43,7 +43,7 @@ EBTNodeResult::Type UBTTask_FindPositionToAttack::ExecuteTask(UBehaviorTreeCompo
         return EBTNodeResult::Failed;
     }
     // AI를 해당 위치로 이동
-    DrawDebugSphere(GetWorld(), AttackPosition, 50, 12, FColor::Green, false, 5.0f);
+    //DrawDebugSphere(GetWorld(), AttackPosition, 50, 12, FColor::Green, false, 5.0f);
     AAITankController_1* AIController = Cast<AAITankController_1>(OwnerComp.GetAIOwner());
     if (AIController != nullptr)
     {

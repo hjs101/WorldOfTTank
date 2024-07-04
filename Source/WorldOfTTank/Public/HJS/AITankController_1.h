@@ -38,7 +38,7 @@ private:
 	void MoveAlongPath(float DeltaTime);
 
 	UFUNCTION()
-	void FinishMove();
+	void FinishMove(bool bSuccessed);
 
 	FVector CurrentTargetLocation;
 	bool bHasTarget;

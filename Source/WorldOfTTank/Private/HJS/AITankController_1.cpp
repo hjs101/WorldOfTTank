@@ -58,10 +58,13 @@ void AAITankController_1::MoveAlongPath(float DeltaTime)
 	if(CurrentPath)
 	{
 		TArray<FNavPathPoint> PathPoints = CurrentPath->GetPathPoints();
+		if (PathPoints.Num() <= 0) {
+			FinishMove(false);
+		}
 		if (PathPoints.Num() > 1)
 		{
 			FVector CurrentLocation = GetPawn()->GetActorLocation();
-			FVector TargetLocation;
+			FVector TargetLocation = FVector::ZeroVector;
 			if (CurrentPathPointIndex < PathPoints.Num())
 			{
 				TargetLocation = PathPoints[CurrentPathPointIndex];
@@ -75,13 +78,13 @@ void AAITankController_1::MoveAlongPath(float DeltaTime)
 				if (CurrentPathPointIndex >= PathPoints.Num())
 				{
 					// 경로 완료
-					FinishMove();
+					FinishMove(true);
 				}
 			}
 		}
 		CurrentTime += DeltaTime;
 		if (CurrentTime > EndTime) {
-			FinishMove();
+			FinishMove(false);
 		}
 	}
 	else {
@@ -89,7 +92,7 @@ void AAITankController_1::MoveAlongPath(float DeltaTime)
 	}
 }
 
-void AAITankController_1::FinishMove()
+void AAITankController_1::FinishMove(bool bSuccessed)
 {
 	CurrentPath = nullptr;
 	CurrentPathPointIndex = 0;
@@ -98,13 +101,18 @@ void AAITankController_1::FinishMove()
 	UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(BrainComponent);
 	if (BTComp)
 	{
-		BTComp->OnTaskFinished(CurrentTask, EBTNodeResult::Succeeded);
+		if (bSuccessed) {
+			BTComp->OnTaskFinished(CurrentTask, EBTNodeResult::Succeeded);
+		}
+		else {
+			BTComp->OnTaskFinished(CurrentTask, EBTNodeResult::Failed);
+		}
 	}
 }
 
 void AAITankController_1::StopBTT()
 {
-	FinishMove();
+	FinishMove(true);
 	UBehaviorTreeComponent* BehaviorComp = Cast<UBehaviorTreeComponent>(GetComponentByClass(UBehaviorTreeComponent::StaticClass()));
 	if (BehaviorComp)
 	{

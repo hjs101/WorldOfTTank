@@ -4,6 +4,8 @@
 #include "HJS/AIProjecttile_1.h"
 #include "HJS/AITankCPU_1.h"
 #include "HJS/Obstacle.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/DecalComponent.h"
 #include "HJS/FractureWall.h"
 // Sets default values
 AAIProjecttile_1::AAIProjecttile_1()
@@ -23,6 +25,14 @@ AAIProjecttile_1::AAIProjecttile_1()
 	{
 		MasterFieldClass = MasterFieldBPClass.Class;
 	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("/Script/Engine.Material'/Game/HJS/Materials/DecalMaterial.DecalMaterial'"));
+	if (TempMat.Succeeded())
+	{
+		DecalMaterial = TempMat.Object;
+	}
+
+
 }
 
 // Called when the game starts or when spawned
@@ -42,10 +52,9 @@ void AAIProjecttile_1::Tick(float DeltaTime)
 void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 
-	// 안부서지는 장애물일 때
-	AObstacle* ObstacleComp = Cast<AObstacle>(OtherActor);
-	if (ObstacleComp != nullptr) {
-		ObstacleComp->AddDecalAtLocation(Hit.ImpactPoint, Hit.ImpactNormal);
+	// 장애물일 때
+	if (Cast<APawn>(OtherActor) == nullptr) {
+		AddDecalAtLocation(Hit.ImpactPoint, Hit.ImpactNormal);
 	}
 
 	// 부서지는 장애물일때
@@ -105,4 +114,22 @@ void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	//}
 	Destroy();
 	return;
+}
+
+void AAIProjecttile_1::AddDecalAtLocation(FVector Location, FVector Normal)
+{
+	// 데칼 생성에 필요한 파라미터 설정
+	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(
+		this,
+		DecalMaterial, // 대포 자국에 사용할 마테리얼
+		FVector(100.f, 100.f, 100.f), // 데칼 크기
+		Location,
+		Normal.Rotation()
+	);
+
+	// 데칼의 수명 설정 (필요에 따라 설정)
+	if (Decal)
+	{
+		Decal->SetLifeSpan(10.0f); // 예: 10초 후에 사라지도록 설정
+	}
 }

@@ -23,7 +23,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-
 private:
 	// 컴포넌트
 	UPROPERTY(EditDefaultsOnly, Category = "combat")
@@ -36,5 +35,11 @@ private:
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	UPROPERTY(EditAnywhere,  Category="Combat")
 	UClass* MasterFieldClass;
+
+	UFUNCTION()
+	void AddDecalAtLocation(FVector Location, FVector Normal);
+
+	UPROPERTY(EditAnywhere, Category="Decal")
+	UMaterial* DecalMaterial = nullptr;
 
 };

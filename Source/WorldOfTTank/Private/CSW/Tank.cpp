@@ -21,7 +21,6 @@ ATank::ATank()
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base Mesh"));
 	RootComponent = BaseMesh;
 	BaseMesh->SetSimulatePhysics(true);
-	BaseMesh->SetLinearDamping(0.8f);
 
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Turret Mesh"));
 	TurretMesh->SetupAttachment(BaseMesh);

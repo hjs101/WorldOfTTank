@@ -4,6 +4,11 @@
 #include "CSW/Projectile.h"
 
 #include "GameFrameWork/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/DecalComponent.h"
+#include "HJS/AITankCPU_1.h"
+#include "HJS/FractureWall.h"
+#include "HJS/Obstacle.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -18,6 +23,12 @@ AProjectile::AProjectile()
 	MoveComp->InitialSpeed = 13000;
 	MoveComp->MaxSpeed = 13000;
 	
+    ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("/Script/Engine.Material'/Game/HJS/Materials/DecalMaterial.DecalMaterial'"));
+    if (TempMat.Succeeded())
+        DecalMaterial = TempMat.Object;
+	static ConstructorHelpers::FClassFinder<UObject> MasterFieldBPClass(TEXT("/Script/Engine.Blueprint'/Game/HJS/Blueprints/Actors/FS_HJSBombField_Prototype.FS_HJSBombField_Prototype'"));
+	if (MasterFieldBPClass.Succeeded())
+		MasterFieldClass = MasterFieldBPClass.Class;
 }
 
 // Called when the game starts or when spawned
@@ -35,10 +46,59 @@ void AProjectile::Tick(float DeltaTime)
 
 }
 
+void AProjectile::AddDecalAtLocation(const FVector& Location, const FVector& Normal) const
+{
+	
+    UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(
+        this,
+        DecalMaterial, // 대포 자국에 사용할 마테리얼
+        FVector(10.0f, 50.0f, 50.0f), // 데칼 크기
+        Location,
+        Normal.Rotation()
+    );
+
+    // 데칼의 수명 설정 (필요에 따라 설정)
+    if (Decal)
+        Decal->SetLifeSpan(10.0f); // 예: 10초 후에 사라지도록 설정
+}
+
+
+
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnHit"));
+	if (Cast<APawn>(OtherActor))
+		AddDecalAtLocation(Hit.Location, Hit.Normal);
 	
+	AObstacle* ObstacleComp = Cast<AObstacle>(OtherActor);
+	if (ObstacleComp != nullptr) {
+		ObstacleComp->AddDecalAtLocation(Hit.ImpactPoint, Hit.ImpactNormal);
+	}
+
+	// 부서지는 장애물일때
+	AFractureWall* FractureComp = Cast<AFractureWall>(OtherActor);
+
+	if (FractureComp != nullptr) 
+	{
+		if (!FractureComp->HpDown())
+		{
+			FTransform HitTransform;
+			HitTransform.SetLocation(Hit.Location);
+			HitTransform.SetRotation(FRotator(GetActorRotation().Pitch - 90.f, GetActorRotation().Yaw, GetActorRotation().Roll).Quaternion());
+			HitTransform.SetScale3D(FVector(1.f, 1.f, 1.f));
+			GetWorld()->SpawnActor<AActor>(MasterFieldClass, HitTransform);
+			
+			FractureComp->SetDestroyTimer();
+		}
+	}
+	// AICPU일때
+	AAITankCPU_1* AITank = Cast<AAITankCPU_1>(OtherActor);
+
+	if (AITank != nullptr) 
+	{
+		AITank->HealthDown(50);
+	}
+
 	Destroy();
 }
 

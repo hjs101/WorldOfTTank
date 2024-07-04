@@ -141,3 +141,11 @@ void ATank::Brake()
 	MoveComp->Velocity /= 2;
 }
 
+void ATank::SetPlayerTankDamage(float Damage)
+{
+	if (HP <= Damage)
+		HP = 0;
+	else
+		HP -= Damage;	
+}
+

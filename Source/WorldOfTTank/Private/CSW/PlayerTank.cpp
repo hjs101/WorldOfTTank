@@ -31,9 +31,7 @@ void APlayerTank::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TpsAim = CreateWidget<UUserWidget>(GetWorld(), TpsAimClass);
-	TpsAim->AddToViewport();
-	FpsAim = CreateWidget<UUserWidget>(GetWorld(), FpsAimClass);
+	ChangeToTps();
 }
 
 
@@ -95,13 +93,37 @@ void APlayerTank::LerpZoom(float DeltaSeconds)
 		SpringArmComp->TargetArmLength = CamDist[CamIdx];
 }
 
+void APlayerTank::ChangeToFps()
+{
+	if (CurrentAim.IsValid())
+	{
+		CurrentAim->RemoveFromParent();
+		CurrentAim.Reset();
+	}
+	UUserWidget* NewWidget = CreateWidget<UUserWidget>(GetWorld(), FpsAimClass);
+	if (NewWidget)
+		(CurrentAim = TStrongObjectPtr<UUserWidget>(NewWidget))->AddToViewport();
+}
+
+void APlayerTank::ChangeToTps()
+{
+	if (CurrentAim.IsValid())
+	{
+		CurrentAim->RemoveFromParent();
+		CurrentAim.Reset();
+	}
+	UUserWidget* NewWidget = CreateWidget<UUserWidget>(GetWorld(), TpsAimClass);
+	if (NewWidget)
+		(CurrentAim = TStrongObjectPtr<UUserWidget>(NewWidget))->AddToViewport();
+}
+
+
 void APlayerTank::ZoomIn()
 {
 	if (CamIdx == 0 && CameraComp->FieldOfView == 80)
 	{
 		CameraComp->FieldOfView /= 2;
-		TpsAim->RemoveFromParent();
-		FpsAim->AddToViewport();
+		ChangeToFps();
 	}
 	else if (CamIdx == 0 && CameraComp->FieldOfView > 5)
 		CameraComp->FieldOfView /= 2;
@@ -116,8 +138,7 @@ void APlayerTank::ZoomOut()
 	else if (CamIdx == 0 && CameraComp->FieldOfView == 40)
 	{
 		CameraComp->FieldOfView *= 2;
-		FpsAim->RemoveFromParent();
-		TpsAim->AddToViewport();
+		ChangeToTps();
 	}
 	else if (CamIdx < 5)
 		CamIdx++;

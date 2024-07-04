@@ -62,6 +62,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float	CurrentReloadTime = 0;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="State")
+	float	HP = 700;
+
+	void SetPlayerTankDamage(float Damage);
 
 protected:
 	void	RotateTurret(float Value);

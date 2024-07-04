@@ -57,6 +57,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="UI")
 	TSubclassOf<UUserWidget> FpsAimClass;
 
-	UUserWidget* TpsAim;
-	UUserWidget* FpsAim;
+	TStrongObjectPtr<UUserWidget> CurrentAim;
+
+	void	ChangeToTps();
+	void	ChangeToFps();
+	
 };

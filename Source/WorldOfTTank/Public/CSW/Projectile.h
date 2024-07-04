@@ -18,11 +18,13 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	void	AddDecalAtLocation(const FVector& Location, const FVector& Normal) const;
+	
 private:
     UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* ProjectileMesh;
@@ -32,4 +34,10 @@ private:
 
 	UFUNCTION()
 	void	OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	
+	UPROPERTY(EditAnywhere, Category="Decal")
+	UMaterial* DecalMaterial = nullptr;
+
+	UPROPERTY(EditAnywhere,  Category="Combat")
+	UClass* MasterFieldClass;
 };

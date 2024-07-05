@@ -67,7 +67,7 @@ void AProjectile::AddDecalAtLocation(const FVector& Location, const FVector& Nor
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnHit"));
-	if (Cast<APawn>(OtherActor))
+	if (!Cast<APawn>(OtherActor))
 		AddDecalAtLocation(Hit.Location, Hit.Normal);
 	
 	AObstacle* ObstacleComp = Cast<AObstacle>(OtherActor);

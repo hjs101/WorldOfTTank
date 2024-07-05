@@ -18,6 +18,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Sunny/SunnyEnemy.h"
 
 AAITankCPU_1::AAITankCPU_1()
 {
@@ -268,7 +269,7 @@ void AAITankCPU_1::OnSeePawn(APawn* Pawn)
 	}
 	else 
 	{
-		if(Cast<AAITankCPU_1>(Pawn)){
+		if(Cast<ASunnyEnemy>(Pawn)){
 			BlackboardComp->SetValueAsObject(FName("TargetCPU"), Pawn);
 		}
 	}

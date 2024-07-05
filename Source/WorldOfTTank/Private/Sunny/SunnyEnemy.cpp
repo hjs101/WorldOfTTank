@@ -6,6 +6,8 @@
 #include "Sunny/SunnyEnemyFSM.h"
 #include "Sunny/SunnyGameMode.h"
 
+#include "CSW/PlayerTank.h"
+
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
@@ -28,19 +30,6 @@ void ASunnyEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Find the distance to the Tank
-	//if (TTank)
-	//{
-	//	float Distance = FVector::Dist(GetActorLocation(), TTank->GetActorLocation());
-
-	//	// Check to see if the Tank is in range
-	//	if (Distance <= FireRange)
-	//	{
-	//		// If in range, rotate turret towrad Tank
-	//		RotateTurret(TTank->GetActorLocation());
-	//	}
-	//}
-
 	if (InFireRange())
 	{
 		RotateTurret(TTank->GetActorLocation());
@@ -55,7 +44,7 @@ void ASunnyEnemy::BeginPlay()
 { 
 	Super::BeginPlay();
 
-	TTank = Cast<ASunnyTTank>(UGameplayStatics::GetPlayerPawn(this, 0));
+	TTank = Cast<APlayerTank>(UGameplayStatics::GetPlayerPawn(this, 0));
 	/*TTankGameMode = Cast<ASunnyGameMode>(UGameplayStatics::GetGameMode(this));*/
 }
 
@@ -108,7 +97,7 @@ bool ASunnyEnemy::InFireRange()
 
 void ASunnyEnemy::OnDie()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
+	bDie = true;
 	// 머리 날리기
 	HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	HeadMesh->SetSimulatePhysics(true);
@@ -129,6 +118,11 @@ void ASunnyEnemy::HandleDestruction()
 {
 	Super::HandleDestruction();
 	Destroy();
+}
+
+bool ASunnyEnemy::IsDie()
+{
+	return bDie;
 }
 
 

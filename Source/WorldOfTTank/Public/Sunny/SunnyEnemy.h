@@ -22,12 +22,14 @@ public:
 
 	void HandleDestruction();
 
+	bool IsDie();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 private:
-	class ASunnyTTank* TTank;
+	class APlayerTank* TTank;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	float FireRange = 1000.f;
@@ -36,7 +38,7 @@ private:
 	float FireRate = 2.f;
 	void CheckFireCondition();
 	bool InFireRange();
-
+	bool bDie = false;
 	//// 체력
 	//int32 Health = 3;
 	//int32 Damage = 1;

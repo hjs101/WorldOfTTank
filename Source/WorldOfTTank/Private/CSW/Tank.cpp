@@ -45,6 +45,8 @@ ATank::ATank()
 void ATank::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetPlayerTankDamage(80);
 }
 
 // Called every frame
@@ -64,10 +66,10 @@ void ATank::Tick(float DeltaTime)
 
 FVector ATank::GetCurrentHitPoint() const
 {
-	FVector Start = ProjectileSpawnPoint->GetComponentLocation() ;
+	FVector Start = BarrelMesh->GetComponentLocation() ;
 	FVector End = Start + BarrelMesh->GetForwardVector() * 100000000000;
 	FHitResult	Hit;
-	GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_GameTraceChannel1);
+	GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldStatic);
 	return Hit.Location;
 }
 

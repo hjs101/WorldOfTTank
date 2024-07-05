@@ -36,7 +36,7 @@ private:
 
 	// 체력 설정
 	UPROPERTY(VisibleAnywhere, Category = "Fracture")
-	int WallHP = 3;
+	int WallHP = 1;
 
 	// 부서졌는지 체크
 	bool bBroken = false;

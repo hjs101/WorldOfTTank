@@ -4,6 +4,7 @@
 #include "Sunny/SunnyEnemyFSM.h"
 #include "Sunny/SunnyEnemy.h"
 #include "Sunny/SunnyTTank.h"
+//#include "Sunny/SunnyBasePawn.h"
 
 #include "CSW/PlayerTank.h"
 
@@ -21,8 +22,6 @@ USunnyEnemyFSM::USunnyEnemyFSM()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	
 }
 
 
@@ -37,7 +36,6 @@ void USunnyEnemyFSM::BeginPlay()
 	Target = Cast<APlayerTank>(actor);
 	// 소유 객체 가져오기
 	Me = Cast<ASunnyEnemy>(GetOwner());
-
 
 	// AAiController 할당
 	Ai = Cast<AAIController>(Me->GetController());
@@ -65,9 +63,9 @@ void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	case EEnemyState::Attack:
 		AttackState();
 		break;
-	case EEnemyState::Damage:
-		DamageState();
-		break;
+	//case EEnemyState::Damage:
+		//DamageState();
+		//break;
 	case EEnemyState::Die:
 		DieState();
 		break;		
@@ -127,8 +125,12 @@ void USunnyEnemyFSM::MoveState()
 	// 목적지까지의 길 찾기 성공 여부 확인
 	if (r.Result == ENavigationQueryResult::Success)
 	{
+		// 타깃쪽으로 몸을 돌리고 
+		Me->RotateTank(Target->GetActorLocation());
+		
 		// 타깃쪽으로 이동
 		Ai->MoveToLocation(destination);
+
 	}
 	else
 	{
@@ -140,11 +142,7 @@ void USunnyEnemyFSM::MoveState()
 			// 새로운 랜덤 위치 가져오기
 			GetRandomPositionInNavMesh(Me->GetActorLocation(), 500, RandomPos);
 		}
-
 	}
-
-
-
 
 	// 타깃과 가까워지면 공격 상태로 전환하고 싶다
 	// 1. 만약 거리가 공격 범위 안에 들어오면
@@ -152,7 +150,6 @@ void USunnyEnemyFSM::MoveState()
 	{
 		// 길찾기 기능 정지
 		Ai->StopMovement();
-		
 
 		// 2. 공격 상태로 전환하고 싶다
 		EnemyState = EEnemyState::Attack;
@@ -193,29 +190,27 @@ void USunnyEnemyFSM::AttackState()
 
 
 // 피격 알림 이벤트 함수
-void USunnyEnemyFSM::OnDamageProcess()
-{
-	//UE_LOG(LogTemp, Warning, TEXT("Damage!!!!"));
-	Me->Destroy();
-
-	// 체력 감소
-	hp--;
-	// 만약 체력이 남아있다면
-	if (hp > 0)
-	{
-		// 상태를 피격으로  전환
-		EnemyState = EEnemyState::Damage;
-	}
-	// 그렇지 않다면
-	else
-	{
-		// 상태를 죽음으로 전환
-		EnemyState = EEnemyState::Die;
-
-		// 캡슐 충돌체 비활성화
-		//Me->GetCapsuleComponent()->SetcollisionEnabled(ECollisionEnabled::NoCollision);
-	}
-}
+//void USunnyEnemyFSM::OnDamageProcess()
+//{
+//	//UE_LOG(LogTemp, Warning, TEXT("Damage!!!!"));
+//	Me->Destroy();
+//
+//	// 만약 체력이 남아있다면
+//	if (hp > 0)
+//	{
+//		// 상태를 피격으로  전환
+//		EnemyState = EEnemyState::Damage;
+//	}
+//	// 그렇지 않다면
+//	else
+//	{
+//		// 상태를 죽음으로 전환
+//		EnemyState = EEnemyState::Die;
+//
+//		// 캡슐 충돌체 비활성화
+//		//Me->GetCapsuleComponent()->SetcollisionEnabled(ECollisionEnabled::NoCollision);
+//	}
+//}
 
 
 // 피격 상태

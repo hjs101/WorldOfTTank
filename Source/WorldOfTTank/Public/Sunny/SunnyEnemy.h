@@ -39,12 +39,6 @@ private:
 	void CheckFireCondition();
 	bool InFireRange();
 	bool bDie = false;
-	//// 체력
-	//int32 Health = 3;
-	//int32 Damage = 1;
-
-	//class ASunnyGameMode* TTankGameMode;
-	
 
 public:
 
@@ -72,5 +66,12 @@ public:
 
 	void SetBeamLocation();
 	void DrawBeam(FVector Start, FVector End);
+
+
+	void RotateTank(FVector LookAtTarget);
+
+
+	UFUNCTION(BlueprintPure)
+	float GetHealthPercent(float health, float maxHealth);
 
 };

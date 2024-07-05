@@ -21,26 +21,30 @@ public:
 
 protected:
 	void RotateTurret(FVector LookAtTarget);
+
 	void Fire();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* HeadMesh;
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* ProjectileSpawnPoint;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* BodyMesh;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UCapsuleComponent* CapsuleComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* BodyMesh;
+	
 
 	
 
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class ASunnyProjectile> ProjectileClass;
+
+
+	//void RotateTank(FVector LookAtTarget);
 };

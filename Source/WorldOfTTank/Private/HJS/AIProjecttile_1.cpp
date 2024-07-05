@@ -4,6 +4,7 @@
 #include "HJS/AIProjecttile_1.h"
 #include "HJS/AITankCPU_1.h"
 #include "HJS/Obstacle.h"
+#include "CSW/Tank.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/DecalComponent.h"
 #include "HJS/FractureWall.h"
@@ -83,6 +84,13 @@ void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		AITank->HealthDown(50);
 	}
 
+	// Player일때
+	ATank* PlayerTank = Cast<ATank>(OtherActor);
+	if (PlayerTank != nullptr)
+	{
+		PlayerTank->SetPlayerTankDamage(50.0);
+	}
+
 	AActor* MyOwner = GetOwner();
 	if (MyOwner == nullptr)
 	{
@@ -122,7 +130,7 @@ void AAIProjecttile_1::AddDecalAtLocation(FVector Location, FVector Normal)
 	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(
 		this,
 		DecalMaterial, // 대포 자국에 사용할 마테리얼
-		FVector(100.f, 100.f, 100.f), // 데칼 크기
+		FVector(10.0f, 50.0f, 50.0f), // 데칼 크기
 		Location,
 		Normal.Rotation()
 	);

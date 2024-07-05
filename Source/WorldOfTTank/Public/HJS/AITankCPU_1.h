@@ -118,4 +118,7 @@ private:
 	void UpdateHealthBar() const;
 	UFUNCTION()
 	void RotateTurretToMainTarget();
+
+	UFUNCTION()
+	void CheckWidgetVisibility();
 };

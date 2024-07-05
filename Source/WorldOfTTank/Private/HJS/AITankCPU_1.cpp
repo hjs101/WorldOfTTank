@@ -5,6 +5,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "HJS/AITankPlayer_1.h"
 #include "HJS/AITankCPU_1.h"
+#include "CSW/PlayerTank.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "HJS/AITankController_1.h"
 #include "NavigationSystem.h"
@@ -57,7 +58,7 @@ void AAITankCPU_1::LaserBeamSetting()
 {
 	FVector TraceStart = HeadMesh->GetComponentLocation();
 	FVector ForwardVector = HeadMesh->GetForwardVector();
-	FVector TraceEnd = ((ForwardVector * 10000.f) + TraceStart);
+	FVector TraceEnd = ((ForwardVector * 20000.f) + TraceStart);
 
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParams;
@@ -107,6 +108,7 @@ void AAITankCPU_1::Tick(float DeltaTime)
 	}
 	LaserBeamSetting();
 	RotateTurretToMainTarget();
+	CheckWidgetVisibility();
 }
 
 // 일정 거리 이상 벗어났는 지 확인하는 함수
@@ -260,7 +262,7 @@ void AAITankCPU_1::OnSeePawn(APawn* Pawn)
 	{
 		return;
 	}
-	if (Cast<AAITankPlayer_1>(Pawn)) 
+	if (Cast<APlayerTank>(Pawn)) 
 	{
 		BlackboardComp->SetValueAsObject(FName("TargetPlayer"), Pawn);
 	}
@@ -528,7 +530,7 @@ void AAITankCPU_1::Die()
 		bReadyFire = false;  // 발사 불가
 		GetWorldTimerManager().ClearTimer(FireRateTimerHandle);  // 타이머 정지
 		GetWorldTimerManager().ClearTimer(DetectRateTimerHandle);  // 탐지 타이머 정지
-
+		SetActorTickEnabled(false); // 틱 정지
 		// 움직임 및 AI 컨트롤러 정지
 		AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
 		if (AIController)
@@ -584,4 +586,27 @@ void AAITankCPU_1::RotateTurretToMainTarget()
 		RotateTurret(MainTarget->GetActorLocation());
 	}
 	return;
+}
+
+void AAITankCPU_1::CheckWidgetVisibility()
+{
+	FVector Start = GetActorLocation();
+	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	FVector End = Player->GetActorLocation();
+	
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+
+	Params.AddIgnoredActor(this);
+	Params.AddIgnoredActor(Player);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+
+	if (bHit)
+	{
+		HpBar->SetVisibility(false);
+	}
+	else
+	{
+		HpBar->SetVisibility(true);
+	}
 }

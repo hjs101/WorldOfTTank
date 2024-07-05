@@ -64,4 +64,11 @@ public:
 
 
 
+	// NiagaraSystem
+	UPROPERTY(EditAnyWhere)
+	class UNiagaraSystem* BeamNiagara;
+
+	void SetBeamLocation();
+	void DrawBeam(FVector Start, FVector End);
+
 };

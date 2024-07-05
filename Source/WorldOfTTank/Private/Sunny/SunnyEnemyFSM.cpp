@@ -95,8 +95,14 @@ void USunnyEnemyFSM::IdleState()
 // 이동 상태
 void USunnyEnemyFSM::MoveState() 
 {
+	FVector destination;
+
 	// 1. 타깃 목적지가 필요하다
-	FVector destination = Target->GetActorLocation();
+	if (Target)
+	{
+		destination = Target->GetActorLocation();
+	}
+
 	// 2. 방향이 필요하다
 	FVector dir = destination - Me->GetActorLocation();
 	// 3. 방향으로 이동하고 싶다
@@ -166,7 +172,12 @@ void USunnyEnemyFSM::AttackState()
 
 	// 목표 : 타깃이 공격 범위를 벗어나면 상태를 이동으로 전환하고 싶다
 	// 1. 타깃과의 거리가 필요하다
-	float Distance = FVector::Distance(Target->GetActorLocation(), Me->GetActorLocation());
+	float Distance;
+
+	if (Target)
+	{
+		Distance = FVector::Distance(Target->GetActorLocation(), Me->GetActorLocation());
+	}
 	// 2. 타깃과의 거리가 공격 범위를 벗어났으니까
 	if (Distance > AttackRange)
 	{

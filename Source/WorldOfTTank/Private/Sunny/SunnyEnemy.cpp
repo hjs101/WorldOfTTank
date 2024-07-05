@@ -10,6 +10,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
 
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 
 ASunnyEnemy::ASunnyEnemy()
 {
@@ -41,6 +45,10 @@ void ASunnyEnemy::Tick(float DeltaTime)
 	{
 		RotateTurret(TTank->GetActorLocation());
 	}
+	
+
+	SetBeamLocation();
+
 }
 
 void ASunnyEnemy::BeginPlay()
@@ -115,9 +123,56 @@ void ASunnyEnemy::OnDie()
 
 
 
+
 // Enemy Delete
 void ASunnyEnemy::HandleDestruction()
 {
 	Super::HandleDestruction();
 	Destroy();
+}
+
+
+
+
+void ASunnyEnemy::SetBeamLocation()
+{
+	FVector Start = ProjectileSpawnPoint->GetComponentLocation();
+	FVector ForwardVector = ProjectileSpawnPoint->GetForwardVector();
+	FVector End = ForwardVector * 10000.f + Start;
+
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+
+	// Perform the line trace
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		ECC_Visibility,
+		TraceParams
+	);
+
+	if (bHit)
+	{
+		End = HitResult.Location;
+	}
+
+
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1, 0, 1);
+
+	DrawBeam(Start, End);
+}
+
+void ASunnyEnemy::DrawBeam(FVector Start, FVector End)
+{
+	if (BeamNiagara)
+	{
+		UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(), BeamNiagara, Start, FRotator::ZeroRotator);
+		if (NiagaraComponent)
+		{
+			NiagaraComponent->SetVectorParameter(TEXT("Beam End"), End);
+		}
+	}
 }

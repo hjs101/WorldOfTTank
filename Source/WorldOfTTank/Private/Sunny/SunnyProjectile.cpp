@@ -77,37 +77,6 @@ void ASunnyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
 		Destroy();
 	}
-	
-
-	/*aactor* myowner = getowner();
-	if (myowner == nullptr)
-	{
-		destroy();
-		return;
-
-	}*/
-
-	/*AControlleraa* MyOwnerInstigator = MyOwner->GetInstigatorController();
-	UClass* DamageTypeClass = UDamageType::StaticClass();
-
-	if (OtherActor && OtherActor != this && OtherActor != MyOwner)
-	{
-		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
-		if (HitParticles)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(this, HitParticles, GetActorLocation(), GetActorRotation());
-		}
-		if (HitSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
-		}
-		if (HitCameraShakeClass)
-		{
-			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitCameraShakeClass);
-		}
-	}
-	Destroy();*/
-
 
 }
 

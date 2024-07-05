@@ -15,6 +15,9 @@ USunnyHealth::USunnyHealth()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	// Enemy 컴포넌트 추가
+	Enemy = CreateDefaultSubobject<ASunnyEnemy>(TEXT("Enemy"));
+
 }
 
 
@@ -40,12 +43,21 @@ void USunnyHealth::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	// ...
 }
 
+
+
 // 데미지 받았을 때 (1. 체력 깍기  2. 체력이 0이면 죽기
 void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* Instigator, AActor* DamageCauser)
 {
 	if (Damage <= 0.f) return;
 
 	Health -= Damage;
+
+	//// 추가 중
+	Enemy->GetHealthPercent(Health, MaxHealth);
+
+
+
+
 	UE_LOG(LogTemp, Warning, TEXT("Health: %f"), Health);
 
 	if (Health <= 0.f)
@@ -63,4 +75,6 @@ void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamage
 		}
 	}
 }
+
+
 

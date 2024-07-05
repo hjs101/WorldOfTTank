@@ -50,6 +50,27 @@ void ASunnyEnemy::BeginPlay()
 
 
 
+// 몸체 회전
+void ASunnyEnemy::RotateTank(FVector LookAtTarget)
+{
+
+	if (LookAtTarget == FVector::ZeroVector) {
+		return;
+	}
+	FVector ToTarget = LookAtTarget - BodyMesh->GetComponentLocation();
+	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
+
+	BodyMesh->SetWorldRotation(
+		FMath::RInterpTo(BodyMesh->GetComponentRotation(),
+			LookAtRotation,
+			UGameplayStatics::GetWorldDeltaSeconds(this)
+			, 2.f)
+	);
+}
+
+
+
+
 //  발사 타이머 설정
 void ASunnyEnemy::SetFireTimer()
 {
@@ -89,12 +110,20 @@ bool ASunnyEnemy::InFireRange()
 			return true;
 		}
 	}
-
 	return false;
 }
 
 
 
+///////////////////////////
+// 체력바 표시 (추가)
+float ASunnyEnemy::GetHealthPercent(float Health, float MaxHealth)
+{
+	return Health / MaxHealth;
+}
+
+
+// 체력이 0 이면  죽음
 void ASunnyEnemy::OnDie()
 {
 	bDie = true;
@@ -110,9 +139,6 @@ void ASunnyEnemy::OnDie()
 	ClearFIreTimer();
 }
 
-
-
-
 // Enemy Delete
 void ASunnyEnemy::HandleDestruction()
 {
@@ -120,14 +146,14 @@ void ASunnyEnemy::HandleDestruction()
 	Destroy();
 }
 
+// 진성 AI 죽음 확인 
 bool ASunnyEnemy::IsDie()
 {
 	return bDie;
 }
 
 
-
-
+// 빔 길이 결정
 void ASunnyEnemy::SetBeamLocation()
 {
 	FVector Start = ProjectileSpawnPoint->GetComponentLocation();
@@ -152,12 +178,12 @@ void ASunnyEnemy::SetBeamLocation()
 		End = HitResult.Location;
 	}
 
-
 	//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1, 0, 1);
 
 	DrawBeam(Start, End);
 }
 
+// 빔 표시
 void ASunnyEnemy::DrawBeam(FVector Start, FVector End)
 {
 	if (BeamNiagara)
@@ -170,3 +196,4 @@ void ASunnyEnemy::DrawBeam(FVector Start, FVector End)
 		}
 	}
 }
+

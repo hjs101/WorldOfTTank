@@ -5,6 +5,8 @@
 #include "Sunny/SunnyEnemy.h"
 #include "Sunny/SunnyTTank.h"
 
+#include "CSW/PlayerTank.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "AIController.h"
@@ -29,10 +31,10 @@ void USunnyEnemyFSM::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 월드에서 ASunnyTTank 타깃 찾아오기
-	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), ASunnyTTank::StaticClass());
-	// ASunnyTTank 타입으로 캐스팅
-	Target = Cast<ASunnyTTank>(actor);
+	// 월드에서 APlayerTank 타깃 찾아오기
+	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerTank::StaticClass());
+	// APlayerTank 타입으로 캐스팅
+	Target = Cast<APlayerTank>(actor);
 	// 소유 객체 가져오기
 	Me = Cast<ASunnyEnemy>(GetOwner());
 
@@ -107,7 +109,7 @@ void USunnyEnemyFSM::MoveState()
 	FVector dir = destination - Me->GetActorLocation();
 	// 3. 방향으로 이동하고 싶다
 	//Me->AddMovementInput(dir.GetSafeNormal());
-	Ai->MoveToLocation(destination);
+	//Ai->MoveToLocation(destination);
 
 
 	// NavigationSystem 객체 얻어오기
@@ -122,7 +124,6 @@ void USunnyEnemyFSM::MoveState()
 	Ai->BuildPathfindingQuery(req, query);
 	// 길 찾기 결과 가져오기
 	FPathFindingResult r = ns->FindPathSync(query);
-
 	// 목적지까지의 길 찾기 성공 여부 확인
 	if (r.Result == ENavigationQueryResult::Success)
 	{
@@ -139,7 +140,6 @@ void USunnyEnemyFSM::MoveState()
 			// 새로운 랜덤 위치 가져오기
 			GetRandomPositionInNavMesh(Me->GetActorLocation(), 500, RandomPos);
 		}
-
 
 	}
 
@@ -165,7 +165,7 @@ void USunnyEnemyFSM::AttackState()
 {
 	if (isTimerSeted == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Attack!!!!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Attack!!!!"));
 		Me->SetFireTimer();
 		isTimerSeted = true;
 	}
@@ -195,7 +195,7 @@ void USunnyEnemyFSM::AttackState()
 // 피격 알림 이벤트 함수
 void USunnyEnemyFSM::OnDamageProcess()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Damage!!!!"));
+	//UE_LOG(LogTemp, Warning, TEXT("Damage!!!!"));
 	Me->Destroy();
 
 	// 체력 감소

@@ -3,6 +3,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "HJS/AITankCPU_1.h"
+#include "Sunny/SunnyEnemy.h"
 #include "Perception/PawnSensingComponent.h"
 #include "HJS/BTTask/BTTask_SearchForTargets.h"
 
@@ -22,8 +23,13 @@ EBTNodeResult::Type UBTTask_SearchForTargets::ExecuteTask(UBehaviorTreeComponent
 	UObject* TargetPlayer = BlackboardComp->GetValueAsObject(FName("TargetPlayer"));
 	UObject* TargetCPU = BlackboardComp->GetValueAsObject(FName("TargetCPU"));
 
-	if (TargetCPU && Cast<AAITankCPU_1>(TargetCPU)->IsDie()) {
+	if (TargetCPU && Cast<ASunnyEnemy>(TargetCPU) && Cast<ASunnyEnemy>(TargetCPU)->IsDie()) {
 		BlackboardComp->SetValueAsObject(FName("TargetCPU"), nullptr);
+
+		if (Cast<ASunnyEnemy>(BlackboardComp->GetValueAsObject(FName("MainTarget"))))
+		{
+			BlackboardComp->SetValueAsObject(FName("MainTarget"), nullptr);
+		}
 	}
 
 	if (TargetPlayer || TargetCPU)

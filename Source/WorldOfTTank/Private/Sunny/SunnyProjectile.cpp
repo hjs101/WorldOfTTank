@@ -6,7 +6,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "CSW/Tank.h"
+#include "HJS/AITankCPU_1.h"
 // Sets default values
 ASunnyProjectile::ASunnyProjectile()
 {
@@ -56,6 +57,20 @@ void ASunnyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	auto MyOwnerInstigator = MyOwner->GetInstigatorController();
 	auto DamageTypeClass = UDamageType::StaticClass();
 
+
+	// Player일때
+	ATank* PlayerTank = Cast<ATank>(OtherActor);
+	if (PlayerTank != nullptr)
+	{
+		PlayerTank->SetPlayerTankDamage(50.0);
+	}
+
+	AAITankCPU_1* AITank = Cast<AAITankCPU_1>(OtherActor);
+
+	if (AITank != nullptr)
+	{
+		AITank->HealthDown(50);
+	}
 
 	if (OtherActor && OtherActor != this && OtherActor != MyOwner)
 	{

@@ -60,7 +60,7 @@ public:
 
 	// 타깃 (써니 땅크)
 	UPROPERTY(VisibleAnywhere, Category=FSM)
-	class ASunnyTTank* Target;
+	class APlayerTank* Target;
 
 	// 소유 액터
 	UPROPERTY()
@@ -69,7 +69,7 @@ public:
 
 	// 공격 범위
 	UPROPERTY(EditAnywhere, Category=FSM)
-	float AttackRange = 1000.f;
+	float AttackRange = 2000.f;
 
 	// 공격 대기 시간
 	UPROPERTY(EditAnywhere, Category = FSM)

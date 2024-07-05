@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/DecalComponent.h"
 #include "HJS/FractureWall.h"
+#include "Sunny/SunnyEnemy.h"
 // Sets default values
 AAIProjecttile_1::AAIProjecttile_1()
 {
@@ -52,7 +53,7 @@ void AAIProjecttile_1::Tick(float DeltaTime)
 
 void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("피격 효과"));
 	// 장애물일 때
 	if (Cast<APawn>(OtherActor) == nullptr) {
 		AddDecalAtLocation(Hit.ImpactPoint, Hit.ImpactNormal);
@@ -92,34 +93,21 @@ void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	}
 
 	AActor* MyOwner = GetOwner();
-	if (MyOwner == nullptr)
+
+	// SunnyEnemy일때
+	if (MyOwner != nullptr)
 	{
-		Destroy();
-		return;
+		AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
+		if (MyOwnerInstigator != nullptr)
+		{
+			UClass* DamageTypeClass = UDamageType::StaticClass();
+			ASunnyEnemy* SunnyEnemy = Cast<ASunnyEnemy>(OtherActor);
+			if (SunnyEnemy != nullptr)
+			{
+				UGameplayStatics::ApplyDamage(OtherActor, 50.f, MyOwnerInstigator, this, DamageTypeClass);
+			}
+		}
 	}
-
-	
-	//AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
-	//UClass* DamageTypeClass = UDamageType::StaticClass();
-
-	//if (OtherActor != nullptr && OtherActor != this && OtherActor != MyOwner)
-	//{
-	//	UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
-	//	if (HitParticles)
-	//	{
-	//		UGameplayStatics::SpawnEmitterAtLocation(this, HitParticles, GetActorLocation(), GetActorRotation());
-	//	}
-
-	//	if (HitSound)
-	//	{
-	//		UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
-	//	}
-
-	//	if (HitCameraShakeClass)
-	//	{
-	//		GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitCameraShakeClass);
-	//	}
-	//}
 	Destroy();
 	return;
 }

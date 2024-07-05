@@ -74,7 +74,7 @@ FVector ATank::GetCurrentHitPoint() const
 }
 
 
-void	ATank::Move(float Value)
+void ATank::Move(float Value)
 {
 	MoveState = (Value >= 0);
 	MoveComp->AddInputVector(GetActorForwardVector() * Value);
@@ -130,11 +130,13 @@ void ATank::Fire()
 {
 	if (CurrentReloadTime != ReloadTime)
 		return ;
-	GetWorld()->SpawnActor<AProjectile>(
+	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(
 		ProjectileClass,
 		ProjectileSpawnPoint->GetComponentLocation(),
 		ProjectileSpawnPoint->GetComponentRotation());
 	CurrentReloadTime = 0;
+
+	Projectile->SetOwner(this);
 }
 
 void ATank::Brake()
@@ -148,5 +150,6 @@ void ATank::SetPlayerTankDamage(float Damage)
 		HP = 0;
 	else
 		HP -= Damage;	
+
 }
 

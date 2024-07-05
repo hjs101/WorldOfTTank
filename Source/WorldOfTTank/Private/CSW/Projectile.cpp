@@ -2,11 +2,12 @@
 
 
 #include "CSW/Projectile.h"
-
+#include "Sunny/SunnyEnemy.h"
 #include "GameFrameWork/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/DecalComponent.h"
 #include "HJS/AITankCPU_1.h"
+#include "GameFramework/DamageType.h"
 #include "HJS/FractureWall.h"
 #include "HJS/Obstacle.h"
 
@@ -52,7 +53,7 @@ void AProjectile::AddDecalAtLocation(const FVector& Location, const FVector& Nor
     UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(
         this,
         DecalMaterial, // 대포 자국에 사용할 마테리얼
-        FVector(10.0f, 50.0f, 50.0f), // 데칼 크기
+        FVector(30.0f, 50.0f, 50.0f), // 데칼 크기
         Location,
         Normal.Rotation()
     );
@@ -66,15 +67,15 @@ void AProjectile::AddDecalAtLocation(const FVector& Location, const FVector& Nor
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnHit"));
 	if (!Cast<APawn>(OtherActor))
 		AddDecalAtLocation(Hit.Location, Hit.Normal);
 	
-	AObstacle* ObstacleComp = Cast<AObstacle>(OtherActor);
-	if (ObstacleComp != nullptr) {
-		ObstacleComp->AddDecalAtLocation(Hit.ImpactPoint, Hit.ImpactNormal);
-	}
+	//AObstacle* ObstacleComp = Cast<AObstacle>(OtherActor);
+	//if (ObstacleComp != nullptr) {
+	//	ObstacleComp->AddDecalAtLocation(Hit.ImpactPoint, Hit.ImpactNormal);
+	//}
 
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("적 타격 효과"));
 	// 부서지는 장애물일때
 	AFractureWall* FractureComp = Cast<AFractureWall>(OtherActor);
 
@@ -98,6 +99,23 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	{
 		AITank->HealthDown(50);
 	}
+
+	// SunnyEnemy일때
+	AActor* MyOwner = GetOwner();
+	if (MyOwner != nullptr) 
+	{
+		AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
+		if (MyOwnerInstigator != nullptr) 
+		{
+			UClass* DamageTypeClass = UDamageType::StaticClass();
+			ASunnyEnemy* SunnyEnemy = Cast<ASunnyEnemy>(OtherActor);
+			if (SunnyEnemy != nullptr)
+			{
+				UGameplayStatics::ApplyDamage(OtherActor, 50.f, MyOwnerInstigator, this, DamageTypeClass);
+			}
+		}
+	}
+
 
 	Destroy();
 }

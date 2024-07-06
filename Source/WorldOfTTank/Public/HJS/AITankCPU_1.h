@@ -39,7 +39,7 @@ public:
 	
 	// 터렛 회전 종료 확인 함수
 	UFUNCTION()
-	bool IsTurretRotationComplete(AActor* TargetActor)const;
+	bool IsTurretRotationComplete(AActor* TargetActor);
 	// 발포 함수 오버라이드
 	virtual void Fire() override;
 	// 공격 유효 지점을 찾는 함수
@@ -105,6 +105,9 @@ private:
 	UPROPERTY()
 	FTimerHandle FireRateTimerHandle;
 
+	UPROPERTY()
+	FTimerHandle HpBarTimerHandle;
+
 	class AAITankController_1* TankAIController;
 
 	// 함수
@@ -121,4 +124,7 @@ private:
 
 	UFUNCTION()
 	void CheckWidgetVisibility();
+
+	UFUNCTION()
+	void SetFalseVisibility();
 };

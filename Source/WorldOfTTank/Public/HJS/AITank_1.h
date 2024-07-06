@@ -16,6 +16,7 @@ public:
 	AAITank_1();
 	UFUNCTION()
 	void RotateTurret(FVector LookAtTarget);
+	void RotateBarrel(FVector LookAtTarget);
 	void RotateTank(FVector LookAtTarget);
 protected:
 	// Called when the game starts or when spawned
@@ -45,16 +46,18 @@ protected:
 	float UpLimit = 30;
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	float LookPitch = 0.f;
-private:
-	// 컴포넌트
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	class UCapsuleComponent* CapsuleComp;
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* BodyMesh;
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* WheelMesh_1;
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* WheelMesh_2;
+	UStaticMeshComponent* WheelMesh_2;\
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	class UCapsuleComponent* CapsuleComp;
+
+private:
+
+
 
 	
 	UPROPERTY(VisibleAnywhere, Category = "Components")

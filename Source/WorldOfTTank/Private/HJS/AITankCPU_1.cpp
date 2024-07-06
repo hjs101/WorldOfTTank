@@ -15,6 +15,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/OverlapResult.h"
 #include "Components/WidgetComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
@@ -26,7 +27,7 @@ AAITankCPU_1::AAITankCPU_1()
 	AIControllerClass = AAITankController_1::StaticClass();
 	// Pawn이 생성될 때 자동으로 AIController 할당하도록 설정
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
+	
 	// Create and initialize the Pawn Sensing Component
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
 
@@ -53,6 +54,7 @@ void AAITankCPU_1::BeginPlay()
 	CurrentHP = MaxHP;
 
 	UpdateHealthBar();
+	SetFalseVisibility();
 }
 
 void AAITankCPU_1::LaserBeamSetting()
@@ -219,7 +221,7 @@ bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AAc
 }
 
 // 다 회전 됐는 지 체크하는 함수
-bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor) const
+bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor)
 {	
 	// 타겟이 없으면 돌리면 안되니 true 리턴
 	if (!TargetActor)
@@ -231,6 +233,7 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor) const
 	FVector ToTarget = TargetActor->GetActorLocation() - HeadMesh->GetComponentLocation();
 	FRotator ToTargetRotation = ToTarget.Rotation();
 	FRotator MyRotation = HeadMesh->GetComponentRotation();
+	RotateTurret(TargetActor->GetActorLocation());
 	//1. yaw 각도는 무조건 일치 해야함. // 아예 안될수도 있으니 오차범위 +-1도정도 생각해두기
 	if (abs(ToTargetRotation.Yaw - MyRotation.Yaw) > 2) {
 		return false;
@@ -239,6 +242,7 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor) const
 	ToTargetRotation = ToTarget.Rotation();
 	MyRotation = BarrelMesh->GetComponentRotation();
 	// 2. 고도 확인하기
+	RotateBarrel(TargetActor->GetActorLocation());
 	if (abs(LookPitch - MyRotation.Pitch) > 2) {
 
 		// 2-1. 피치가 다르면서 한계고도 안쪽일 경우 false
@@ -532,6 +536,7 @@ void AAITankCPU_1::Die()
 		GetWorldTimerManager().ClearTimer(FireRateTimerHandle);  // 타이머 정지
 		GetWorldTimerManager().ClearTimer(DetectRateTimerHandle);  // 탐지 타이머 정지
 		SetActorTickEnabled(false); // 틱 정지
+
 		// 움직임 및 AI 컨트롤러 정지
 		AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
 		if (AIController)
@@ -546,6 +551,12 @@ void AAITankCPU_1::Die()
 			PawnSensingComponent->SetActive(false);
 		}
 
+		// 죽는 순간 네비에 탐지
+		BodyMesh->SetCanEverAffectNavigation(true);
+		WheelMesh_1->SetCanEverAffectNavigation(true);
+		WheelMesh_2->SetCanEverAffectNavigation(true);
+		HeadMesh->SetCanEverAffectNavigation(true);
+		CapsuleComp->SetSimulatePhysics(false);
 		// bDie 활성화
 		bDie = true;
 	}
@@ -584,8 +595,9 @@ void AAITankCPU_1::RotateTurretToMainTarget()
 	}
 	APawn* MainTarget = Cast<APawn>(BlackboardComp->GetValueAsObject("MainTarget"));
 	if(MainTarget != nullptr){
-		RotateTurret(MainTarget->GetActorLocation());
+		IsTurretRotationComplete(MainTarget);
 	}
+	
 	return;
 }
 
@@ -604,10 +616,18 @@ void AAITankCPU_1::CheckWidgetVisibility()
 
 	if (bHit)
 	{
-		HpBar->SetVisibility(false);
+		if(!GetWorldTimerManager().IsTimerActive(HpBarTimerHandle))
+		{
+			GetWorldTimerManager().SetTimer(HpBarTimerHandle, this, &AAITankCPU_1::SetFalseVisibility, 5.f, false);
+		}
 	}
 	else
 	{
 		HpBar->SetVisibility(true);
 	}
+}
+
+void AAITankCPU_1::SetFalseVisibility()
+{
+	HpBar->SetVisibility(false);
 }

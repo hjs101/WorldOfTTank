@@ -562,6 +562,27 @@ void AAITankCPU_1::Die()
 	}
 }
 
+void AAITankCPU_1::SetBlackBoardTarget(AActor* OtherActor)
+{
+	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
+
+	if (AIController == nullptr)
+	{
+		return;
+	}
+	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+	if (BlackboardComp == nullptr)
+	{
+		return;
+	}
+
+	if (Cast<APlayerTank>(OtherActor))
+	{
+		BlackboardComp->SetValueAsObject("TargetPlayer", OtherActor);
+	}
+
+}
+
 void AAITankCPU_1::FireReady()
 {
 	bReadyFire = true;

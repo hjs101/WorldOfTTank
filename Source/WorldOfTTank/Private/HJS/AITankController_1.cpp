@@ -9,7 +9,7 @@
 #include "NavigationPath.h"
 #include "NavigationData.h"
 #include "HJS/AITankController_1.h"
-#include "HJS/AITank_1.h"
+#include "HJS/AITankCPU_1.h"
 AAITankController_1::AAITankController_1()
 {
 	// Initialize the BlackboardComponent
@@ -28,6 +28,11 @@ void AAITankController_1::SetCurrentTask(UBTTaskNode* Task)
 	if (Task != nullptr) {
 		CurrentTask = Task;
 	}
+}
+
+void AAITankController_1::SetbNonStopMove(bool Value)
+{
+	bNonStop = Value;
 }
 
 void AAITankController_1::BeginPlay()
@@ -70,8 +75,17 @@ void AAITankController_1::MoveAlongPath(float DeltaTime)
 				TargetLocation = PathPoints[CurrentPathPointIndex];
 			}
 			FVector Direction = (TargetLocation - CurrentLocation).GetSafeNormal();
-			GetPawn()->AddMovementInput(Direction);
-			Cast<AAITank_1>(GetPawn())->RotateTank(TargetLocation);
+			GetPawn()->AddMovementInput(GetPawn()->GetActorForwardVector());
+			AAITankCPU_1* AITank = Cast<AAITankCPU_1>(GetPawn());
+			if(AITank)
+			{
+				AITank->RotateTank(TargetLocation);
+				if(AITank->GetFireState() && !bNonStop)
+				{
+					FinishMove(true);
+				}
+			}
+			
 			if (FVector::Dist(CurrentLocation, TargetLocation) < AcceptanceRadius)
 			{
 				CurrentPathPointIndex++;
@@ -108,6 +122,9 @@ void AAITankController_1::FinishMove(bool bSuccessed)
 			BTComp->OnTaskFinished(CurrentTask, EBTNodeResult::Failed);
 		}
 	}
+
+	bNonStop = false;
+
 }
 
 void AAITankController_1::StopBTT()

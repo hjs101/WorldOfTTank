@@ -52,8 +52,7 @@ void UBTTask_RotateTurretToTarget::TickTask(UBehaviorTreeComponent& OwnerComp, u
 	}
 
 	// 포신 회전 시작
-	AITank->RotateTurret(TargetActor->GetActorLocation());
-	// 포신 회전 완료 여부 확인
+	// 포신 회전 완료 여부 확인 (포신을 돌리는 것도 겸함)
 	if (AITank->IsTurretRotationComplete(TargetActor))
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // 회전 완료

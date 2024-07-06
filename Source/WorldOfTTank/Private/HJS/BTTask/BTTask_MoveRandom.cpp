@@ -69,6 +69,7 @@ EBTNodeResult::Type UBTTask_MoveRandom::ExecuteTask(UBehaviorTreeComponent& Owne
 
         if (Result.IsSuccessful())
         {
+            AIController->SetbNonStopMove(true);
             AIController->SetNavPath(Result.Path);
             return EBTNodeResult::InProgress;
         }

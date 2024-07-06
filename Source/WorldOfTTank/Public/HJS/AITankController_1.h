@@ -19,6 +19,8 @@ public:
 	UFUNCTION()
 	void SetCurrentTask(UBTTaskNode* Task);
 
+	void SetbNonStopMove(bool Value);
+
 	UFUNCTION()
 	void StopBTT();
 protected:
@@ -47,7 +49,9 @@ private:
 	float AcceptanceRadius = 100.f;
 
 	float CurrentTime = 0.f;
-	float EndTime = 5.f;
+	float EndTime = 15.f;
+
+	bool bNonStop = false;
 
 	UPROPERTY()
     UBTTaskNode* CurrentTask;

@@ -96,13 +96,21 @@ void AAITank_1::RotateTurret(FVector LookAtTarget)
 		FMath::RInterpConstantTo(HeadMesh->GetComponentRotation(),
 			LookAtRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this)
-			, 120.f)
+			, 60.f)
 	);
 
 	//LookAtRotation.Pitch = ToTarget.Rotation().Pitch;
+
+
+}
+
+void AAITank_1::RotateBarrel(FVector LookAtTarget)
+{
 	// 포신 각도 설정 : 탄도학 적용 버전
-	float TargetDistance = ToTarget.Size2D()/100.f; // 수평 거리
-	float TargetHeight = ToTarget.Z/100.f; // 높이 차이
+	FVector ToTarget = LookAtTarget - HeadMesh->GetComponentLocation();
+	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
+	float TargetDistance = ToTarget.Size2D() / 100.f; // 수평 거리
+	float TargetHeight = ToTarget.Z / 100.f; // 높이 차이
 	LookAtRotation.Pitch = CalculateLaunchAngle(FireSpeed, TargetDistance, TargetHeight);
 	LookPitch = LookAtRotation.Pitch;
 	// 포신 각도 제한
@@ -117,9 +125,8 @@ void AAITank_1::RotateTurret(FVector LookAtTarget)
 		FMath::RInterpConstantTo(BarrelMesh->GetComponentRotation(),
 			LookAtRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this)
-		, 80.f)
+			, 10.f)
 	);
-
 }
 
 void AAITank_1::RotateTank(FVector LookAtTarget)
@@ -132,10 +139,10 @@ void AAITank_1::RotateTank(FVector LookAtTarget)
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 	// 몸체 돌리기
 	CapsuleComp->SetWorldRotation(
-		FMath::RInterpTo(CapsuleComp->GetComponentRotation(),
+		FMath::RInterpConstantTo(CapsuleComp->GetComponentRotation(),
 			LookAtRotation,
 			UGameplayStatics::GetWorldDeltaSeconds(this)
-			, 2.f)
+			, 50.f)
 	);
 
 }
@@ -148,7 +155,6 @@ float AAITank_1::CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, f
 
 	if (Term1 < 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No valid solution exists for the given parameters."));
 		return 0.0f;
 	}
 
@@ -159,5 +165,5 @@ float AAITank_1::CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, f
 	float Angle2 = atan((LaunchSpeedSquared - Term1) / Term2);
 
 	// 선택: 두 개의 각도 중 하나를 선택 (낮은 각도 또는 높은 각도)
-	return FMath::RadiansToDegrees(Angle2); // 또는 FMath::RadiansToDegrees(Angle2)
+	return FMath::RadiansToDegrees(Angle2); //
 }

@@ -54,6 +54,7 @@ EBTNodeResult::Type UBTTask_MoveToAttackRange::ExecuteTask(UBehaviorTreeComponen
 
             if (Result.IsSuccessful())
             {
+                AIController->SetbNonStopMove(true);
                 AIController->SetNavPath(Result.Path);
                 return EBTNodeResult::InProgress;
             }

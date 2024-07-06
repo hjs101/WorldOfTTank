@@ -6,10 +6,15 @@
 #include "Sunny/SunnyBasePawn.h"
 #include "SunnyEnemy.generated.h"
 
+class UWidgetComponent;
+class UProgressBar;
+class UTextBlock;
+class APlayerTank;
+class USunnyEnemyFSM;
+class UFloatingPawnMovement;
+class UNiagaraSystem;
 
-/**
- * 
- */
+
 UCLASS()
 class WORLDOFTTANK_API ASunnyEnemy : public ASunnyBasePawn
 {
@@ -27,6 +32,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+
+	// 체력바 Widget
+	UPROPERTY(VisibleAnywhere)
+	class UWidgetComponent* HealthWidgetComp;
+
 	
 private:
 	class APlayerTank* TTank;
@@ -38,7 +49,7 @@ private:
 	float FireRate = 2.f;
 	void CheckFireCondition();
 	bool InFireRange();
-	bool bDie = false;
+	
 
 public:
 
@@ -67,11 +78,33 @@ public:
 	void SetBeamLocation();
 	void DrawBeam(FVector Start, FVector End);
 
-
+	// Enemy 몸체 회전
 	void RotateTank(FVector LookAtTarget);
 
 
-	UFUNCTION(BlueprintPure)
+
+	// 체력바 게이지
+	UPROPERTY(meta = (BindWidget))
+	class UProgressBar* HealthBar;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* CurrentHealthLabel;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* MaxHealthLabel;
+
+	
+	UPROPERTY(EditAnywhere)
+	class USunnyHealth* HealthComp;
+
+	UFUNCTION()
 	float GetHealthPercent(float health, float maxHealth);
+
+	void SetHealthPercent(float health, float maxHealth);
+
+	bool bDie = false;
+
+
+	
 
 };

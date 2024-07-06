@@ -77,7 +77,7 @@ public:
 
 
 	// 피격 알림 이벤트 함수
-	void OnDamageProcess();
+	//void OnDamageProcess();
 
 	// 피격 대기 시간
 	UPROPERTY(EditAnywhere, Category = FSM)

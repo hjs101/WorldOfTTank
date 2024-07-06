@@ -62,14 +62,14 @@ void ASunnyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	ATank* PlayerTank = Cast<ATank>(OtherActor);
 	if (PlayerTank != nullptr)
 	{
-		PlayerTank->SetPlayerTankDamage(50.0);
+		PlayerTank->SetPlayerTankDamage(Damage);
 	}
 
 	AAITankCPU_1* AITank = Cast<AAITankCPU_1>(OtherActor);
 
 	if (AITank != nullptr)
 	{
-		AITank->HealthDown(50);
+		AITank->HealthDown(Damage);
 	}
 
 	if (OtherActor && OtherActor != this && OtherActor != MyOwner)

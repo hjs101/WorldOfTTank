@@ -60,6 +60,9 @@ public:
 	UFUNCTION()
 	void Die();
 
+	UFUNCTION()
+	void SetBlackBoardTarget(AActor* OtherActor);
+
 protected:
 virtual void BeginPlay() override;
 
@@ -127,4 +130,5 @@ private:
 
 	UFUNCTION()
 	void SetFalseVisibility();
+
 };

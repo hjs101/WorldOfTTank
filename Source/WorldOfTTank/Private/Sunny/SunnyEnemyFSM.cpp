@@ -31,8 +31,16 @@ USunnyEnemyFSM::USunnyEnemyFSM()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	UE_LOG(LogTemp, Warning, TEXT("USunnyEnemyFSM created for %s"), *GetOwner()->GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("USunnyEnemyFSM created for %s"), *GetOwner()->GetName());
 
+}
+
+
+
+// Called when the game starts
+void USunnyEnemyFSM::BeginPlay()
+{
+	Super::BeginPlay();
 
 	// 월드에서 APlayerTank 타깃 찾아오기
 	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerTank::StaticClass());
@@ -46,22 +54,14 @@ USunnyEnemyFSM::USunnyEnemyFSM()
 }
 
 
-
-// Called when the game starts
-void USunnyEnemyFSM::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-
 // Called every frame
 void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// 실행창에 상태 메세지 출력하기
-	//FString logMsg = UEnum::GetValueAsString(EnemyState);
-	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
+	FString logMsg = UEnum::GetValueAsString(EnemyState);
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
 	switch (EnemyState)
 	{
@@ -115,6 +115,7 @@ void USunnyEnemyFSM::MoveState()
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning,TEXT( "12434"));
 		// 타깃이 없다면 Idle 상태로 전환
 		EnemyState = EEnemyState::Idle;
 		return;
@@ -253,11 +254,11 @@ void USunnyEnemyFSM::DamageState()
 // 죽음 상태
 void USunnyEnemyFSM::DieState() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("Entering DieState for %s"), *Me->GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("Entering DieState for %s"), *Me->GetName());
 
 	if (Me)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OnDie() 호출"));
+		//UE_LOG(LogTemp, Warning, TEXT("OnDie() 호출"));
 		Me->OnDie();
 	}
 	else

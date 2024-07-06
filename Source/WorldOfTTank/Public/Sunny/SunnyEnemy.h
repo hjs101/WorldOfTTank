@@ -98,7 +98,7 @@ public:
 	class USunnyHealth* HealthComp;
 
 	UFUNCTION()
-	float GetHealthPercent(float health, float maxHealth);
+	//float GetHealthPercent(float health, float maxHealth);
 
 	void SetHealthPercent(float health, float maxHealth);
 

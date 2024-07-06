@@ -120,7 +120,10 @@ void ASunnyEnemy::SetFireTimer()
 void ASunnyEnemy::ClearFIreTimer()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ClearFireTimer()"));
-	GetWorldTimerManager().ClearTimer(FireRateTimerHandle);
+	if (GetWorldTimerManager().IsTimerActive(FireRateTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(FireRateTimerHandle);
+	}
 }
 	
 
@@ -201,7 +204,7 @@ void ASunnyEnemy::SetHealthPercent(float Health, float MaxHealth)
 // 체력이 0 이면  죽음
 void ASunnyEnemy::OnDie()
 {
-	UE_LOG(LogTemp, Warning, TEXT("뚝배기!!"));
+	//UE_LOG(LogTemp, Warning, TEXT("뚝배기!!"));
 	bDie = true;
 	// 머리 날리기
 	HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
@@ -209,10 +212,9 @@ void ASunnyEnemy::OnDie()
 	HeadMesh->AddImpulse(FVector(0, 0, 2000), NAME_None, true);
 
 	// 종료
-	PrimaryActorTick.SetTickFunctionEnable(false);
-	SetActorTickEnabled(false);
-	EnemyMove->StopMovementImmediately();
 	ClearFIreTimer();
+	EnemyMove->StopMovementImmediately();
+	
 
 	// 실행창에 상태 메세지 출력하기
 	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan,TEXT("Enemy 격추 효과"));
@@ -222,6 +224,9 @@ void ASunnyEnemy::OnDie()
 		//UE_LOG(LogTemp, Warning, TEXT("위젯 꺼짐"));
 		HealthWidgetComp->SetVisibility(false);
 	}
+
+	PrimaryActorTick.SetTickFunctionEnable(false);
+	SetActorTickEnabled(false);
 }
 
 // Enemy Delete

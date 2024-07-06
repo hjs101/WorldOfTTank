@@ -70,13 +70,13 @@ void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamage
 	if (GetHealth() <= 0.f && AiEnemy && !AiEnemy->bDie)
 	{
 		USunnyEnemyFSM* fsm = Cast<USunnyEnemyFSM>(AiEnemy->Fsm);
-			
+
 		if (fsm)
 		{
 			fsm->EnemyState = EEnemyState::Die;
 			UE_LOG(LogTemp, Warning, TEXT("Setting EnemyState to Die for %s"), *AiEnemy->GetName());
 		}
-		
+
 	}
 }
 

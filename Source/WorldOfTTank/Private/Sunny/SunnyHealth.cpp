@@ -2,11 +2,12 @@
 
 
 #include "Sunny/SunnyHealth.h"
-#include "GameFramework/Actor.h"
-#include "Kismet/GameplayStatics.h"
-#include "Sunny/SunnyGameMode.h"
+//#include "Sunny/SunnyGameMode.h"
 #include "Sunny/SunnyEnemy.h"
 #include "Sunny/SunnyEnemyFSM.h"
+
+#include "GameFramework/Actor.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 USunnyHealth::USunnyHealth()
@@ -15,9 +16,11 @@ USunnyHealth::USunnyHealth()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// Enemy 컴포넌트 추가
-	Enemy = CreateDefaultSubobject<ASunnyEnemy>(TEXT("Enemy"));
-
+	// 초기 체력 설정
+	SetMaxHealth(MaxHealth);
+	UE_LOG(LogTemp, Error, TEXT("SetMaxHealth() : %.f"), MaxHealth);
+	SetHealth(GetMaxHealth());
+	UE_LOG(LogTemp, Error, TEXT("SetHealth() : %.f"), Health);
 }
 
 
@@ -26,12 +29,17 @@ void USunnyHealth::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 초기 체력 설정
-	Health = MaxHealth;
+
+	// Enemy 컴포넌트 추가
+	AiEnemy = Cast<ASunnyEnemy>(GetOwner());
+
+	if (AiEnemy == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AiEnemy is null in USunnyHealth::BeginPlay"));
+		return;
+	}
 
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &USunnyHealth::DamageTaken);
-	//TTankGameMode = Cast<ASunnyGameMode>(UGameplayStatics::GetGameMode(this));
-	
 }
 
 
@@ -40,7 +48,6 @@ void USunnyHealth::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
 }
 
 
@@ -50,29 +57,26 @@ void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamage
 {
 	if (Damage <= 0.f) return;
 
-	Health -= Damage;
+	SetHealth(GetHealth() - Damage);
 
-	//// 추가 중
-	Enemy->GetHealthPercent(Health, MaxHealth);
-
-
-
-
-	UE_LOG(LogTemp, Warning, TEXT("Health: %f"), Health);
-
-	if (Health <= 0.f)
+	//// 체력 갱신
+	if (AiEnemy && !AiEnemy->bDie)
 	{
-		ASunnyEnemy* enemy = Cast<ASunnyEnemy>(DamagedActor);
-		
-		if (enemy)
+		AiEnemy->SetHealthPercent(GetHealth(), GetMaxHealth());
+	}
+	//AiEnemy->GetHealthPercent(Health, MaxHealth);
+
+
+	if (GetHealth() <= 0.f && AiEnemy && !AiEnemy->bDie)
+	{
+		USunnyEnemyFSM* fsm = Cast<USunnyEnemyFSM>(AiEnemy->Fsm);
+			
+		if (fsm)
 		{
-			USunnyEnemyFSM* fsm = Cast<USunnyEnemyFSM>(enemy->Fsm);
-			if (fsm)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("DamageTaken()"));
-				fsm->EnemyState = EEnemyState::Die;
-			}
+			fsm->EnemyState = EEnemyState::Die;
+			UE_LOG(LogTemp, Warning, TEXT("Setting EnemyState to Die for %s"), *AiEnemy->GetName());
 		}
+		
 	}
 }
 

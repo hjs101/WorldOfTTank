@@ -43,24 +43,6 @@ void ASunnyBasePawn::RotateTurret(FVector LookAtTarget)
 			10.f)
 	);
 }
-//
-//// 몸체 회전
-//void ASunnyBasePawn::RotateTank(FVector LookAtTarget)
-//{
-//
-//	if (LookAtTarget == FVector::ZeroVector) {
-//		return;
-//	}
-//	FVector ToTarget = LookAtTarget - BodyMesh->GetComponentLocation();
-//	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
-//	
-//	BodyMesh->SetWorldRotation(
-//		FMath::RInterpTo(BodyMesh->GetComponentRotation(),
-//			LookAtRotation,
-//			UGameplayStatics::GetWorldDeltaSeconds(this)
-//			, 2.f)
-//	);
-//}
 
 
 // 발사

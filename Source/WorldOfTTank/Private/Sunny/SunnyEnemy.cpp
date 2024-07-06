@@ -2,19 +2,24 @@
 
 
 #include "Sunny/SunnyEnemy.h"
-#include "Sunny/SunnyTTank.h"
 #include "Sunny/SunnyEnemyFSM.h"
 #include "Sunny/SunnyGameMode.h"
-
+#include "Sunny/SunnyTTank.h"
+#include "Sunny/SunnyHealth.h"
 #include "CSW/PlayerTank.h"
 
-#include "TimerManager.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
-#include "NiagaraSystem.h"
-#include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
+
+#include "Components/WidgetComponent.h"
+#include "Components/progressBar.h"
+#include "Components/TextBlock.h"
+
 
 
 ASunnyEnemy::ASunnyEnemy()
@@ -24,6 +29,12 @@ ASunnyEnemy::ASunnyEnemy()
 
 	// Pawn Move 컴포넌트 추가
 	EnemyMove = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MOVEMENT"));
+
+	// Health Bar Widget 컴포넌트 추가
+	HealthWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HEALTH BAR"));
+	HealthWidgetComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	HealthComp = CreateDefaultSubobject<USunnyHealth>(TEXT("HealthComp"));
 }
 
 void ASunnyEnemy::Tick(float DeltaTime)
@@ -35,37 +46,64 @@ void ASunnyEnemy::Tick(float DeltaTime)
 		RotateTurret(TTank->GetActorLocation());
 	}
 	
-
 	SetBeamLocation();
-
 }
 
 void ASunnyEnemy::BeginPlay()
-{ 
+{
 	Super::BeginPlay();
 
 	TTank = Cast<APlayerTank>(UGameplayStatics::GetPlayerPawn(this, 0));
-	/*TTankGameMode = Cast<ASunnyGameMode>(UGameplayStatics::GetGameMode(this));*/
-}
 
+
+	if (HealthWidgetComp)
+	{
+		UUserWidget* HealthWidget = HealthWidgetComp->GetUserWidgetObject();
+		if (HealthWidget)
+		{
+			HealthBar = Cast<UProgressBar>(HealthWidget->GetWidgetFromName(TEXT("HealthBar")));
+			CurrentHealthLabel = Cast<UTextBlock>(HealthWidget->GetWidgetFromName(TEXT("CurrentHealthLabel")));
+			MaxHealthLabel = Cast<UTextBlock>(HealthWidget->GetWidgetFromName(TEXT("MaxHealthLabel")));
+			// 잘 보면 100,100은생겼는데 체력바는 안생겼죠 응응 ㄱ
+			// 이게 왜그러냐면, Health 컴포넌트가 이 에너미의 자식이잖아요 엉
+			// 순서가 반대인듯?? 잘은 모르겠지만 비긴플레이가 동시에 아니면 여기가 먼저 생기거나 하는 거 같은데 헬스컴포넌트에서 생성자에서 넣으면 될듯?
+			if (!HealthBar || !CurrentHealthLabel || !MaxHealthLabel)
+			{
+				UE_LOG(LogTemp, Error, TEXT("HealthBar, CurrentHealthLabel, or MaxHealthLabel is not found in HealthWidget"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("HealthWidget is not valid in ASunnyEnemy::BeginPlay"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("HealthWidgetComp is not initialized in ASunnyEnemy::BeginPlay"));
+	}
+
+	//HealthComp = FindComponentByClass<USunnyHealth>();
+
+	if (HealthComp == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("HealthComponent is null in ASunnyEnemy::BeginPlay"));
+		return;
+	}
+	SetHealthPercent(HealthComp->GetHealth(), HealthComp->GetMaxHealth());
+}
 
 
 // 몸체 회전
 void ASunnyEnemy::RotateTank(FVector LookAtTarget)
 {
-
-	if (LookAtTarget == FVector::ZeroVector) {
+	if (LookAtTarget == FVector::ZeroVector)
+	{
 		return;
 	}
 	FVector ToTarget = LookAtTarget - BodyMesh->GetComponentLocation();
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 
-	BodyMesh->SetWorldRotation(
-		FMath::RInterpTo(BodyMesh->GetComponentRotation(),
-			LookAtRotation,
-			UGameplayStatics::GetWorldDeltaSeconds(this)
-			, 2.f)
-	);
+	BodyMesh->SetWorldRotation(FMath::RInterpTo(BodyMesh->GetComponentRotation(), LookAtRotation, UGameplayStatics::GetWorldDeltaSeconds(this), 2.f));
 }
 
 
@@ -74,14 +112,14 @@ void ASunnyEnemy::RotateTank(FVector LookAtTarget)
 //  발사 타이머 설정
 void ASunnyEnemy::SetFireTimer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("SetFireTimer()"));
+	//UE_LOG(LogTemp, Warning, TEXT("SetFireTimer()"));
 	GetWorldTimerManager().SetTimer(FireRateTimerHandle, this, &ASunnyEnemy::CheckFireCondition, FireRate, true);
 }
 
 // 발사 타이머 해제
 void ASunnyEnemy::ClearFIreTimer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ClearFireTimer()"));
+	//UE_LOG(LogTemp, Warning, TEXT("ClearFireTimer()"));
 	GetWorldTimerManager().ClearTimer(FireRateTimerHandle);
 }
 	
@@ -90,7 +128,7 @@ void ASunnyEnemy::ClearFIreTimer()
 // 발사할지 여부 확인
 void ASunnyEnemy::CheckFireCondition()
 {
-	UE_LOG(LogTemp, Warning, TEXT("CheckFireCondition()"));
+	//UE_LOG(LogTemp, Warning, TEXT("CheckFireCondition()"));
 	if (InFireRange())
 	{
 		Fire();
@@ -115,17 +153,55 @@ bool ASunnyEnemy::InFireRange()
 
 
 
-///////////////////////////
-// 체력바 표시 (추가)
-float ASunnyEnemy::GetHealthPercent(float Health, float MaxHealth)
+// 체력바 설정
+void ASunnyEnemy::SetHealthPercent(float Health, float MaxHealth)
 {
-	return Health / MaxHealth;
+	if (HealthBar)
+	{
+		HealthBar->SetPercent(Health / MaxHealth);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("HealthBar is null"));
+	}
+
+	if (CurrentHealthLabel)
+	{
+		FNumberFormattingOptions Opts;
+		Opts.SetMaximumFractionalDigits(0);
+		CurrentHealthLabel->SetText(FText::AsNumber(Health, &Opts));
+	}
+	else
+	{ 
+		UE_LOG(LogTemp, Error, TEXT("CurrentHealthLabel is null"));
+	}
+
+	if (MaxHealthLabel)
+	{
+		FNumberFormattingOptions Opts;
+		Opts.SetMaximumFractionalDigits(0);
+		MaxHealthLabel->SetText(FText::AsNumber(MaxHealth, &Opts));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("MaxHealthLabel is null"));
+	}
 }
+
+// 체력바 표시
+//float ASunnyEnemy::GetHealthPercent(float Health, float MaxHealth)
+//{
+//	// 실행창에 체력 메세지 출력하기
+//	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, FString::Printf(TEXT("Health: %0.f / MaxHealth : %0.f"), Health, MaxHealth));
+//
+//	return Health / MaxHealth;
+//}
 
 
 // 체력이 0 이면  죽음
 void ASunnyEnemy::OnDie()
 {
+	UE_LOG(LogTemp, Warning, TEXT("뚝배기!!"));
 	bDie = true;
 	// 머리 날리기
 	HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
@@ -137,6 +213,15 @@ void ASunnyEnemy::OnDie()
 	SetActorTickEnabled(false);
 	EnemyMove->StopMovementImmediately();
 	ClearFIreTimer();
+
+	// 실행창에 상태 메세지 출력하기
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan,TEXT("Enemy 격추 효과"));
+
+	if (bDie)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("위젯 꺼짐"));
+		HealthWidgetComp->SetVisibility(false);
+	}
 }
 
 // Enemy Delete

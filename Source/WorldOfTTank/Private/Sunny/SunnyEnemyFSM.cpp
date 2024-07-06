@@ -19,16 +19,20 @@
 // Sets default values for this component's properties
 USunnyEnemyFSM::USunnyEnemyFSM()
 {
+	
+	// 초기화 시 Null 포인터 접근을 방지하기 위해 Owner 확인
+		if (GetOwner() == nullptr)
+		{
+			UE_LOG(LogTemp, Error, TEXT("USunnyEnemyFSM constructor called with null owner!"));
+			return;
+		}
+
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-}
 
+	UE_LOG(LogTemp, Warning, TEXT("USunnyEnemyFSM created for %s"), *GetOwner()->GetName());
 
-// Called when the game starts
-void USunnyEnemyFSM::BeginPlay()
-{
-	Super::BeginPlay();
 
 	// 월드에서 APlayerTank 타깃 찾아오기
 	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerTank::StaticClass());
@@ -39,7 +43,14 @@ void USunnyEnemyFSM::BeginPlay()
 
 	// AAiController 할당
 	Ai = Cast<AAIController>(Me->GetController());
-	
+}
+
+
+
+// Called when the game starts
+void USunnyEnemyFSM::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 
@@ -49,8 +60,8 @@ void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// 실행창에 상태 메세지 출력하기
-	FString logMsg = UEnum::GetValueAsString(EnemyState);
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
+	//FString logMsg = UEnum::GetValueAsString(EnemyState);
+	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
 	switch (EnemyState)
 	{
@@ -97,21 +108,33 @@ void USunnyEnemyFSM::MoveState()
 {
 	FVector destination;
 
-	// 1. 타깃 목적지가 필요하다
+	// 타깃이 존재하는지 확인
 	if (Target)
 	{
 		destination = Target->GetActorLocation();
 	}
+	else
+	{
+		// 타깃이 없다면 Idle 상태로 전환
+		EnemyState = EEnemyState::Idle;
+		return;
+	}
 
-	// 2. 방향이 필요하다
+	// 방향 벡터 계산
 	FVector dir = destination - Me->GetActorLocation();
-	// 3. 방향으로 이동하고 싶다
-	//Me->AddMovementInput(dir.GetSafeNormal());
-	//Ai->MoveToLocation(destination);
 
 
 	// NavigationSystem 객체 얻어오기
-	auto ns = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	//auto ns = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+
+	auto ns = UNavigationSystemV1::GetCurrent(GetWorld());
+	if (!ns)
+	{
+		UE_LOG(LogTemp, Error, TEXT("NavigationSystem is null in USunnyEnemyFSM::MoveState"));
+		return;
+	}
+
+
 	// 목적지 길 찾기 경로 데이터 검색
 	FPathFindingQuery query;
 	FAIMoveRequest req;
@@ -130,7 +153,6 @@ void USunnyEnemyFSM::MoveState()
 		
 		// 타깃쪽으로 이동
 		Ai->MoveToLocation(destination);
-
 	}
 	else
 	{
@@ -231,8 +253,17 @@ void USunnyEnemyFSM::DamageState()
 // 죽음 상태
 void USunnyEnemyFSM::DieState() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("Die!!!!"));
-	Me->OnDie();
+	UE_LOG(LogTemp, Warning, TEXT("Entering DieState for %s"), *Me->GetName());
+
+	if (Me)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnDie() 호출"));
+		Me->OnDie();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Me is null in DieState"));
+	}
 
 	// Tick Enabled
 	SetComponentTickEnabled(false);

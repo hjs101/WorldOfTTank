@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "HJS/AITankController_1.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -8,7 +9,6 @@
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "NavigationData.h"
-#include "HJS/AITankController_1.h"
 #include "HJS/AITankCPU_1.h"
 AAITankController_1::AAITankController_1()
 {

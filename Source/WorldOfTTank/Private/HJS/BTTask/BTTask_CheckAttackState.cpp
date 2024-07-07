@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "HJS/BTTask/BTTask_CheckAttackState.h"
 #include "HJS/AITankCPU_1.h"
 #include "AIController.h"
-#include "HJS/BTTask/BTTask_CheckAttackState.h"
 
 UBTTask_CheckAttackState::UBTTask_CheckAttackState()
 {

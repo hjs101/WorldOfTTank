@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "HJS/BTTask/BTTask_SearchForTargets.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "HJS/AITankCPU_1.h"
 #include "Sunny/SunnyEnemy.h"
 #include "Perception/PawnSensingComponent.h"
-#include "HJS/BTTask/BTTask_SearchForTargets.h"
 
 UBTTask_SearchForTargets::UBTTask_SearchForTargets()
 {

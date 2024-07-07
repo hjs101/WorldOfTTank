@@ -13,10 +13,6 @@ APlayerTank::APlayerTank()
 {
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArmComp->SetupAttachment(RootComponent);
-	// SpringArmComp->bDoCollisionTest = true;
-	// SpringArmComp->bInheritPitch = true;
-	// SpringArmComp->bInheritYaw = true;
-	// SpringArmComp->bInheritPitch = true;
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->TargetArmLength = 1000;
 
@@ -44,15 +40,7 @@ void APlayerTank::Tick(float DeltaSeconds)
 
 	if (CamDist[CamIdx] != SpringArmComp->TargetArmLength)
 		LerpZoom(DeltaSeconds);
-	LerpAim(DeltaSeconds);
-	FVector2D NowScreenPosition;
-	FVector2D TargetScreenPosition;
-	FVector CurrentHitPoint = GetCurrentHitPoint();
-	ControllerRef->ProjectWorldLocationToScreen(ChasingAim->GetComponentLocation(), NowScreenPosition);
-	ControllerRef->ProjectWorldLocationToScreen(CurrentHitPoint, TargetScreenPosition);
-	FVector2D ans = TargetScreenPosition - NowScreenPosition;
-	// UE_LOG(LogTemp, Warning, TEXT("%f %f, %f %f"), TargetScreenPosition.X, TargetScreenPosition.Y, NowScreenPosition.X, NowScreenPosition.Y);
-	UE_LOG(LogTemp, Warning, TEXT("%f %f"), ans.X, ans.Y);
+	ChasingAim->SetWorldLocation(GetCurrentHitPoint());
 }
 
 // Called to bind functionality to input
@@ -121,13 +109,6 @@ void APlayerTank::LerpAim(float DeltaSeconds)
 		10);
 	ChasingAim->SetWorldLocation(ans);
 
-	// FVector CurrentVector = FVector(0.0f, 0.0f, 0.0f);
-	// FVector TargetVector = FVector(100.0f, 100.0f, 100.0f);
-	// float DeltaTime = GetWorld()->GetDeltaSeconds();
-	// float InterpSpeed = 5.0f;
-	//
-	// FVector Result = FMath::VInterpTo(CurrentVector, TargetVector, DeltaTime, InterpSpeed);
-
 }
 
 
@@ -155,7 +136,6 @@ void APlayerTank::ChangeToTps()
 		(CurrentAim = TStrongObjectPtr<UUserWidget>(NewWidget))->AddToViewport();
 }
 
-
 void APlayerTank::ZoomIn()
 {
 	if (CamIdx == 0 && CameraComp->FieldOfView == 80)
@@ -164,7 +144,6 @@ void APlayerTank::ZoomIn()
 		FVector Target = GetCursorTarget();
 		SpringArmComp->TargetArmLength = 0;
 		SpringArmComp->SetupAttachment(ProjectileSpawnPoint);
-		SpringArmComp->SetRelativeLocation(FVector());
 		CameraComp->SetWorldRotation((Target - CameraComp->GetComponentLocation()).Rotation());
 		ChangeToFps();
 	}

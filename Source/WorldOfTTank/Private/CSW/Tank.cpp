@@ -49,8 +49,6 @@ ATank::ATank()
 void ATank::BeginPlay()
 {
 	Super::BeginPlay();
-
-	SetPlayerTankDamage(80);
 }
 
 // Called every frame
@@ -80,10 +78,10 @@ FVector ATank::GetCurrentHitPoint() const
 
 void ATank::Move(float Value)
 {
-	MoveState = (Value >= 0);
+	MoveState = Value;
 
-	if (Speed < 500)
-		Speed += 1;
+	if (Speed < MaxSpeed)
+		Speed += 3;
 	LeftWheelMesh->SetWorldLocation(LeftWheelMesh->GetComponentLocation() + Value * LeftWheelMesh->GetForwardVector() * Speed * UGameplayStatics::GetWorldDeltaSeconds(this));
 	RightWheelMesh->SetWorldLocation(RightWheelMesh->GetComponentLocation() + Value * RightWheelMesh->GetForwardVector() * Speed * UGameplayStatics::GetWorldDeltaSeconds(this));
 }
@@ -92,9 +90,17 @@ void ATank::Turn(float Value)
 {
 	FRotator DeltaRotation = FRotator::ZeroRotator;
 	
-	if (!MoveState)
+	if (MoveState < 0) 
 		Value *= -1;
+	else
+		Value *= 1;
 	DeltaRotation.Yaw = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * TurnRate;
+
+	if (MoveState == 0 && Value != 0)
+	{
+		LeftWheelMesh->SetWorldLocation(LeftWheelMesh->GetComponentLocation() + LeftWheelMesh->GetForwardVector() * 70 * UGameplayStatics::GetWorldDeltaSeconds(this));
+		RightWheelMesh->SetWorldLocation(RightWheelMesh->GetComponentLocation() + RightWheelMesh->GetForwardVector() * 70 * UGameplayStatics::GetWorldDeltaSeconds(this));
+	}
 	LeftWheelMesh->AddLocalRotation(DeltaRotation, true);
 	RightWheelMesh->AddLocalRotation(DeltaRotation, true);
 }
@@ -108,7 +114,7 @@ void ATank::RotateTurret(float Value)
 				Value,
 				0),
 			UGameplayStatics::GetWorldDeltaSeconds(this),
-			35)
+			50)
 			);
 }
 
@@ -116,8 +122,8 @@ float	LimitBarrelPitch(float Value)
 {
 	if (30 < Value)
 		return 30;
-	if (-10 > Value)
-		return -10;
+	if (-5 > Value)
+		return -5;
 	return Value;
 }
 
@@ -151,6 +157,7 @@ void ATank::Fire()
 void ATank::Brake()
 {
 	Speed = 150;
+	MoveState = 0;
 }
 
 void ATank::SetPlayerTankDamage(float Damage)

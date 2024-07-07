@@ -3,14 +3,9 @@
 
 #include "CSW/Tank.h"
 
-#include "CollisionDebugDrawingPublic.h"
-#include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "CSW/Projectile.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
-#include "Math/UnitConversion.h"
 
 // Sets default values
 ATank::ATank()

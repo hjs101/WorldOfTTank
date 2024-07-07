@@ -21,6 +21,10 @@ APlayerTank::APlayerTank()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->FieldOfView = 80;
+	
+	FovCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FovCamera"));
+	FovCameraComp->SetupAttachment(SpringArmComp);
+	FovCameraComp->bUsePawnControlRotation = true;
 
 	ChasingAim = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChasingAim"));
 	ChasingAim->SetupAttachment(RootComponent);
@@ -32,6 +36,7 @@ void APlayerTank::BeginPlay()
 	Super::BeginPlay();
 
 	ChangeToTps();
+	ControllerRef = UGameplayStatics::GetPlayerController(this, 0);
 }
 
 
@@ -68,17 +73,24 @@ void	APlayerTank::LookRightLeft(float Value)
 	RotateTurret(CameraComp->GetComponentRotation().Yaw);
 }
 
+FVector APlayerTank::GetCursorTarget() const
+{
+	FVector Start = CameraComp->GetComponentLocation();
+	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
+	FHitResult	Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start , End, ECollisionChannel::ECC_GameTraceChannel1))
+		return Hit.Location;
+	return FVector::ZeroVector;
+}
+
 void APlayerTank::LookUpDown(float Value)
 {
 	if ((CameraComp->GetComponentRotation().Pitch >= 30 && Value < 0) ||
 		(CameraComp->GetComponentRotation().Pitch <= -50) && Value > 0)
 		return ;
 	AddControllerPitchInput(Value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
-	FVector Start = CameraComp->GetComponentLocation();
-	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
-	FHitResult	Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start , End, ECollisionChannel::ECC_GameTraceChannel1))
-		RotateBarrel(FVector(Hit.Location.X, Hit.Location.Y, Hit.Location.Z));
+	FVector Target = GetCursorTarget();
+	RotateBarrel(Target);
 }
 
 void APlayerTank::LerpZoom(float DeltaSeconds)
@@ -123,6 +135,11 @@ void APlayerTank::ZoomIn()
 	if (CamIdx == 0 && CameraComp->FieldOfView == 80)
 	{
 		CameraComp->FieldOfView /= 2;
+		FVector Target = GetCursorTarget();
+		SpringArmComp->TargetArmLength = 0;
+		SpringArmComp->SetupAttachment(ProjectileSpawnPoint);
+		SpringArmComp->SetRelativeLocation(FVector());
+		CameraComp->SetWorldRotation((Target - CameraComp->GetComponentLocation()).Rotation());
 		ChangeToFps();
 	}
 	else if (CamIdx == 0 && CameraComp->FieldOfView > 5)
@@ -138,6 +155,12 @@ void APlayerTank::ZoomOut()
 	else if (CamIdx == 0 && CameraComp->FieldOfView == 40)
 	{
 		CameraComp->FieldOfView *= 2;
+		SpringArmComp->SetupAttachment(RootComponent);
+		SpringArmComp->TargetArmLength = -200;
+		
+		FVector Target = GetCursorTarget();
+		SpringArmComp->SetRelativeLocation(FVector(0, 0, 200));
+		SpringArmComp->SetRelativeRotation((Target - SpringArmComp->GetComponentLocation()).Rotation());
 		ChangeToTps();
 	}
 	else if (CamIdx < 5)

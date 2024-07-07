@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "HJS/BTTask/BTTask_SetTargetPriority.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "HJS/AITankCPU_1.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "HJS/BTTask/BTTask_SetTargetPriority.h"
 
 UBTTask_SetTargetPriority::UBTTask_SetTargetPriority()
 {

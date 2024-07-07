@@ -1,6 +1,6 @@
+#include "HJS/BTTask/BTTask_CheckForNearbyObstacle.h"
 #include "HJS/AITankCPU_1.h"
 #include "AIController.h"
-#include "HJS/BTTask/BTTask_CheckForNearbyObstacle.h"
 
 UBTTask_CheckForNearbyObstacle::UBTTask_CheckForNearbyObstacle()
 {

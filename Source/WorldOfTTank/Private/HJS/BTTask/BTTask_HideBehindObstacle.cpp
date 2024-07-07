@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "HJS/BTTask/BTTask_HideBehindObstacle.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "HJS/AITankController_1.h"
 #include "HJS/AITankCPU_1.h"
@@ -7,7 +8,6 @@
 #include "GameFramework/Actor.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "NavigationSystem.h"
-#include "HJS/BTTask/BTTask_HideBehindObstacle.h"
 
 UBTTask_HideBehindObstacle::UBTTask_HideBehindObstacle()
 {

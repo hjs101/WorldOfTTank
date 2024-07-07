@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "GameFrameWork/ProjectileMovementComponent.h"
 #include "HJS/AIProjecttile_1.h"
+#include "GameFrameWork/ProjectileMovementComponent.h"
 #include "HJS/AITankCPU_1.h"
 #include "HJS/Obstacle.h"
 #include "CSW/Tank.h"

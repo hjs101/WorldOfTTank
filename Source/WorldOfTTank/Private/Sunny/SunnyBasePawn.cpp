@@ -20,7 +20,7 @@ ASunnyBasePawn::ASunnyBasePawn()
 	RootComponent = CapsuleComp;
 
 	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body Mesh"));
-	BodyMesh->SetupAttachment(CapsuleComp);
+	BodyMesh->SetupAttachment(RootComponent);
 
 	HeadMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Head Mesh"));
 	HeadMesh->SetupAttachment(BodyMesh);

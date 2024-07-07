@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+#include "HJS/AITank_1.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Components/CapsuleComponent.h"
-#include "HJS/AITank_1.h"
 #include "HJS/AIProjecttile_1.h"
 // Sets default values
 AAITank_1::AAITank_1()
@@ -160,7 +160,7 @@ float AAITank_1::CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, f
 
 	Term1 = sqrt(Term1);
 	float Term2 = Gravity * TargetDistance;
-
+	
 	float Angle1 = atan((LaunchSpeedSquared + Term1) / Term2);
 	float Angle2 = atan((LaunchSpeedSquared - Term1) / Term2);
 

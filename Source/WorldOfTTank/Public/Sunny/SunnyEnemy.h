@@ -6,13 +6,13 @@
 #include "Sunny/SunnyBasePawn.h"
 #include "SunnyEnemy.generated.h"
 
-class UWidgetComponent;
+/*class UWidgetComponent;
 class UProgressBar;
 class UTextBlock;
 class APlayerTank;
 class USunnyEnemyFSM;
 class UFloatingPawnMovement;
-class UNiagaraSystem;
+class UNiagaraSystem;*/
 
 
 UCLASS()

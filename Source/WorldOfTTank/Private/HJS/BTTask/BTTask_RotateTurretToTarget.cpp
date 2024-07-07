@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "HJS/BTTask/BTTask_RotateTurretToTarget.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "HJS/AITankCPU_1.h"
-#include "HJS/BTTask/BTTask_RotateTurretToTarget.h"
 
 UBTTask_RotateTurretToTarget::UBTTask_RotateTurretToTarget()
 {

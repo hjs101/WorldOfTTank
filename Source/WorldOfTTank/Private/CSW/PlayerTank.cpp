@@ -3,8 +3,6 @@
 
 #include "CSW/PlayerTank.h"
 
-#include "CollisionDebugDrawingPublic.h"
-#include "FrameTypes.h"
 #include "Camera/CameraComponent.h"
 #include "Components/WidgetComponent.h"
 #include "CSW/PlayerUserWidjet.h"
@@ -15,6 +13,10 @@ APlayerTank::APlayerTank()
 {
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArmComp->SetupAttachment(RootComponent);
+	// SpringArmComp->bDoCollisionTest = true;
+	// SpringArmComp->bInheritPitch = true;
+	// SpringArmComp->bInheritYaw = true;
+	// SpringArmComp->bInheritPitch = true;
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->TargetArmLength = 1000;
 
@@ -22,12 +24,8 @@ APlayerTank::APlayerTank()
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->FieldOfView = 80;
 	
-	FovCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FovCamera"));
-	FovCameraComp->SetupAttachment(SpringArmComp);
-	FovCameraComp->bUsePawnControlRotation = true;
-
 	ChasingAim = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChasingAim"));
-	ChasingAim->SetupAttachment(RootComponent);
+	ChasingAim->SetupAttachment(SpringArmComp);
 }
 
 
@@ -36,7 +34,7 @@ void APlayerTank::BeginPlay()
 	Super::BeginPlay();
 
 	ChangeToTps();
-	ControllerRef = UGameplayStatics::GetPlayerController(this, 0);
+	ControllerRef = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 }
 
 
@@ -46,7 +44,15 @@ void APlayerTank::Tick(float DeltaSeconds)
 
 	if (CamDist[CamIdx] != SpringArmComp->TargetArmLength)
 		LerpZoom(DeltaSeconds);
-	ChasingAim->SetWorldLocation(GetCurrentHitPoint());
+	LerpAim(DeltaSeconds);
+	FVector2D NowScreenPosition;
+	FVector2D TargetScreenPosition;
+	FVector CurrentHitPoint = GetCurrentHitPoint();
+	ControllerRef->ProjectWorldLocationToScreen(ChasingAim->GetComponentLocation(), NowScreenPosition);
+	ControllerRef->ProjectWorldLocationToScreen(CurrentHitPoint, TargetScreenPosition);
+	FVector2D ans = TargetScreenPosition - NowScreenPosition;
+	// UE_LOG(LogTemp, Warning, TEXT("%f %f, %f %f"), TargetScreenPosition.X, TargetScreenPosition.Y, NowScreenPosition.X, NowScreenPosition.Y);
+	UE_LOG(LogTemp, Warning, TEXT("%f %f"), ans.X, ans.Y);
 }
 
 // Called to bind functionality to input
@@ -104,6 +110,26 @@ void APlayerTank::LerpZoom(float DeltaSeconds)
 	if (pre == SpringArmComp->TargetArmLength)
 		SpringArmComp->TargetArmLength = CamDist[CamIdx];
 }
+
+void APlayerTank::LerpAim(float DeltaSeconds)
+{
+	FVector pre = ChasingAim->GetComponentLocation();
+	FVector target = GetCurrentHitPoint();
+	FVector ans = FMath::VInterpTo(pre,
+		target,
+		DeltaSeconds,
+		10);
+	ChasingAim->SetWorldLocation(ans);
+
+	// FVector CurrentVector = FVector(0.0f, 0.0f, 0.0f);
+	// FVector TargetVector = FVector(100.0f, 100.0f, 100.0f);
+	// float DeltaTime = GetWorld()->GetDeltaSeconds();
+	// float InterpSpeed = 5.0f;
+	//
+	// FVector Result = FMath::VInterpTo(CurrentVector, TargetVector, DeltaTime, InterpSpeed);
+
+}
+
 
 void APlayerTank::ChangeToFps()
 {

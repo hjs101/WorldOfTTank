@@ -4,8 +4,8 @@
 #include "CSW/Tank.h"
 
 #include "CSW/Projectile.h"
-#include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 // Sets default values
 ATank::ATank()
@@ -23,17 +23,26 @@ ATank::ATank()
 	BarrelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Barrel Mesh"));
 	BarrelMesh->SetupAttachment(TurretMesh);
 
-	LeftWheelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftWhell Mesh"));
+	LeftWheelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftWheel Mesh"));
 	LeftWheelMesh->SetupAttachment(BaseMesh);
+	LeftWheelMesh->SetSimulatePhysics(true);
 
-	RightWheelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RigthWhell Mesh"));
+	RightWheelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightWheel Mesh"));
 	RightWheelMesh->SetupAttachment(BaseMesh);
+	RightWheelMesh->SetSimulatePhysics(true);
+
+	RightWheelSuspension = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("RightWheel Suspension"));
+	RightWheelSuspension->SetupAttachment(RootComponent);
+	RightWheelSuspension->ComponentName1.ComponentName = "Base Mesh";
+	RightWheelSuspension->ComponentName2.ComponentName = "RightWheel Mesh";
+	
+	LeftWheelSuspension = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("LeftWheel Suspension"));
+	LeftWheelSuspension->SetupAttachment(RootComponent);
+	LeftWheelSuspension->ComponentName1.ComponentName = "Base Mesh";
+	LeftWheelSuspension->ComponentName2.ComponentName = "LeftWheel Mesh";
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
 	ProjectileSpawnPoint->SetupAttachment(BarrelMesh);
-
-	MoveComp = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("Move Comp"));
-	MoveComp->SetUpdatedComponent(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -72,7 +81,11 @@ FVector ATank::GetCurrentHitPoint() const
 void ATank::Move(float Value)
 {
 	MoveState = (Value >= 0);
-	MoveComp->AddInputVector(GetActorForwardVector() * Value);
+
+	if (Speed < 500)
+		Speed += 1;
+	LeftWheelMesh->SetWorldLocation(LeftWheelMesh->GetComponentLocation() + Value * LeftWheelMesh->GetForwardVector() * Speed * UGameplayStatics::GetWorldDeltaSeconds(this));
+	RightWheelMesh->SetWorldLocation(RightWheelMesh->GetComponentLocation() + Value * RightWheelMesh->GetForwardVector() * Speed * UGameplayStatics::GetWorldDeltaSeconds(this));
 }
 
 void ATank::Turn(float Value)
@@ -82,7 +95,8 @@ void ATank::Turn(float Value)
 	if (!MoveState)
 		Value *= -1;
 	DeltaRotation.Yaw = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * TurnRate;
-	AddActorLocalRotation(DeltaRotation, true);
+	LeftWheelMesh->AddLocalRotation(DeltaRotation, true);
+	RightWheelMesh->AddLocalRotation(DeltaRotation, true);
 }
 void ATank::RotateTurret(float Value)
 {
@@ -136,7 +150,7 @@ void ATank::Fire()
 
 void ATank::Brake()
 {
-	MoveComp->Velocity /= 2;
+	Speed = 150;
 }
 
 void ATank::SetPlayerTankDamage(float Damage)

@@ -41,13 +41,17 @@ protected:
 	UStaticMeshComponent* RightWheelMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
+	class UPhysicsConstraintComponent* LeftWheelSuspension;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
+	class UPhysicsConstraintComponent* RightWheelSuspension;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
 	USceneComponent* ProjectileSpawnPoint;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Components", meta=(AllowPrivateAccess="true"))
-	class UFloatingPawnMovement* MoveComp;
-	
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float Speed = 150;
+	const float MaxSpeed = 500;
 	
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float TurnRate = 30;

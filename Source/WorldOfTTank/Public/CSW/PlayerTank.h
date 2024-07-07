@@ -38,9 +38,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	class UCameraComponent* CameraComp;
 
-	UPROPERTY(VisibleAnywhere, Category="Components")
-	class UCameraComponent* FovCameraComp;
-	
 	UPROPERTY(EditAnywhere, Category="Look")
 	float	ViewRotationRate = 100;
 
@@ -51,6 +48,7 @@ private:
 	int		CamIdx = 5;
 
 	void LerpZoom(float DeltaSeconds);
+	void LerpAim(float DeltaSeconds);
 
 	UPROPERTY(EditDefaultsOnly)
 	class UWidgetComponent* ChasingAim;

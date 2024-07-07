@@ -24,6 +24,7 @@ public:
 private:
 	void	LookRightLeft(float Value);
 	void	LookUpDown(float Value);
+	FVector	GetCursorTarget() const;
 
 	bool	MoveState = true;
 	
@@ -36,12 +37,15 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	class UCameraComponent* CameraComp;
+
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	class UCameraComponent* FovCameraComp;
 	
 	UPROPERTY(EditAnywhere, Category="Look")
 	float	ViewRotationRate = 100;
 
 	UPROPERTY(VisibleAnywhere)
-	AController* ControllerRef;
+	APlayerController* ControllerRef;
 
 	float	CamDist[6] = {-200, 100, 400, 700, 1000, 1300};
 	int		CamIdx = 5;

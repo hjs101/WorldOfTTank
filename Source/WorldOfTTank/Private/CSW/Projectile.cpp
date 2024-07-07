@@ -98,6 +98,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	if (AITank != nullptr) 
 	{
 		AITank->HealthDown(50);
+		AITank->SetBlackBoardTarget(OtherActor);
 	}
 
 	// SunnyEnemy일때

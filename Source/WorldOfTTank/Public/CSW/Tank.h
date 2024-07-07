@@ -51,12 +51,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float Speed = 150;
-	const float MaxSpeed = 500;
+	const float MaxSpeed = 400;
 	
 	UPROPERTY(EditAnywhere, Category="Movement")
-	float TurnRate = 30;
+	float TurnRate = 70;
 
-	bool	MoveState = true;
+	int MoveState = 0;
 public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> ProjectileClass;

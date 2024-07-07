@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "TimerManager.h"
 #include "HJS/FractureWall.h"
+#include "TimerManager.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
 
 // Sets default values

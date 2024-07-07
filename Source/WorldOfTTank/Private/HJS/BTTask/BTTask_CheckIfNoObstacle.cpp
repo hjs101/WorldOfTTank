@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "HJS/BTTask/BTTask_CheckIfNoObstacle.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "HJS/AITankCPU_1.h"
-#include "HJS/BTTask/BTTask_CheckIfNoObstacle.h"
 
 UBTTask_CheckIfNoObstacle::UBTTask_CheckIfNoObstacle()
 {

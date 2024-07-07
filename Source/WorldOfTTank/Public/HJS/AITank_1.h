@@ -51,7 +51,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* WheelMesh_1;
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* WheelMesh_2;\
+	UStaticMeshComponent* WheelMesh_2;
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UCapsuleComponent* CapsuleComp;
 

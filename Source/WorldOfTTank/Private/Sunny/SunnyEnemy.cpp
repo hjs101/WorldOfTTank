@@ -20,6 +20,11 @@
 #include "Components/progressBar.h"
 #include "Components/TextBlock.h"
 
+#include "Components/CapsuleComponent.h"
+
+
+
+
 
 
 ASunnyEnemy::ASunnyEnemy()
@@ -223,6 +228,11 @@ void ASunnyEnemy::OnDie()
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("위젯 꺼짐"));
 		HealthWidgetComp->SetVisibility(false);
+
+		// 죽는 순간  내비에 탐지
+		BodyMesh->SetCanEverAffectNavigation(true);
+		HeadMesh->SetCanEverAffectNavigation(true);
+		CapsuleComp->SetSimulatePhysics(false);
 	}
 
 	PrimaryActorTick.SetTickFunctionEnable(false);
@@ -266,7 +276,20 @@ void ASunnyEnemy::SetBeamLocation()
 	if (bHit)
 	{
 		End = HitResult.Location;
+
+		// Check if the hit actor is the player
+		if (HitResult.GetActor()->IsA(APlayerTank::StaticClass()))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("위젯 켜짐"));
+			HealthWidgetComp->SetVisibility(true);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("위젯 꺼짐"));
+			HealthWidgetComp->SetVisibility(false);
+		}
 	}
+
 
 	//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1, 0, 1);
 

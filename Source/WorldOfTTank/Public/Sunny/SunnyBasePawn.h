@@ -33,18 +33,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* BodyMesh;
 
-private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UCapsuleComponent* CapsuleComp;
 
-	
 
-	
-
+private:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class ASunnyProjectile> ProjectileClass;
 
-
-	//void RotateTank(FVector LookAtTarget);
 };

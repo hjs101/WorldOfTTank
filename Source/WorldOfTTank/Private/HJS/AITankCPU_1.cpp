@@ -626,6 +626,11 @@ void AAITankCPU_1::CheckWidgetVisibility()
 {
 	FVector Start = GetActorLocation();
 	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if(Player == nullptr)
+	{
+		HpBar->SetVisibility(false);
+		return;
+	}
 	FVector End = Player->GetActorLocation();
 	
 	FHitResult HitResult;

@@ -50,7 +50,7 @@ private:
     UMaterialInstanceDynamic* DynamicMaterial;
 	// FadeOut 시간 설정
     UPROPERTY(EditAnywhere)
-    float FadeDuration = 5.f;
+    float FadeDuration = 3.f;
 	// 현재 진행 시간
 	float CurrentTime = 0.f;
 	UPROPERTY()

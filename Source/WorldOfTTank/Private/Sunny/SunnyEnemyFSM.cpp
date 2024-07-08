@@ -60,8 +60,8 @@ void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// 실행창에 상태 메세지 출력하기
-	FString logMsg = UEnum::GetValueAsString(EnemyState);
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
+	//FString logMsg = UEnum::GetValueAsString(EnemyState);
+	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
 	switch (EnemyState)
 	{

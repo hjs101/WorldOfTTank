@@ -72,7 +72,7 @@ FVector APlayerTank::GetCursorTarget() const
 	FVector Start = CameraComp->GetComponentLocation();
 	FVector End = CameraComp->GetComponentLocation() + CameraComp->GetComponentRotation().Vector() * 15000000;
 	FHitResult	Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start , End, ECollisionChannel::ECC_GameTraceChannel1))
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start , End, ECollisionChannel::ECC_WorldStatic))
 		return Hit.Location;
 	return FVector::ZeroVector;
 }

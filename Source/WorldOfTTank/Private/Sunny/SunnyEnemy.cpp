@@ -21,6 +21,7 @@
 #include "Components/TextBlock.h"
 
 #include "Components/CapsuleComponent.h"
+#include "PaperSpriteComponent.h"
 
 
 
@@ -40,6 +41,10 @@ ASunnyEnemy::ASunnyEnemy()
 	HealthWidgetComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 	HealthComp = CreateDefaultSubobject<USunnyHealth>(TEXT("HealthComp"));
+
+	// Enemy Indicator 컴포넌트 추가
+	EnemyIndicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Enemy Indicator"));
+	EnemyIndicator->SetupAttachment(RootComponent);
 }
 
 void ASunnyEnemy::Tick(float DeltaTime)
@@ -196,15 +201,6 @@ void ASunnyEnemy::SetHealthPercent(float Health, float MaxHealth)
 	}
 }
 
-// 체력바 표시
-//float ASunnyEnemy::GetHealthPercent(float Health, float MaxHealth)
-//{
-//	// 실행창에 체력 메세지 출력하기
-//	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, FString::Printf(TEXT("Health: %0.f / MaxHealth : %0.f"), Health, MaxHealth));
-//
-//	return Health / MaxHealth;
-//}
-
 
 // 체력이 0 이면  죽음
 void ASunnyEnemy::OnDie()
@@ -226,8 +222,9 @@ void ASunnyEnemy::OnDie()
 
 	if (bDie)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("위젯 꺼짐"));
+		// 체력바, 화살표 끄기
 		HealthWidgetComp->SetVisibility(false);
+		EnemyIndicator->SetVisibility(false);
 
 		// 죽는 순간  내비에 탐지
 		BodyMesh->SetCanEverAffectNavigation(true);

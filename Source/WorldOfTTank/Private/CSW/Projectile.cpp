@@ -23,13 +23,18 @@ AProjectile::AProjectile()
 	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Move Comp"));
 	MoveComp->InitialSpeed = 13000;
 	MoveComp->MaxSpeed = 13000;
-	
-    ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("/Script/Engine.Material'/Game/HJS/Materials/DecalMaterial.DecalMaterial'"));
-    if (TempMat.Succeeded())
-        DecalMaterial = TempMat.Object;
-	static ConstructorHelpers::FClassFinder<UObject> MasterFieldBPClass(TEXT("/Script/Engine.Blueprint'/Game/HJS/Blueprints/Actors/FS_HJSBombField_Prototype.FS_HJSBombField_Prototype'"));
-	if (MasterFieldBPClass.Succeeded())
-		MasterFieldClass = MasterFieldBPClass.Class;
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> TempMesh(TEXT("/Script/Engine.StaticMesh'/Game/CSW/Asset/SM_Projectile.SM_Projectile'"));
+	if(TempMesh.Succeeded())
+	{
+		ProjectileMesh->SetStaticMesh(TempMesh.Object);
+		ProjectileMesh->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
+	}
+	// ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("/Script/Engine.Material'/Game/CSW/M_Metal_Steel.M_Metal_Steel'"));
+	// if (TempMat.Succeeded())
+	// {
+	// 	ProjectileMesh->SetMaterial(0, TempMat.Object);
+	// }
 }
 
 // Called when the game starts or when spawned
@@ -118,6 +123,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	}
 
 
-	Destroy();
+	// Destroy();
 }
 

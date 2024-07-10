@@ -31,7 +31,7 @@ public:
 	bool IsDie();
 
 	UFUNCTION()
-	FVector GetHeadMeshLocation();
+	FVector GetHeadLocation();
 
 	// 특정 액터 방향으로 라인트레이싱 사용 함수
 	UFUNCTION()

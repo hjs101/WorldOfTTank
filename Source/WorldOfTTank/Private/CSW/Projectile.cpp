@@ -10,6 +10,7 @@
 #include "GameFramework/DamageType.h"
 #include "HJS/FractureWall.h"
 #include "HJS/Obstacle.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -30,11 +31,16 @@ AProjectile::AProjectile()
 		ProjectileMesh->SetStaticMesh(TempMesh.Object);
 		ProjectileMesh->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
 	}
-	// ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("/Script/Engine.Material'/Game/CSW/M_Metal_Steel.M_Metal_Steel'"));
-	// if (TempMat.Succeeded())
-	// {
-	// 	ProjectileMesh->SetMaterial(0, TempMat.Object);
-	// }
+	Explosion = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Explosion"));
+	Explosion->SetupAttachment(RootComponent);
+	Explosion->bAutoActivate = false;
+	Explosion->SetActive(false);
+	ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("/Script/Engine.ParticleSystem'/Game/HJS/Realistic_Starter_VFX_Pack_Vol2/Particles/Explosion/P_Explosion_Big_B.P_Explosion_Big_B'"));
+	if (ParticleAsset.Succeeded())
+	{
+		Explosion->SetTemplate(ParticleAsset.Object);
+		Explosion->SetRelativeScale3D(FVector(5.f, 5.f, 5.f));
+	}
 }
 
 // Called when the game starts or when spawned
@@ -81,6 +87,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	//}
 
 	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("적 타격 효과"));
+	Explosion->Activate();
 	// 부서지는 장애물일때
 	AFractureWall* FractureComp = Cast<AFractureWall>(OtherActor);
 

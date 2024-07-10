@@ -21,6 +21,7 @@ ATankVehicle::ATankVehicle()
 	if (ParticleAsset.Succeeded())
 	{
 		GunFire->SetTemplate(ParticleAsset.Object);
+		GunFire->bAutoActivate = false;
 	}
 	GunFire->SetupAttachment(ProjectileSpawnPoint);
 }

@@ -8,7 +8,7 @@ public class WorldOfTTank : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "NavigationSystem", "AIModule", "GeometryCollectionEngine", "Niagara" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "NavigationSystem", "AIModule", "GeometryCollectionEngine", "Niagara", "Paper2D"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

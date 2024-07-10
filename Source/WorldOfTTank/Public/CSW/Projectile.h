@@ -32,6 +32,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	class UProjectileMovementComponent* MoveComp;
 
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UParticleSystemComponent* Explosion;
+	
 	UFUNCTION()
 	void	OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	

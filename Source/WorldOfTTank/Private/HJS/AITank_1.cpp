@@ -4,76 +4,95 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Components/CapsuleComponent.h"
 #include "HJS/AIProjecttile_1.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "ChaosWheeledVehicleMovementComponent.h"
+#include "HJS/AITANKAnim.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Engine/SkeletalMeshSocket.h"
 // Sets default values
 AAITank_1::AAITank_1()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Comp"));
-	SetRootComponent(CapsuleComp);
-	// 스태틱 메시 컴포넌트(탱크) 생성
-	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AITank_1 Body"));
-	BodyMesh->SetupAttachment(RootComponent);
-	WheelMesh_1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AITank_1 Wheel1"));
-	WheelMesh_1->SetupAttachment(RootComponent);
-	WheelMesh_2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AITank_1 Wheel2"));
-	WheelMesh_2->SetupAttachment(RootComponent);
-	HeadMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AITank_1 Head"));
-	HeadMesh->SetupAttachment(RootComponent);
-	BarrelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AITank_1 Barrel"));
-	BarrelMesh->SetupAttachment(HeadMesh);
+	SetRootComponent(GetMesh());
 
 	// 스폰 포인트 생성
 	ProjecttileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("AITank_1 Spawn Point"));
-	ProjecttileSpawnPoint->SetupAttachment(BarrelMesh);
+	ProjecttileSpawnPoint->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("gun_1_jntSocket"));
 
-	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("AITank_1 MovementComponent"));
-	MovementComponent->SetUpdatedComponent(RootComponent);
-
-	// Tank physics settings
-	if (CapsuleComp){
-		CapsuleComp->SetSimulatePhysics(true);
-		CapsuleComp->SetLinearDamping(1.0f); // 선형 감쇠
-		CapsuleComp->SetAngularDamping(1.0f); // 각 감쇠
-	}
 }
 
 // Called when the game starts or when spawned
 void AAITank_1::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	// Tank physics settings
+	BodyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
+	TracksMaterial = GetMesh()->CreateDynamicMaterialInstance(1);
 }
 
 // Called every frame
 void AAITank_1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	bStopTurn = (GetMesh()->GetPhysicsAngularVelocityInDegrees().Length() > 30);
+	SetSpeed();
 }
 
 void AAITank_1::Move(float value)
 {
+
+	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
+
+	if (VehicleMovement == nullptr)
+	{
+		UE_LOG(LogTemp,Error,TEXT("VehicleMovement is NULL"));
+	}
 	MoveState = value;
-	//if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent))
-	//{
-	//	MovementComponent->AddInputVector(GetActorForwardVector() * value);
-	//}
-	CapsuleComp->AddForce((GetActorForwardVector()*1000000.f*value));
+	
+	if (value > 0.f) {
+		VehicleMovement->SetThrottleInput(value);
+		VehicleMovement->SetBrakeInput(0.f);
+	}
+	else
+	{
+		VehicleMovement->SetThrottleInput(value);
+		VehicleMovement->SetBrakeInput(-value);
+	}
+	
 }
 
 void AAITank_1::BodyTurn(float value)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("BodyTurn!!"));
-	FRotator DeltaRotation = FRotator::ZeroRotator;
-	if (MoveState == -1) {
-		value = -1 * value;
-	}
+	
+	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
+	if (value != 0) {
+		if (bStopTurn)
+		{
+			VehicleYaw = FMath::Lerp(VehicleYaw, 0.f, 1.f);
+			VehicleMovement->SetYawInput(VehicleYaw);
+		}
+		else
+		{
+			if (FVector::DotProduct(GetMesh()->GetPhysicsLinearVelocity(), GetActorForwardVector()) < 0)
+			{
+				VehicleYaw = -value;
+			}else
+			{
+				VehicleYaw = value;
+			}
 
-	DeltaRotation.Yaw = value * TurnRate * UGameplayStatics::GetWorldDeltaSeconds(this);
-	AddActorLocalRotation(DeltaRotation, true);
-	if (MoveState == 0 && MovementComponent && (MovementComponent->UpdatedComponent == RootComponent))
+			VehicleMovement->SetYawInput(VehicleYaw);
+		}
+	}
+	if (value != 0 && MoveState == 0)
 	{
-		MovementComponent->AddInputVector(GetActorForwardVector() / 2 * abs(value));
+		Move(0.2f);
+	}
+	if(value == 0)
+	{
+		VehicleMovement->SetYawInput(0.f);
 	}
 }
 
@@ -87,27 +106,32 @@ void AAITank_1::Fire()
 	}
 }
 
-void AAITank_1::RotateTurret(FVector LookAtTarget)
+void AAITank_1::RotateTurret(FVector ToTarget)
 {
-	FVector ToTarget = LookAtTarget - HeadMesh->GetComponentLocation();
+	// To Target의 방향으로 돌려주면 되는데, 그 기준을 0으로 만들어야했음..
+	float ToAngle = -(GetActorRotation().Yaw - ToTarget.Rotation().Yaw);
+	if (ToAngle >= -300 && ToAngle < -295)
+	{
+		TurretAngle = ToAngle;
+	}
+	else if (ToAngle > 55 && ToAngle <= 60)
+	{
+		TurretAngle =  ToAngle;
+	}
+	else
+	{
+		TurretAngle = FMath::Lerp(TurretAngle,ToAngle,1.f);
+	}
+
+	SetHead();
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
-	// 머리 돌리기
-	HeadMesh->SetWorldRotation(
-		FMath::RInterpConstantTo(HeadMesh->GetComponentRotation(),
-			LookAtRotation,
-			UGameplayStatics::GetWorldDeltaSeconds(this)
-			, 60.f)
-	);
-
-	//LookAtRotation.Pitch = ToTarget.Rotation().Pitch;
-
 
 }
 
 void AAITank_1::RotateBarrel(FVector LookAtTarget)
 {
 	// 포신 각도 설정 : 탄도학 적용 버전
-	FVector ToTarget = LookAtTarget - HeadMesh->GetComponentLocation();
+	FVector ToTarget = LookAtTarget - GetMesh()->GetSocketLocation(FName("turret_jnt"));
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 	float TargetDistance = ToTarget.Size2D() / 100.f; // 수평 거리
 	float TargetHeight = ToTarget.Z / 100.f; // 높이 차이
@@ -120,31 +144,47 @@ void AAITank_1::RotateBarrel(FVector LookAtTarget)
 	if (LookAtRotation.Pitch > UpLimit) {
 		LookAtRotation.Pitch = UpLimit;
 	}
-	// 포신 돌리기
-	BarrelMesh->SetWorldRotation(
-		FMath::RInterpConstantTo(BarrelMesh->GetComponentRotation(),
-			LookAtRotation,
-			UGameplayStatics::GetWorldDeltaSeconds(this)
-			, 10.f)
-	);
+
+	float ToAngle = -(GetActorRotation().Pitch - LookAtRotation.Pitch);
+	GunElevation = ToAngle;
+
+	SetGun();
 }
 
-void AAITank_1::RotateTank(FVector LookAtTarget)
-{
-
+float AAITank_1::RotateTank(FVector LookAtTarget)
+{	
+	
 	if (LookAtTarget == FVector::ZeroVector) {
-		return;
+		return 0.f;
 	}
-	FVector ToTarget = LookAtTarget - CapsuleComp->GetComponentLocation();
+	FRotator CurrentRotation = GetMesh()->GetComponentRotation();
+	FVector ToTarget = LookAtTarget - GetMesh()->GetComponentLocation();
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 	// 몸체 돌리기
-	CapsuleComp->SetWorldRotation(
-		FMath::RInterpConstantTo(CapsuleComp->GetComponentRotation(),
-			LookAtRotation,
-			UGameplayStatics::GetWorldDeltaSeconds(this)
-			, 50.f)
-	);
+	float YawDifference = FMath::FindDeltaAngleDegrees(CurrentRotation.Yaw, LookAtRotation.Yaw);
 
+	float ReturnValue = 0.f;
+	if (IsRotationCompleted(CurrentRotation, ToTarget.Rotation(),10.f))
+	{
+		ReturnValue = 0.f;
+	}
+	else {
+		if (YawDifference > 0)
+		{
+			ReturnValue = 1.f;
+		}
+		else
+		{
+			ReturnValue = -1.f;
+		}
+	}
+	return ReturnValue;
+}
+
+bool AAITank_1::IsRotationCompleted(FRotator CurrentRotation, FRotator TargetRotation, float Tolerance)
+{
+	float YawDifference = FMath::Abs(FMath::FindDeltaAngleDegrees(CurrentRotation.Yaw, TargetRotation.Yaw));
+	return YawDifference <= Tolerance;
 }
 
 float AAITank_1::CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, float TargetHeight)
@@ -166,4 +206,41 @@ float AAITank_1::CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, f
 
 	// 선택: 두 개의 각도 중 하나를 선택 (낮은 각도 또는 높은 각도)
 	return FMath::RadiansToDegrees(Angle2); //
+}
+
+void AAITank_1::SetSpeed()
+{
+	UAITANKAnim* AnimInstance = Cast<UAITANKAnim>(GetMesh()->GetAnimInstance());
+	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
+	if (VehicleMovement == nullptr)
+	{
+		return;
+	}
+	float speed = FMath::Clamp(VehicleMovement->GetForwardSpeed(),-500,500);
+	AnimInstance->SetWheelSpeed(speed);
+	return;
+}
+
+void AAITank_1::SetHead()
+{
+	if (GetMesh() == nullptr)
+	{
+		return;
+	}
+	if (UAITANKAnim* AnimInstance = Cast<UAITANKAnim>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->SetTurretAngle(TurretAngle);
+	}
+}
+
+void AAITank_1::SetGun()
+{
+	if (GetMesh() == nullptr)
+	{
+		return;
+	}
+	if (UAITANKAnim* AnimInstance = Cast<UAITANKAnim>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->SetGunElevation(GunElevation);
+	}
 }

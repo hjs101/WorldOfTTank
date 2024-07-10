@@ -24,8 +24,8 @@ EBTNodeResult::Type UBTTask_MoveRandom::ExecuteTask(UBehaviorTreeComponent& Owne
     if (NavSys == nullptr)
     {
         return EBTNodeResult::Failed;
-    }
-    float SampleRadius = 1000.0;
+    }   
+    float SampleRadius = 1000.f;
     int32 NumSamples = 36; // 샘플링할 지점 수 (360도를 기준으로 10도 간격)
     FVector StartLocation = AITank->GetActorLocation();
     
@@ -70,6 +70,7 @@ EBTNodeResult::Type UBTTask_MoveRandom::ExecuteTask(UBehaviorTreeComponent& Owne
         if (Result.IsSuccessful())
         {
             AIController->SetbNonStopMove(true);
+            AIController->SetAttackMode(true);
             AIController->SetNavPath(Result.Path);
             return EBTNodeResult::InProgress;
         }

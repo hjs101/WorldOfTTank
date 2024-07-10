@@ -20,7 +20,7 @@ public:
 	void SetCurrentTask(UBTTaskNode* Task);
 
 	void SetbNonStopMove(bool Value);
-
+	void SetAttackMode(bool Value);
 	UFUNCTION()
 	void StopBTT();
 protected:
@@ -46,13 +46,16 @@ private:
 	bool bHasTarget;
 	FNavPathSharedPtr CurrentPath;
 	int32 CurrentPathPointIndex = 0;
-	float AcceptanceRadius = 100.f;
+	float AcceptanceRadius = 400.f;
 
 	float CurrentTime = 0.f;
-	float EndTime = 15.f;
+	float EndTime = 10.f;
 
 	bool bNonStop = false;
+	bool bAttackMode = false;
 
+	float MoveState = 0.f;
+	float TurnState = 0.f;
 	UPROPERTY()
     UBTTaskNode* CurrentTask;
 };

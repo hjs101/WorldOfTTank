@@ -280,12 +280,12 @@ void ASunnyEnemy::SetBeamLocation()
 		// Check if the hit actor is the player
 		if (HitResult.GetActor()->IsA(APlayerTank::StaticClass()))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("위젯 켜짐"));
+			//UE_LOG(LogTemp, Warning, TEXT("위젯 켜짐"));
 			HealthWidgetComp->SetVisibility(true);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("위젯 꺼짐"));
+			//UE_LOG(LogTemp, Warning, TEXT("위젯 꺼짐"));
 			HealthWidgetComp->SetVisibility(false);
 		}
 	}

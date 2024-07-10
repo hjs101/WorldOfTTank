@@ -14,6 +14,7 @@ AAITankController_1::AAITankController_1()
 {
 	// Initialize the BlackboardComponent
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
+
 }
 
 void AAITankController_1::SetNavPath(FNavPathSharedPtr Path)
@@ -35,10 +36,14 @@ void AAITankController_1::SetbNonStopMove(bool Value)
 	bNonStop = Value;
 }
 
+void AAITankController_1::SetAttackMode(bool Value)
+{
+	bAttackMode = Value;
+}
+
 void AAITankController_1::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (UseBlackboard(BlackboardData, BlackboardComponent))
 	{
 		if (BehaviorTree != nullptr)
@@ -56,10 +61,21 @@ void AAITankController_1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	MoveAlongPath(DeltaTime);
+	AAITankCPU_1* AITank = Cast<AAITankCPU_1>(GetPawn());
+	if (AITank)
+	{
+		if(TurnState != 0)
+		{
+			MoveState = 0;
+		};
+		AITank->Move(MoveState);
+		AITank->BodyTurn(TurnState);
+	}
 }
 
 void AAITankController_1::MoveAlongPath(float DeltaTime)
 {
+
 	if(CurrentPath)
 	{
 		TArray<FNavPathPoint> PathPoints = CurrentPath->GetPathPoints();
@@ -75,14 +91,26 @@ void AAITankController_1::MoveAlongPath(float DeltaTime)
 				TargetLocation = PathPoints[CurrentPathPointIndex];
 			}
 			FVector Direction = (TargetLocation - CurrentLocation).GetSafeNormal();
-			GetPawn()->AddMovementInput(GetPawn()->GetActorForwardVector());
 			AAITankCPU_1* AITank = Cast<AAITankCPU_1>(GetPawn());
 			if(AITank)
 			{
-				AITank->RotateTank(TargetLocation);
+				MoveState=1;
+				TurnState = AITank->RotateTank(TargetLocation);
 				if(AITank->GetFireState() && !bNonStop)
 				{
 					FinishMove(true);
+				}
+				if (AITank->GetFireState() && bAttackMode == true)
+				{
+					AActor* Target = Cast<AActor>(BlackboardComponent->GetValueAsObject(FName("MainTarget")));
+					if (Target != nullptr)
+					{
+						bool bNotAbleAttack = AITank->HasLineOfSightToTarget(CurrentLocation, Target);
+						if (!bNotAbleAttack)
+						{
+							FinishMove(true);
+						}
+					}
 				}
 			}
 			
@@ -111,6 +139,7 @@ void AAITankController_1::FinishMove(bool bSuccessed)
 	CurrentPath = nullptr;
 	CurrentPathPointIndex = 0;
 	CurrentTime = 0;
+	MoveState = 0;
 	// BTT의 InProgress 상태를 Success로 변경
 	UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(BrainComponent);
 	if (BTComp)
@@ -124,7 +153,7 @@ void AAITankController_1::FinishMove(bool bSuccessed)
 	}
 
 	bNonStop = false;
-
+	bAttackMode = false;
 }
 
 void AAITankController_1::StopBTT()

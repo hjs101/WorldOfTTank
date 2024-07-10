@@ -49,6 +49,9 @@ private:
 	float FireRate = 2.f;
 	void CheckFireCondition();
 	bool InFireRange();
+
+
+	
 	
 
 public:
@@ -103,6 +106,11 @@ public:
 	void SetHealthPercent(float health, float maxHealth);
 
 	bool bDie = false;
+
+
+	// Enemy Indicator
+	UPROPERTY(EditAnywhere)
+	class UPaperSpriteComponent* EnemyIndicator;
 
 
 	

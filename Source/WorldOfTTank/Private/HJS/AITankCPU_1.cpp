@@ -59,8 +59,8 @@ void AAITankCPU_1::BeginPlay()
 
 void AAITankCPU_1::LaserBeamSetting()
 {
-	FVector TraceStart = HeadMesh->GetComponentLocation();
-	FVector ForwardVector = HeadMesh->GetForwardVector();
+	FVector TraceStart = GetMesh()->GetSocketLocation(FName("turret_jnt"));
+	FVector ForwardVector = GetMesh()->GetSocketLocation(FName("turret_jnt")).ForwardVector;
 	FVector TraceEnd = ((ForwardVector * 20000.f) + TraceStart);
 
 	FHitResult HitResult;
@@ -181,9 +181,9 @@ bool AAITankCPU_1::IsDie()
 	return bDie;
 }
 
-FVector AAITankCPU_1::GetHeadMeshLocation()
+FVector AAITankCPU_1::GetHeadLocation()
 {
-	return HeadMesh->GetComponentLocation();
+	return GetMesh()->GetSocketLocation(FName("turret_jnt"));
 }
 
 // 레이저 쏴서 일직선 상에 있는지 확인하는 함수
@@ -194,10 +194,10 @@ bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AAc
 	{
 		return false;
 	}
-
+	FVector StartVector = StartLocation;
+	StartVector.Z = StartVector.Z + 50.f;
 	// 종료 위치는 타겟의 Vector
 	FVector EndLocation = TargetActor->GetActorLocation();
-
 	// HitResult 선언
 	FHitResult HitResult;
 	// CollisionQueryParams 선언
@@ -206,11 +206,11 @@ bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AAc
 	CollisionParams.AddIgnoredActor(this);
 	// 타겟도 무시
 	CollisionParams.AddIgnoredActor(TargetActor);
-	float SphereRadius = 20.f;
+	float SphereRadius = 40.f;
 	// 라인트레이싱 실행
 	bool bHit = GetWorld()->SweepSingleByChannel(
 		HitResult,
-		StartLocation,
+		StartVector,
 		EndLocation,
 		FQuat::Identity,
 		ECC_Visibility, // 가시성 채널 사용 
@@ -229,27 +229,30 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor)
 		return true;
 	}
 
+	USkeletalMeshComponent* SkelMesh = GetMesh();
+	if (SkelMesh == nullptr)
+	{
+		return true;
+	}
 	// 타겟 방향 벡터 구하기
-	FVector ToTarget = TargetActor->GetActorLocation() - HeadMesh->GetComponentLocation();
+	FVector ToTarget = TargetActor->GetActorLocation() - SkelMesh->GetSocketLocation(FName("turret_jnt"));
 	FRotator ToTargetRotation = ToTarget.Rotation();
-	FRotator MyRotation = HeadMesh->GetComponentRotation();
-	RotateTurret(TargetActor->GetActorLocation());
+	FRotator MyRotation = SkelMesh->GetSocketRotation(FName("turret_jnt"));
+	RotateTurret(ToTarget);
 	//1. yaw 각도는 무조건 일치 해야함. // 아예 안될수도 있으니 오차범위 +-1도정도 생각해두기
 	if (abs(ToTargetRotation.Yaw - MyRotation.Yaw) > 2) {
 		return false;
 	}
-	ToTarget = TargetActor->GetActorLocation() - BarrelMesh->GetComponentLocation();
+	ToTarget = TargetActor->GetActorLocation() - SkelMesh->GetSocketLocation(FName("gun_jnt"));
 	ToTargetRotation = ToTarget.Rotation();
-	MyRotation = BarrelMesh->GetComponentRotation();
+	MyRotation = SkelMesh->GetSocketRotation(FName("gun_jnt"));
 	// 2. 고도 확인하기
 	RotateBarrel(TargetActor->GetActorLocation());
 	if (abs(LookPitch - MyRotation.Pitch) > 2) {
-
 		// 2-1. 피치가 다르면서 한계고도 안쪽일 경우 false
 		if (LookPitch < UpLimit && LookPitch > DownLimit) {
 			return false;
 		}
-
 	}
 	return true;
 }
@@ -317,7 +320,7 @@ FVector AAITankCPU_1::FindValidAttackPosition(float SampleRadius,const AActor* T
 		// 각도를 기준으로 샘플링 지점 계산
 		float Angle = (360.0f / NumSamples) * i;
 		FVector SamplePoint = StartLocation + SampleRadius * FVector(FMath::Cos(FMath::DegreesToRadians(Angle)), FMath::Sin(FMath::DegreesToRadians(Angle)), 0);
-		
+		/*DrawDebugSphere(GetWorld(),SamplePoint,50.f,12,FColor::Green,false,5.f);*/
 		// 라인 트레이스 수행
 		bool bHit = AAITankCPU_1::HasLineOfSightToTarget(SamplePoint, TargetActor);
 		// 충돌이 없고 네비메시에서 유효한 지점인지 확인
@@ -522,14 +525,6 @@ void AAITankCPU_1::Die()
 {
 	if(!bDie)
 	{
-		// 머리를 날려버리기 위한 로직
-		if (HeadMesh)
-		{
-			// 머리 메쉬를 분리하여 날림
-			HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-			HeadMesh->SetSimulatePhysics(true);  // 물리 시뮬레이션 활성화
-			HeadMesh->AddImpulse(FVector(0, 0, 5000), NAME_None, true);  // 위로 날아가게 임펄스 추가
-		}
 
 		// 모든 기능 정지
 		bReadyFire = false;  // 발사 불가
@@ -552,11 +547,6 @@ void AAITankCPU_1::Die()
 		}
 
 		// 죽는 순간 네비에 탐지
-		BodyMesh->SetCanEverAffectNavigation(true);
-		WheelMesh_1->SetCanEverAffectNavigation(true);
-		WheelMesh_2->SetCanEverAffectNavigation(true);
-		HeadMesh->SetCanEverAffectNavigation(true);
-		CapsuleComp->SetSimulatePhysics(false);
 		// bDie 활성화
 		bDie = true;
 	}
@@ -613,7 +603,7 @@ void AAITankCPU_1::RotateTurretToMainTarget()
 	if (BlackboardComp == nullptr)
 	{
 		return;
-	}
+	}		
 	APawn* MainTarget = Cast<APawn>(BlackboardComp->GetValueAsObject("MainTarget"));
 	if(MainTarget != nullptr){
 		IsTurretRotationComplete(MainTarget);

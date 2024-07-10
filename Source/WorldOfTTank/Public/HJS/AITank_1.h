@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "WheeledVehiclePawn.h"
 #include "AITank_1.generated.h"
 
 UCLASS()
-class WORLDOFTTANK_API AAITank_1 : public APawn
+class WORLDOFTTANK_API AAITank_1 : public AWheeledVehiclePawn
 {
 	GENERATED_BODY()
 
@@ -17,51 +17,50 @@ public:
 	UFUNCTION()
 	void RotateTurret(FVector LookAtTarget);
 	void RotateBarrel(FVector LookAtTarget);
-	void RotateTank(FVector LookAtTarget);
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	// 함수
+	float RotateTank(FVector LookAtTarget);
 	UFUNCTION()
 	void BodyTurn(float value);
 	UFUNCTION()
 	void Move(float value);
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	// 함수
+
 	UFUNCTION()
 	virtual void Fire();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, Category="MatInstance")
+	UMaterialInstanceDynamic* BodyMaterial;
+
+	UPROPERTY(EditAnywhere, Category = "MatInstance")
+	UMaterialInstanceDynamic* TracksMaterial;
+
+	UFUNCTION()
+	void SetSpeed();
+
+	UFUNCTION()
+	void SetHead();
+
+	UFUNCTION()
+	void SetGun();
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Conponents", BlueprintReadOnly, meta = (AllowPrivateAccess = true));
 	USceneComponent* ProjecttileSpawnPoint;
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* HeadMesh;
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* BarrelMesh;
 	// 한계 고도 변수
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float DownLimit = -10;
+	float DownLimit = -5.f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float UpLimit = 30;
+	float UpLimit = 30.f;
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	float LookPitch = 0.f;
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* BodyMesh;
-	UPROPERTY(EditAnywhere, Category = "Components")
-	UStaticMeshComponent* WheelMesh_1;
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* WheelMesh_2;
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	class UCapsuleComponent* CapsuleComp;
-
-private:
 
 
-
-	
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	class UFloatingPawnMovement* MovementComponent;
+private:	
 
 	// 변수
 	UPROPERTY(EditAnywhere, Category = "Movement")
@@ -72,6 +71,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float FireSpeed = 80.f;
 
+	// 회전 변수
+	bool bStopTurn = false;
+	float VehicleYaw = 0.f;
+
 	// class 변수
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class AAIProjecttile_1> ProjecttileClass;
@@ -79,4 +82,10 @@ private:
 	// 함수
 	UFUNCTION()
 	float CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, float TargetHeight);
+
+	float TurretAngle;
+	float GunElevation;
+
+	UFUNCTION()
+	bool IsRotationCompleted(FRotator CurrentRotation, FRotator TargetRotation, float Tolerance = 1.0f);
 };

@@ -31,7 +31,7 @@ EBTNodeResult::Type UBTTask_CheckIfNoObstacle::ExecuteTask(UBehaviorTreeComponen
 	}
 
 	// 장애물이 없는지 확인
-	if (MyTank->HasLineOfSightToTarget(MyTank->GetHeadMeshLocation() ,Target))
+	if (MyTank->HasLineOfSightToTarget(MyTank->GetHeadLocation() ,Target))
 	{
 		return EBTNodeResult::Failed; // 장애물이 있는 경우 실패
 	}

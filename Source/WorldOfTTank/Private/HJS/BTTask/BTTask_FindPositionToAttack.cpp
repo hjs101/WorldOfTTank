@@ -30,7 +30,7 @@ EBTNodeResult::Type UBTTask_FindPositionToAttack::ExecuteTask(UBehaviorTreeCompo
         return EBTNodeResult::Failed;
     }
     FVector AttackPosition = FVector::ZeroVector;
-    for (int32 i = 10; i <= 80; i++) {
+    for (int32 i = 5; i <= 120; i++) {
         float SampleRadius = i * 100;
         AttackPosition = AITank->FindValidAttackPosition(SampleRadius,Target);
         // 유효한 공격 위치 찾기
@@ -62,6 +62,7 @@ EBTNodeResult::Type UBTTask_FindPositionToAttack::ExecuteTask(UBehaviorTreeCompo
             if (Result.IsSuccessful())
             {
                 AIController->SetbNonStopMove(true);
+                AIController->SetAttackMode(true);
                 AIController->SetNavPath(Result.Path);
                 return EBTNodeResult::InProgress;
             }

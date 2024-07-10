@@ -5,7 +5,6 @@
 
 #include "Camera/CameraComponent.h"
 #include "Components/WidgetComponent.h"
-#include "CSW/PlayerUserWidjet.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -20,8 +19,8 @@ APlayerTank::APlayerTank()
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->FieldOfView = 80;
 	
-	ChasingAim = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChasingAim"));
-	ChasingAim->SetupAttachment(SpringArmComp);
+	// ChasingAim = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChasingAim"));
+	// ChasingAim->SetupAttachment(SpringArmComp);
 }
 
 
@@ -29,8 +28,8 @@ void APlayerTank::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ChangeToTps();
-	ControllerRef = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	// ChangeToTps();
+	// ControllerRef = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 }
 
 

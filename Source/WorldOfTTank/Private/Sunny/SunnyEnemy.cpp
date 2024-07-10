@@ -44,7 +44,7 @@ ASunnyEnemy::ASunnyEnemy()
 
 	// Enemy Indicator 컴포넌트 추가
 	EnemyIndicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Enemy Indicator"));
-	EnemyIndicator->SetupAttachment(RootComponent);
+	EnemyIndicator->SetupAttachment(HeadMesh);
 }
 
 void ASunnyEnemy::Tick(float DeltaTime)

@@ -19,12 +19,17 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+		
+	void SetPlayerTankDamage(float Damage);
+
 	void Move(float Value);
 	void Turn(float Value);
 	void Fire();
 	void Brake();
 	void	RotateTurret(float Value);
-	void	RotateBarrel(FVector Target);
+	void	RotateBarrel(float Value);
+	USceneComponent* GetProjectileSpawnPoint() const;
+	FVector GetCurrentHitPoint() const;
 private:
 	float MoveState;
 
@@ -33,6 +38,12 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
 	float	CurrentReloadTime = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
+	float Hp = 700;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
+	float MaxHp = 700;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
 	TSubclassOf<class AProjectile> ProjectileClass;

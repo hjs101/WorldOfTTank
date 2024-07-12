@@ -25,9 +25,9 @@ public:
 	UFUNCTION()
 	float GetWheelTurnAngle() const;
 	UFUNCTION()
-	float GetTurretRotation() const;
+	FRotator GetTurretRotation() const;
 	UFUNCTION()
-	float GetTurretElevation() const;
+	FRotator GetTurretElevation() const;
 	UFUNCTION()
 	FRotator GetWheelRotation() const;
 
@@ -38,9 +38,9 @@ public:
 	UFUNCTION()
 	void SetWheelTurnAngle(float Value);
 	UFUNCTION()
-	void SetTurretRotation(float Value);
+	void SetTurretRotation(const FRotator& Value);
 	UFUNCTION()
-	void SetTurretElevation(float Value);
+	void SetTurretElevation(const FRotator& Value);
 	UFUNCTION()
 	void SetWheelRotation(const FRotator& Value);
 	UFUNCTION()
@@ -55,10 +55,10 @@ private:
 	float WheelTurnAngle;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
-	float TurretRotation;
+	FRotator TurretRotation;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
-	float TurretElevation;
+	FRotator TurretElevation;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
 	FRotator WheelRotation;

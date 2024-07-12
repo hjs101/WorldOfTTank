@@ -38,12 +38,12 @@ float UTankVehicleAnimInstance::GetWheelTurnAngle() const
 	return WheelTurnAngle;
 }
 
-float UTankVehicleAnimInstance::GetTurretRotation() const
+FRotator UTankVehicleAnimInstance::GetTurretRotation() const
 {
 	return TurretRotation;
 }
 
-float UTankVehicleAnimInstance::GetTurretElevation() const
+FRotator UTankVehicleAnimInstance::GetTurretElevation() const
 {
 	return TurretElevation;
 }
@@ -68,12 +68,12 @@ void UTankVehicleAnimInstance::SetWheelTurnAngle(float Value)
 	WheelTurnAngle = Value;
 }
 
-void UTankVehicleAnimInstance::SetTurretRotation(float Value)
+void UTankVehicleAnimInstance::SetTurretRotation(const FRotator& Value)
 {
 	TurretRotation = Value;
 }
 
-void UTankVehicleAnimInstance::SetTurretElevation(float Value)
+void UTankVehicleAnimInstance::SetTurretElevation(const FRotator& Value)
 {
 	TurretElevation = Value;
 }

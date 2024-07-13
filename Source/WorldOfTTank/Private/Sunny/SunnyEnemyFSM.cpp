@@ -2,9 +2,11 @@
 
 
 #include "Sunny/SunnyEnemyFSM.h"
-#include "Sunny/SunnyEnemy.h"
+//#include "Sunny/SunnyEnemy.h"
 #include "Sunny/SunnyTTank.h"
-//#include "Sunny/SunnyBasePawn.h"
+
+//#include "Sunny/SunnyRealTTank.h"
+#include "Sunny/SunnyNewTTank.h"
 
 #include "CSW/PlayerTank.h"
 
@@ -47,7 +49,7 @@ void USunnyEnemyFSM::BeginPlay()
 	// APlayerTank 타입으로 캐스팅
 	Target = Cast<APlayerTank>(actor);
 	// 소유 객체 가져오기
-	Me = Cast<ASunnyEnemy>(GetOwner());
+	Me = Cast<ASunnyNewTTank>(GetOwner());
 
 	// AAiController 할당
 	Ai = Cast<AAIController>(Me->GetController());
@@ -60,8 +62,8 @@ void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// 실행창에 상태 메세지 출력하기
-	//FString logMsg = UEnum::GetValueAsString(EnemyState);
-	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
+	FString logMsg = UEnum::GetValueAsString(EnemyState);
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
 	switch (EnemyState)
 	{
@@ -81,12 +83,17 @@ void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		DieState();
 		break;		
 	}
+
+
+
 }
 
 
 // 대기 상태
 void USunnyEnemyFSM::IdleState()
 {
+	UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Idle"));
+
 	// 1. 시간이 흘렀으니까
 	CurrentTime += GetWorld()->DeltaTimeSeconds;
 
@@ -106,16 +113,18 @@ void USunnyEnemyFSM::IdleState()
 // 이동 상태
 void USunnyEnemyFSM::MoveState() 
 {
+	UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Move"));
+
 	FVector destination;
 
 	// 타깃이 존재하는지 확인
 	if (Target)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("Target Found"));
 		destination = Target->GetActorLocation();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning,TEXT( "12434"));
 		// 타깃이 없다면 Idle 상태로 전환
 		EnemyState = EEnemyState::Idle;
 		return;
@@ -150,6 +159,8 @@ void USunnyEnemyFSM::MoveState()
 	if (r.Result == ENavigationQueryResult::Success)
 	{
 		// 타깃쪽으로 몸을 돌리고 
+		UE_LOG(LogTemp, Warning, TEXT("SunnyEnemyFSM->Me->RotateTank()"));
+		
 		Me->RotateTank(Target->GetActorLocation());
 		
 		// 타깃쪽으로 이동
@@ -183,6 +194,8 @@ void USunnyEnemyFSM::MoveState()
 // 공격 상태
 void USunnyEnemyFSM::AttackState() 
 {
+	UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Attack"));
+
 	if (isTimerSeted == false)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Attack!!!!"));
@@ -192,7 +205,7 @@ void USunnyEnemyFSM::AttackState()
 
 	// 목표 : 타깃이 공격 범위를 벗어나면 상태를 이동으로 전환하고 싶다
 	// 1. 타깃과의 거리가 필요하다
-	float Distance;
+	float Distance = 0.0f;
 
 	if (Target)
 	{
@@ -212,48 +225,26 @@ void USunnyEnemyFSM::AttackState()
 }
 
 
-// 피격 알림 이벤트 함수
-//void USunnyEnemyFSM::OnDamageProcess()
+// 피격 상태
+//void USunnyEnemyFSM::DamageState() 
 //{
-//	//UE_LOG(LogTemp, Warning, TEXT("Damage!!!!"));
-//	Me->Destroy();
-//
-//	// 만약 체력이 남아있다면
-//	if (hp > 0)
+//	
+//	// 1. 시간이 흘렀으니까
+//	CurrentTime += GetWorld()->DeltaRealTimeSeconds;
+//	// 2. 만약 경과 시간이 대기 시간을 초과했다면
+//	if (CurrentTime > DamageDelayTime)
 //	{
-//		// 상태를 피격으로  전환
-//		EnemyState = EEnemyState::Damage;
-//	}
-//	// 그렇지 않다면
-//	else
-//	{
-//		// 상태를 죽음으로 전환
-//		EnemyState = EEnemyState::Die;
-//
-//		// 캡슐 충돌체 비활성화
-//		//Me->GetCapsuleComponent()->SetcollisionEnabled(ECollisionEnabled::NoCollision);
+//		//3. 대기 상태로 전환하고 싶다
+//		EnemyState = EEnemyState::Idle;
+//		// 경과 시간 초기화
+//		CurrentTime = 0;
 //	}
 //}
-
-
-// 피격 상태
-void USunnyEnemyFSM::DamageState() 
-{
-	// 1. 시간이 흘렀으니까
-	CurrentTime += GetWorld()->DeltaRealTimeSeconds;
-	// 2. 만약 경과 시간이 대기 시간을 초과했다면
-	if (CurrentTime > DamageDelayTime)
-	{
-		//3. 대기 상태로 전환하고 싶다
-		EnemyState = EEnemyState::Idle;
-		// 경과 시간 초기화
-		CurrentTime = 0;
-	}
-}
 
 // 죽음 상태
 void USunnyEnemyFSM::DieState() 
 {
+	UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Die"));
 	//UE_LOG(LogTemp, Warning, TEXT("Entering DieState for %s"), *Me->GetName());
 
 	if (Me)

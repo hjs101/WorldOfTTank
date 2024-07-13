@@ -6,14 +6,6 @@
 #include "Sunny/SunnyBasePawn.h"
 #include "SunnyEnemy.generated.h"
 
-/*class UWidgetComponent;
-class UProgressBar;
-class UTextBlock;
-class APlayerTank;
-class USunnyEnemyFSM;
-class UFloatingPawnMovement;
-class UNiagaraSystem;*/
-
 
 UCLASS()
 class WORLDOFTTANK_API ASunnyEnemy : public ASunnyBasePawn
@@ -50,8 +42,6 @@ private:
 	void CheckFireCondition();
 	bool InFireRange();
 
-
-	
 	
 
 public:

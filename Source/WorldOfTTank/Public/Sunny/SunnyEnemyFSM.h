@@ -30,6 +30,7 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -58,18 +59,18 @@ public:
 	float CurrentTime = 0;
 
 
-	// 타깃 (써니 땅크)
+	// 타깃 (선우 땅크)
 	UPROPERTY(VisibleAnywhere, Category=FSM)
 	class APlayerTank* Target;
 
 	// 소유 액터
 	UPROPERTY()
-	class ASunnyEnemy* Me;
+	class ASunnyNewTTank* Me;
 
 
 	// 공격 범위
 	UPROPERTY(EditAnywhere, Category=FSM)
-	float AttackRange = 1000.f;
+	float AttackRange = 2000.f;
 
 	// 공격 대기 시간
 	UPROPERTY(EditAnywhere, Category = FSM)

@@ -9,6 +9,8 @@
 #include "Components/DecalComponent.h"
 #include "HJS/FractureWall.h"
 #include "Sunny/SunnyEnemy.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "CSW/PlayerTankVehicle.h"
 // Sets default values
 AAIProjecttile_1::AAIProjecttile_1()
 {
@@ -34,6 +36,10 @@ AAIProjecttile_1::AAIProjecttile_1()
 		DecalMaterial = TempMat.Object;
 	}
 
+	BoomSys = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("BoomSys"));
+	BoomSys->SetupAttachment(RootComponent);
+	BoomSys->bAutoActivate = false;
+	BoomSys->SetActive(false);
 
 }
 
@@ -53,8 +59,12 @@ void AAIProjecttile_1::Tick(float DeltaTime)
 
 void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("피격 효과"));
-	// 장애물일 때
+	if (BoomSys)
+	{
+		BoomSys->Activate();
+		BoomSys->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	}
+
 	if (Cast<APawn>(OtherActor) == nullptr) {
 		AddDecalAtLocation(Hit.ImpactPoint, Hit.ImpactNormal);
 	}
@@ -86,10 +96,10 @@ void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	}
 
 	// Player일때
-	ATank* PlayerTank = Cast<ATank>(OtherActor);
+	ATankVehicle* PlayerTank = Cast<ATankVehicle>(OtherActor);
 	if (PlayerTank != nullptr)
 	{
-		PlayerTank->SetPlayerTankDamage(50.0);
+		//PlayerTank->SetPlayerTankDamage(50.0);
 	}
 
 	AActor* MyOwner = GetOwner();
@@ -108,7 +118,10 @@ void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 			}
 		}
 	}
-	Destroy();
+
+	ProjecttileComp->SetVisibility(false);
+	this->SetActorEnableCollision(false);
+	GetWorldTimerManager().SetTimer(BulletTimerHandle,this,&AAIProjecttile_1::BulletDestroy,5.f,false);
 	return;
 }
 
@@ -128,4 +141,9 @@ void AAIProjecttile_1::AddDecalAtLocation(FVector Location, FVector Normal)
 	{
 		Decal->SetLifeSpan(10.0f); // 예: 10초 후에 사라지도록 설정
 	}
+}
+
+void AAIProjecttile_1::BulletDestroy()
+{
+	Destroy();
 }

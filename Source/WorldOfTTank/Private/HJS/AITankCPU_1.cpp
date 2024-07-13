@@ -5,7 +5,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "Perception/PawnSensingComponent.h"
 #include "HJS/AITankPlayer_1.h"
-#include "CSW/PlayerTank.h"
+#include "CSW/PlayerTankVehicle.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "HJS/AITankController_1.h"
 #include "NavigationSystem.h"
@@ -20,6 +20,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Sunny/SunnyEnemy.h"
+#include "Sunny/SunnyGameMode.h"
 
 AAITankCPU_1::AAITankCPU_1()
 {
@@ -39,7 +40,11 @@ AAITankCPU_1::AAITankCPU_1()
 	{
 		HpBar->SetWidgetClass(WidgetClass.Class);
 	}
-
+	OnDieMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OnDieMeshComp"));
+	OnDieMeshComp->SetupAttachment(RootComponent);
+	OnDieMeshComp->SetVisibility(false);
+	OnDieMeshComp->SetCollisionProfileName("NoCollision");
+	OnDieMeshComp->SetCanEverAffectNavigation(false);
 }
 
 void AAITankCPU_1::BeginPlay()
@@ -270,7 +275,7 @@ void AAITankCPU_1::OnSeePawn(APawn* Pawn)
 	{
 		return;
 	}
-	if (Cast<APlayerTank>(Pawn)) 
+	if (Cast<APlayerTankVehicle>(Pawn)) 
 	{
 		BlackboardComp->SetValueAsObject(FName("TargetPlayer"), Pawn);
 	}
@@ -545,8 +550,35 @@ void AAITankCPU_1::Die()
 		{
 			PawnSensingComponent->SetActive(false);
 		}
+		Move(0.f);
+		BodyTurn(0.f);
+		// 메시 스위칭
+		GetMesh()->SetVisibility(false);
+		GetMesh()->SetCollisionProfileName("NoCollision");
+		OnDieMeshComp->SetVisibility(true);
+		OnDieMeshComp->SetCollisionProfileName("Vehicle");
+		OnDieMeshComp->SetCanEverAffectNavigation(true);
+		
+		// 죽은 뒤 불 이펙트
+		if (OnDieFire)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),OnDieFire,GetActorLocation(),GetActorRotation());
+		}
 
-		// 죽는 순간 네비에 탐지
+		// 폭발 사운드
+		if (DieExplosionSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), DieExplosionSound, GetActorLocation());
+		}
+
+		// UI 갱신
+		ASunnyGameMode* gm = Cast<ASunnyGameMode>(GetWorld()->GetAuthGameMode());
+
+		if (gm)
+		{
+			gm->OnEnemyDie();
+		}
+
 		// bDie 활성화
 		bDie = true;
 	}
@@ -566,7 +598,7 @@ void AAITankCPU_1::SetBlackBoardTarget(AActor* OtherActor)
 		return;
 	}
 
-	if (Cast<APlayerTank>(OtherActor))
+	if (Cast<APlayerTankVehicle>(OtherActor))
 	{
 		BlackboardComp->SetValueAsObject("TargetPlayer", OtherActor);
 	}

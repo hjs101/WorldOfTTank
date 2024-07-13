@@ -74,11 +74,19 @@ private:
 	void LaserBeamSetting();
 	void LaserBeam(FVector Start, FVector End);
 
+	UPROPERTY(EditAnywhere, Category="Combat")
+	UParticleSystem* OnDieFire;
+
+	UPROPERTY(EditAnywhere, Category="SFX")
+	USoundBase* DieExplosionSound;
 
 	// 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UPawnSensingComponent* PawnSensingComponent;
 	
+	UPROPERTY(VisibleAnywhere,Category="Components")
+	UStaticMeshComponent* OnDieMeshComp;
+
 	// 위젯 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	class UWidgetComponent* HpBar;

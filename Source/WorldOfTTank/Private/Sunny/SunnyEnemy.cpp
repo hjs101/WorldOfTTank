@@ -57,6 +57,8 @@ void ASunnyEnemy::Tick(float DeltaTime)
 	}
 	
 	SetBeamLocation();
+
+
 }
 
 void ASunnyEnemy::BeginPlay()
@@ -100,6 +102,8 @@ void ASunnyEnemy::BeginPlay()
 		return;
 	}
 	SetHealthPercent(HealthComp->GetHealth(), HealthComp->GetMaxHealth());
+
+	//EnemyIndicator->SetVisibility(true);
 }
 
 

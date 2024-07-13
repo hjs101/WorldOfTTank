@@ -15,17 +15,23 @@ class WORLDOFTTANK_API ASunnyGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	ASunnyGameMode();
 
 	void ActorDied(AActor* DeadActor);
+
+	UPROPERTY(EditAnywhere, Category = "MiniMap")
+	class USceneCaptureComponent2D* SceneCaptureComp;
 
 protected:
 
 	virtual void BeginPlay() override;
 
+	
+
 
 private:
 
-	class ASunnyTTank* TTank;
-	class ASunnyPlayerController* TTanksPlayerController;
+	//class ASunnyTTank* TTank;
+	//class ASunnyPlayerController* TTanksPlayerController;
 	
 };

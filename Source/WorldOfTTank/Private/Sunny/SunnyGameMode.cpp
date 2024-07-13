@@ -2,15 +2,22 @@
 
 
 #include "Sunny/SunnyGameMode.h"
-#include "Sunny/SunnyTTank.h"
-#include "Sunny/SunnyEnemy.h"
+//#include "Sunny/SunnyTTank.h"
+//#include "Sunny/SunnyEnemy.h"
 #include "Sunny/SunnyPlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/SceneCaptureComponent2D.h"
+
+ASunnyGameMode::ASunnyGameMode()
+{
+	SceneCaptureComp = CreateDefaultSubobject<USceneCaptureComponent2D>("SceneCaptureComp");
+	SceneCaptureComp->ProjectionType = ECameraProjectionMode::Orthographic;
+}
 
 
 void ASunnyGameMode::ActorDied(AActor* DeadActor)
 {
-	if (DeadActor == TTank)
+	/*if (DeadActor == TTank)
 	{
 		TTank->HandleDestruction();
 		if (TTanksPlayerController)
@@ -21,7 +28,7 @@ void ASunnyGameMode::ActorDied(AActor* DeadActor)
 	else if (ASunnyEnemy* DestroyedEnemy = Cast<ASunnyEnemy>(DeadActor))
 	{
 		DestroyedEnemy->HandleDestruction();
-	}
+	}*/
 }
 
 
@@ -29,6 +36,6 @@ void ASunnyGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TTank = Cast<ASunnyTTank>(UGameplayStatics::GetPlayerPawn(this, 0));
-	TTanksPlayerController = Cast<ASunnyPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	//TTank = Cast<ASunnyTTank>(UGameplayStatics::GetPlayerPawn(this, 0));
+	//TTanksPlayerController = Cast<ASunnyPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 }

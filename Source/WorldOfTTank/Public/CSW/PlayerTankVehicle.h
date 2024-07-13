@@ -18,18 +18,48 @@ public:
 	APlayerTankVehicle();
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void BeginPlay() override;
 	FVector GetCursorTarget() const;
-
 	
-protected:
+private:
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	class USpringArmComponent* SpringArmComp;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	class UCameraComponent* CameraComp;
+
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	class USpringArmComponent* FpsSpringArmComp;
 	
-private:
-	float ViewRotationRate = 100;
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	class UCameraComponent* FpsCameraComp;
+
+	UPROPERTY(VisibleAnywhere)
+	APlayerController* ControllerRef;
+
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> TpsAimClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> FpsAimClass;
+
+	TStrongObjectPtr<UUserWidget> CurrentAim;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UWidgetComponent* ChasingAim;
+	
+	bool IsFps = false;
+\
+	void	LerpZoom(float DeltaSeconds);
+	void	ZoomIn();
+	void	ZoomOut();
+	void	ChangeToTps();
+	void	ChangeToFps();
+	
+	
+	float	ViewRotationRate = 100;
+	float	CamDist[6] = {0, 400, 800, 1200, 1600, 2000};
+	int		CamIdx = 5;
 	void	LookRightLeft(float Value);
 	void	LookUpDown(float Value);
 };

@@ -14,7 +14,8 @@ ATankVehicle::ATankVehicle()
 	MoveComp->SetIsReplicated(true);
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSpawnPoint"));
-	ProjectileSpawnPoint->SetupAttachment(RootComponent, FName("gunSocket"));
+	ProjectileSpawnPoint->SetupAttachment(RootComponent, FName("gun_jnt"));
+	ProjectileSpawnPoint->SetRelativeLocation(FVector(500, 0, 0));
 
 	GunFire = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("GunFire"));
 	ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleAsset(TEXT("/Script/Engine.ParticleSystem'/Game/CSW/VigilanteContent/Vehicles/East_SPG_2S3Akatsia/FX/FX_MuzzleFire_01_2S3Akatsia.FX_MuzzleFire_01_2S3Akatsia'"));
@@ -32,6 +33,8 @@ void ATankVehicle::BeginPlay()
 
 	GetMesh()->CreateDynamicMaterialInstance(1);
 	GetMesh()->SetAnimInstanceClass(AnimInstanceClass);
+
+	SetPlayerTankDamage(50);
 }
 
 void ATankVehicle::Tick(float DeltaSeconds)
@@ -41,17 +44,23 @@ void ATankVehicle::Tick(float DeltaSeconds)
 		CurrentReloadTime += DeltaSeconds;
 	else if (CurrentReloadTime + DeltaSeconds > DeltaSeconds)
 		CurrentReloadTime = ReloadTime;
-	
+
 	UTankVehicleAnimInstance* animIns = Cast<UTankVehicleAnimInstance>(GetMesh()->GetAnimInstance());
 	float speed = GetVehicleMovementComponent()->GetForwardSpeed();
 	
 	animIns->SetWheelSpeed(FMath::Clamp(speed, -500, 500));
 }
 
+USceneComponent* ATankVehicle::GetProjectileSpawnPoint() const
+{
+	return ProjectileSpawnPoint;
+}
+
+
 void ATankVehicle::Move(float Value)
 {
 	UChaosVehicleMovementComponent* moveComp = GetVehicleMovementComponent();
-
+	
 	MoveState = Value;
 	if (Value > 0)
 	{
@@ -69,38 +78,41 @@ void ATankVehicle::Turn(float Value)
 {
 	UChaosVehicleMovementComponent* moveComp = GetVehicleMovementComponent();
 
-	if (MoveState == 0)
-		moveComp->SetThrottleInput(0.4f);
-	else if (MoveState < 0)
+	// if (MoveState == 0)
+	// 	moveComp->SetThrottleInput(1);
+	if (MoveState < 0)
 		Value *= -1;
+
 	if (GetMesh()->GetPhysicsAngularVelocityInDegrees().Length() < 30)
-		moveComp->SetYawInput(Value/4);
+		moveComp->SetYawInput(Value);
 	else
-		moveComp->SetYawInput(0);
+		moveComp->SetYawInput(Value/30);
 }
 
 void ATankVehicle::RotateTurret(float Value)
 {
 	UTankVehicleAnimInstance* animIns = Cast<UTankVehicleAnimInstance>(GetMesh()->GetAnimInstance());
-	animIns->SetTurretRotation(
-		FMath::FInterpConstantTo(
-			animIns->GetTurretRotation(),
-			Value,
+	FRotator start = animIns->GetTurretRotation();
+	FRotator end = FRotator(0, Value, 0);
+	FRotator lerp = FMath::RInterpConstantTo(
+			start,
+			end,
 			UGameplayStatics::GetWorldDeltaSeconds(this),
-			35)
-			);
+			35);
+	animIns->SetTurretRotation(lerp);
 }
 
-void	ATankVehicle::RotateBarrel(FVector Target)
+void	ATankVehicle::RotateBarrel(float Value)
 {
 	UTankVehicleAnimInstance* animIns = Cast<UTankVehicleAnimInstance>(GetMesh()->GetAnimInstance());
-	animIns->SetTurretElevation(
-		FMath::FInterpConstantTo(
-			animIns->GetTurretElevation(),
-			FMath::Clamp(Target.Rotation().Pitch - animIns->GetTurretElevation(), -5, 60),
+	FRotator start = animIns->GetTurretElevation();
+	FRotator end = FRotator(Value, animIns->GetTurretRotation().Yaw, 0);
+	FRotator lerp = FMath::RInterpConstantTo(
+			start,
+			end,
 			UGameplayStatics::GetWorldDeltaSeconds(this),
-			35)
-			);
+			35);
+	animIns->SetTurretElevation(lerp);
 }
 
 void ATankVehicle::Fire()
@@ -122,5 +134,22 @@ void ATankVehicle::Brake()
 {
 	MoveState = 0;
 	GetVehicleMovementComponent()->SetThrottleInput(0);
-	GetVehicleMovementComponent()->SetBrakeInput(1);
+	GetVehicleMovementComponent()->SetBrakeInput(0);
+}
+
+FVector ATankVehicle::GetCurrentHitPoint() const
+{
+	FVector Start = ProjectileSpawnPoint->GetComponentLocation() ;
+	FVector End = Start + ProjectileSpawnPoint->GetForwardVector() * 100000000000;
+	FHitResult	Hit;
+	GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldStatic);
+	return Hit.ImpactPoint;
+}
+
+void ATankVehicle::SetPlayerTankDamage(float Damage)
+{
+	if (Hp > Damage)
+		Hp -= Damage;
+	else
+		Hp = 0;
 }

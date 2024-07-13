@@ -86,17 +86,6 @@ void APlayerTank::LookUpDown(float Value)
 	RotateBarrel(Target);
 }
 
-void APlayerTank::LerpZoom(float DeltaSeconds)
-{
-	float pre = SpringArmComp->TargetArmLength;
-	SpringArmComp->TargetArmLength = FMath::FInterpTo(
-		SpringArmComp->TargetArmLength,
-		CamDist[CamIdx],
-		DeltaSeconds,
-		10);
-	if (pre == SpringArmComp->TargetArmLength)
-		SpringArmComp->TargetArmLength = CamDist[CamIdx];
-}
 
 void APlayerTank::LerpAim(float DeltaSeconds)
 {
@@ -135,6 +124,17 @@ void APlayerTank::ChangeToTps()
 		(CurrentAim = TStrongObjectPtr<UUserWidget>(NewWidget))->AddToViewport();
 }
 
+void APlayerTank::LerpZoom(float DeltaSeconds)
+{
+	float pre = SpringArmComp->TargetArmLength;
+	SpringArmComp->TargetArmLength = FMath::FInterpTo(
+		SpringArmComp->TargetArmLength,
+		CamDist[CamIdx],
+		DeltaSeconds,
+		10);
+	if (pre == SpringArmComp->TargetArmLength)
+		SpringArmComp->TargetArmLength = CamDist[CamIdx];
+}
 void APlayerTank::ZoomIn()
 {
 	if (CamIdx == 0 && CameraComp->FieldOfView == 80)

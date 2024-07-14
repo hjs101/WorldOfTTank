@@ -10,6 +10,8 @@
 #include "Sound/SoundBase.h"
 #include "TimerManager.h"
 #include "HJS/TotalState.h"
+#include "HJS/EndGameWidget.h"
+
 void ASunnyGameMode::ActorDied(AActor* DeadActor)
 {
 	if (DeadActor == TTank)
@@ -53,6 +55,16 @@ void ASunnyGameMode::BeginPlay()
 			//화면에 보이게 
 			TotalStateUI->AddToViewport();
 			TotalStateUI->UpdateTotalStateUI(2);
+		}
+	}
+
+	if (EndGameUIFactory != nullptr)
+	{
+		EndGameUI = Cast<UEndGameWidget>(CreateWidget(GetWorld(), EndGameUIFactory, FName("EndGameUI")));
+		if (TotalStateUI != nullptr)
+		{
+			//화면에 보이게 
+			TotalStateUI->AddToViewport();
 		}
 	}
 

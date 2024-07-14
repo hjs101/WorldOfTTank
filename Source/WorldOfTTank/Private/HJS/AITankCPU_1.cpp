@@ -192,17 +192,22 @@ FVector AAITankCPU_1::GetHeadLocation()
 }
 
 // 레이저 쏴서 일직선 상에 있는지 확인하는 함수
-bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AActor* TargetActor) const
+bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,AActor* TargetActor) const
 {
 	// 타겟이 없으면 false 리턴
 	if (!TargetActor)
 	{
 		return false;
 	}
-	FVector StartVector = StartLocation;
-	StartVector.Z = StartVector.Z + 50.f;
+
+	AWheeledVehiclePawn* TargetTank = Cast<AWheeledVehiclePawn>(TargetActor);
+	if (TargetTank == nullptr)
+	{
+		return true;
+	}
+	
 	// 종료 위치는 타겟의 Vector
-	FVector EndLocation = TargetActor->GetActorLocation();
+	FVector EndLocation = TargetTank->GetMesh()->GetSocketLocation(FName("turret_jnt"));
 	// HitResult 선언
 	FHitResult HitResult;
 	// CollisionQueryParams 선언
@@ -211,17 +216,22 @@ bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AAc
 	CollisionParams.AddIgnoredActor(this);
 	// 타겟도 무시
 	CollisionParams.AddIgnoredActor(TargetActor);
-	float SphereRadius = 40.f;
+	float SphereRadius = 30.f;
 	// 라인트레이싱 실행
 	bool bHit = GetWorld()->SweepSingleByChannel(
 		HitResult,
-		StartVector,
+		StartLocation,
 		EndLocation,
 		FQuat::Identity,
 		ECC_Visibility, // 가시성 채널 사용 
 		FCollisionShape::MakeSphere(SphereRadius),
 		CollisionParams
 	);
+	//if (bHit)
+	//{
+	//	//DrawDebugLine(GetWorld(), StartLocation, HitResult.Location, FColor::Green, false, 1, 0, 1);
+	//}
+
 	return bHit;
 }
 
@@ -234,13 +244,19 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor)
 		return true;
 	}
 
+	AWheeledVehiclePawn* TargetTank = Cast<AWheeledVehiclePawn>(TargetActor);
+	if (TargetTank == nullptr)
+	{
+		return true;
+	}
+
 	USkeletalMeshComponent* SkelMesh = GetMesh();
 	if (SkelMesh == nullptr)
 	{
 		return true;
 	}
 	// 타겟 방향 벡터 구하기
-	FVector ToTarget = TargetActor->GetActorLocation() - SkelMesh->GetSocketLocation(FName("turret_jnt"));
+	FVector ToTarget = TargetTank->GetMesh()->GetSocketLocation(FName("turret_jnt")) - SkelMesh->GetSocketLocation(FName("turret_jnt"));
 	FRotator ToTargetRotation = ToTarget.Rotation();
 	FRotator MyRotation = SkelMesh->GetSocketRotation(FName("turret_jnt"));
 	RotateTurret(ToTarget);
@@ -251,8 +267,10 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor)
 	ToTarget = TargetActor->GetActorLocation() - SkelMesh->GetSocketLocation(FName("gun_jnt"));
 	ToTargetRotation = ToTarget.Rotation();
 	MyRotation = SkelMesh->GetSocketRotation(FName("gun_jnt"));
+
+
 	// 2. 고도 확인하기
-	RotateBarrel(TargetActor->GetActorLocation());
+	RotateBarrel(TargetTank->GetMesh()->GetSocketLocation(FName("turret_jnt")));
 	if (abs(LookPitch - MyRotation.Pitch) > 2) {
 		// 2-1. 피치가 다르면서 한계고도 안쪽일 경우 false
 		if (LookPitch < UpLimit && LookPitch > DownLimit) {
@@ -299,12 +317,12 @@ void AAITankCPU_1::Fire()
 }
 
 // 공격 유효지점 찾기
-FVector AAITankCPU_1::FindValidAttackPosition(float SampleRadius,const AActor* TargetActor)
+FVector AAITankCPU_1::FindValidAttackPosition(float SampleRadius,AActor* TargetActor)
 {
 
 
 	// 시작위치 불러오기
-	FVector StartLocation = GetActorLocation();
+	FVector StartLocation = GetMesh()->GetSocketLocation(FName("turret_jnt"));
 
 	if (TargetActor == nullptr) {
 		return StartLocation;
@@ -442,7 +460,7 @@ bool AAITankCPU_1::CheckForNearbyObstacle()
 
 	// 현재 위치를 기준으로 탐색 반경 설정
 	FVector StartLocation = GetActorLocation();
-	float SearchRadius = 2000.f;  // 예시로 반경 1000 설정
+	float SearchRadius = 5000.f;  // 예시로 반경 1000 설정
 
 	// 탐색 결과를 저장할 배열
 	TArray<FOverlapResult> OverlapResults;

@@ -34,12 +34,12 @@ EBTNodeResult::Type UBTTask_FindPositionToAttack::ExecuteTask(UBehaviorTreeCompo
         float SampleRadius = i * 100;
         AttackPosition = AITank->FindValidAttackPosition(SampleRadius,Target);
         // 유효한 공격 위치 찾기
-        if (AttackPosition != AITank->GetActorLocation()) {
+        if (AttackPosition != AITank->GetHeadLocation()) {
             break;
         }
     }
     
-    if (FVector::Dist(AttackPosition, AITank->GetActorLocation()) < 100.f ) {
+    if (FVector::Dist(AttackPosition, AITank->GetHeadLocation()) < 100.f ) {
         return EBTNodeResult::Failed;
     }
     // AI를 해당 위치로 이동

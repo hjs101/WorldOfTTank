@@ -45,6 +45,12 @@ private:
 	UPROPERTY()
 	class UTotalState* TotalStateUI;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UEndGameWidget> EndGameUIFactory;
+
+	UPROPERTY()
+	class UEndGameWidget* EndGameUI;
+
 	UFUNCTION()
 	void VolumeDown();
 

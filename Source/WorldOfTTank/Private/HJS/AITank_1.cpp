@@ -55,7 +55,7 @@ void AAITank_1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	bStopTurn = (GetMesh()->GetPhysicsAngularVelocityInDegrees().Length() > 40);
+	bStopTurn = (GetMesh()->GetPhysicsAngularVelocityInDegrees().Length() > 50);
 	SetSpeed();
 	UpdateMovementSound();
 }
@@ -158,7 +158,7 @@ void AAITank_1::RotateBarrel(FVector LookAtTarget)
 {
 	// 포신 각도 설정 : 탄도학 적용 버전
 	// 타겟의 로테이션이 바닥을 기준으로 되어있어 조금 올림
-	LookAtTarget.Z = LookAtTarget.Z+40.f;
+	LookAtTarget.Z = LookAtTarget.Z;
 	FVector ToTarget = LookAtTarget - GetMesh()->GetSocketLocation(FName("turret_jnt"));
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 	float TargetDistance = ToTarget.Size2D() / 100.f; // 수평 거리
@@ -185,14 +185,15 @@ float AAITank_1::RotateTank(FVector LookAtTarget)
 	if (LookAtTarget == FVector::ZeroVector) {
 		return 0.f;
 	}
-	FVector rightVector = GetMesh()->GetRightVector().GetSafeNormal();
-
+	FVector RightVector = GetMesh()->GetRightVector().GetSafeNormal();
+	FVector ForWordVector = GetMesh()->GetForwardVector().GetSafeNormal();
 	//FRotator CurrentRotation = GetMesh()->GetComponentRotation();
 	FVector ToTarget = LookAtTarget - GetMesh()->GetComponentLocation();
 	ToTarget.Z = 0.f;
 	ToTarget.Normalize();
-	float result = FVector::DotProduct(rightVector, ToTarget);
-	if (result > -0.2f && result < 0.2f)
+	float result = FVector::DotProduct(RightVector, ToTarget);
+	float result2 = FVector::DotProduct(ForWordVector, ToTarget);
+	if ((result > -0.15f && result < 0.15f) && (result2 > 0.9f))
 		return 0;
 	return result < 0.f ? -1.f : 1.f;
 }

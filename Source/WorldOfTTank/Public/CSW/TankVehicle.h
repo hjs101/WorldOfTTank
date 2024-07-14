@@ -30,6 +30,8 @@ public:
 	void	RotateBarrel(float Value);
 	USceneComponent* GetProjectileSpawnPoint() const;
 	void GetCurrentHitPoint(FHitResult& Hit) const;
+	void UpdateMovementSound();
+	
 private:
 	float MoveState;
 
@@ -53,6 +55,18 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UParticleSystemComponent* GunFire;
+
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UAudioComponent* FireSoundComp;
+
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UAudioComponent* TrackSoundComp;
+
+	UPROPERTY(EditAnywhere, Category="FX")
+	USoundBase* FireSound;
+
+	UPROPERTY(EditAnywhere, Category="FX")
+	USoundBase* TrackSound;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UTankVehicleAnimInstance> AnimInstanceClass;

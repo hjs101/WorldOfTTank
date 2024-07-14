@@ -86,7 +86,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	//}
 
 	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("적 타격 효과"));
-	Explosion->Activate();
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Explosion->Template, Hit.Location, FRotator::ZeroRotator, FVector(3));
 	// 부서지는 장애물일때
 	AFractureWall* FractureComp = Cast<AFractureWall>(OtherActor);
 
@@ -129,6 +129,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	}
 
 
-	// Destroy();
+	Destroy();
 }
 

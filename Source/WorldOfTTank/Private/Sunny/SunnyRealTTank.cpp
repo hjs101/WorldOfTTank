@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Sunny/SunnyEnemy.h"
+#include "Sunny/SunnyRealTTank.h"
 #include "Sunny/SunnyEnemyFSM.h"
 #include "Sunny/SunnyGameMode.h"
 #include "Sunny/SunnyTTank.h"
@@ -23,12 +23,13 @@
 #include "Components/CapsuleComponent.h"
 #include "PaperSpriteComponent.h"
 
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "ChaosWheeledVehicleMovementComponent.h"
 
 
 
-
-
-ASunnyEnemy::ASunnyEnemy()
+ASunnyRealTTank::ASunnyRealTTank()
 {
 	// EnemyFSM 컴포넌트 추가
 	Fsm = CreateDefaultSubobject<USunnyEnemyFSM>(TEXT("FSM"));
@@ -44,28 +45,89 @@ ASunnyEnemy::ASunnyEnemy()
 
 	// Enemy Indicator 컴포넌트 추가
 	EnemyIndicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Enemy Indicator"));
-	EnemyIndicator->SetupAttachment(HeadMesh);
+	EnemyIndicator->SetupAttachment(GetMesh());
 }
 
-void ASunnyEnemy::Tick(float DeltaTime)
+
+
+void ASunnyRealTTank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	if (InFireRange())
 	{
-		RotateTurret(TTank->GetActorLocation());
+		UE_LOG(LogTemp, Warning, TEXT("Tick()->InFireRange()"))
+		RotateTurret(PlayerTTank->GetActorLocation());
 	}
-	
+
 	SetBeamLocation();
+}
+
+void ASunnyRealTTank::RotateTurret(FVector LookAtTarget)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("RotateTurret()"))
+	//if (LookAtTarget == FVector::ZeroVector)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("RotateTurret()->NO LookAtTarget"))
+	//	return;
+	//}
+	//UE_LOG(LogTemp, Warning, TEXT("RotateTurret()-> OK LookAtTarget"))
+
+	//USkeletalMeshComponent* SkelMesh = GetMesh();
+	//UE_LOG(LogTemp, Warning, TEXT("======Set SkelMesh==============="))
+
+	//if (SkelMesh == nullptr)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("RotateTurret()->NO SkelMesh"))
+	//	return;
+	//}
+	//UE_LOG(LogTemp, Warning, TEXT("RotateTurret()->OK SkelMesh"))
+
+	//// Get the location of the turret socket
+	//FVector TurretLocation = SkelMesh->GetSocketLocation(FName("turret_jnt"));
+	//UE_LOG(LogTemp, Warning, TEXT("TurretLocation: X=%f, Y=%f, Z=%f"), TurretLocation.X, TurretLocation.Y, TurretLocation.Z);
+
+	//// Calculate the direction to the target
+	//FVector ToTarget = PlayerTTank->GetActorLocation() - TurretLocation;
+	//FRotator ToTargetRotation = ToTarget.Rotation();
+	//UE_LOG(LogTemp, Warning, TEXT("ToTargetRotation: X=%f, Y=%f, Z=%f"), ToTargetRotation.Roll, ToTargetRotation.Pitch, ToTargetRotation.Yaw);
+
+	//// Get the current rotation of the turret
+	//FRotator CurrentRotation = SkelMesh->GetSocketRotation(FName("turret_jnt"));
+	//UE_LOG(LogTemp, Warning, TEXT("CurrentRotation: X=%f, Y=%f, Z=%f"), CurrentRotation.Roll, CurrentRotation.Pitch, CurrentRotation.Yaw);
+
+	//// Calculate the difference in yaw between the current rotation and the target rotation
+	//float YawDifference = FMath::FindDeltaAngleDegrees(CurrentRotation.Yaw, ToTargetRotation.Yaw);
+	//UE_LOG(LogTemp, Warning, TEXT("YawDifference: %f"), YawDifference);
+
+	//// Normalize the yaw difference to be within -1 to 1
+	//float YawInput = FMath::Clamp(YawDifference / 180.0f, -1.0f, 1.0f);
+	//UE_LOG(LogTemp, Warning, TEXT("YawInput: %f"), YawInput);
+
+
+	//// Get the vehicle movement component and set the yaw input
+	//UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
+	//if (VehicleMovement)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("SetYawInput()"));
+
+	//	VehicleMovement->SetYawInput(YawInput);
+	//}
+	
 
 
 }
 
-void ASunnyEnemy::BeginPlay()
+void ASunnyRealTTank::RotateBarrel(FVector LookAtTarget)
+{
+
+}
+
+void ASunnyRealTTank::BeginPlay()
 {
 	Super::BeginPlay();
-
-	TTank = Cast<APlayerTank>(UGameplayStatics::GetPlayerPawn(this, 0));
+	
+	PlayerTTank = Cast<APlayerTank>(UGameplayStatics::GetPlayerPawn(this, 0));
 
 
 	if (HealthWidgetComp)
@@ -76,9 +138,7 @@ void ASunnyEnemy::BeginPlay()
 			HealthBar = Cast<UProgressBar>(HealthWidget->GetWidgetFromName(TEXT("HealthBar")));
 			CurrentHealthLabel = Cast<UTextBlock>(HealthWidget->GetWidgetFromName(TEXT("CurrentHealthLabel")));
 			MaxHealthLabel = Cast<UTextBlock>(HealthWidget->GetWidgetFromName(TEXT("MaxHealthLabel")));
-			// 잘 보면 100,100은생겼는데 체력바는 안생겼죠 응응 ㄱ
-			// 이게 왜그러냐면, Health 컴포넌트가 이 에너미의 자식이잖아요 엉
-			// 순서가 반대인듯?? 잘은 모르겠지만 비긴플레이가 동시에 아니면 여기가 먼저 생기거나 하는 거 같은데 헬스컴포넌트에서 생성자에서 넣으면 될듯?
+			
 			if (!HealthBar || !CurrentHealthLabel || !MaxHealthLabel)
 			{
 				UE_LOG(LogTemp, Error, TEXT("HealthBar, CurrentHealthLabel, or MaxHealthLabel is not found in HealthWidget"));
@@ -107,31 +167,16 @@ void ASunnyEnemy::BeginPlay()
 }
 
 
-// 몸체 회전
-void ASunnyEnemy::RotateTank(FVector LookAtTarget)
-{
-	if (LookAtTarget == FVector::ZeroVector)
-	{
-		return;
-	}
-	FVector ToTarget = LookAtTarget - BodyMesh->GetComponentLocation();
-	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
-
-	BodyMesh->SetWorldRotation(FMath::RInterpTo(BodyMesh->GetComponentRotation(), LookAtRotation, UGameplayStatics::GetWorldDeltaSeconds(this), 2.f));
-}
-
-
-
 
 //  발사 타이머 설정
-void ASunnyEnemy::SetFireTimer()
+void ASunnyRealTTank::SetFireTimer()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("SetFireTimer()"));
-	GetWorldTimerManager().SetTimer(FireRateTimerHandle, this, &ASunnyEnemy::CheckFireCondition, FireRate, true);
+	GetWorldTimerManager().SetTimer(FireRateTimerHandle, this, &ASunnyRealTTank::CheckFireCondition, FireRate, true);
 }
 
 // 발사 타이머 해제
-void ASunnyEnemy::ClearFIreTimer()
+void ASunnyRealTTank::ClearFIreTimer()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ClearFireTimer()"));
 	if (GetWorldTimerManager().IsTimerActive(FireRateTimerHandle))
@@ -139,13 +184,13 @@ void ASunnyEnemy::ClearFIreTimer()
 		GetWorldTimerManager().ClearTimer(FireRateTimerHandle);
 	}
 }
-	
+
 
 
 // 발사할지 여부 확인
-void ASunnyEnemy::CheckFireCondition()
+void ASunnyRealTTank::CheckFireCondition()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("CheckFireCondition()"));
+	UE_LOG(LogTemp, Warning, TEXT("CheckFireCondition()"));
 	if (InFireRange())
 	{
 		Fire();
@@ -153,12 +198,12 @@ void ASunnyEnemy::CheckFireCondition()
 }
 
 // 사정 거리 여부 확인 함수
-bool ASunnyEnemy::InFireRange()
+bool ASunnyRealTTank::InFireRange()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("InFireRange()"));
-	if (TTank)
+	if (PlayerTTank)
 	{
-		float Distance = FVector::Dist(GetActorLocation(), TTank->GetActorLocation());
+		float Distance = FVector::Dist(GetActorLocation(), PlayerTTank->GetActorLocation());
 
 		if (Distance <= FireRange)
 		{
@@ -171,7 +216,7 @@ bool ASunnyEnemy::InFireRange()
 
 
 // 체력바 설정
-void ASunnyEnemy::SetHealthPercent(float Health, float MaxHealth)
+void ASunnyRealTTank::SetHealthPercent(float Health, float MaxHealth)
 {
 	if (HealthBar)
 	{
@@ -189,7 +234,7 @@ void ASunnyEnemy::SetHealthPercent(float Health, float MaxHealth)
 		CurrentHealthLabel->SetText(FText::AsNumber(Health, &Opts));
 	}
 	else
-	{ 
+	{
 		UE_LOG(LogTemp, Error, TEXT("CurrentHealthLabel is null"));
 	}
 
@@ -207,22 +252,22 @@ void ASunnyEnemy::SetHealthPercent(float Health, float MaxHealth)
 
 
 // 체력이 0 이면  죽음
-void ASunnyEnemy::OnDie()
+void ASunnyRealTTank::OnDie()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("뚝배기!!"));
+	UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
 	bDie = true;
 	// 머리 날리기
-	HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-	HeadMesh->SetSimulatePhysics(true);
-	HeadMesh->AddImpulse(FVector(0, 0, 2000), NAME_None, true);
+	//HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	//HeadMesh->SetSimulatePhysics(true);
+	//HeadMesh->AddImpulse(FVector(0, 0, 2000), NAME_None, true);
 
 	// 종료
 	ClearFIreTimer();
 	EnemyMove->StopMovementImmediately();
-	
+
 
 	// 실행창에 상태 메세지 출력하기
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan,TEXT("Enemy 격추 효과"));
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("Enemy 격추 효과"));
 
 	if (bDie)
 	{
@@ -231,9 +276,7 @@ void ASunnyEnemy::OnDie()
 		EnemyIndicator->SetVisibility(false);
 
 		// 죽는 순간  내비에 탐지
-		BodyMesh->SetCanEverAffectNavigation(true);
-		HeadMesh->SetCanEverAffectNavigation(true);
-		CapsuleComp->SetSimulatePhysics(false);
+		GetMesh()->SetCanEverAffectNavigation(true);
 	}
 
 	PrimaryActorTick.SetTickFunctionEnable(false);
@@ -241,21 +284,21 @@ void ASunnyEnemy::OnDie()
 }
 
 // Enemy Delete
-void ASunnyEnemy::HandleDestruction()
+void ASunnyRealTTank::HandleDestruction()
 {
 	Super::HandleDestruction();
 	Destroy();
 }
 
 // 진성 AI 죽음 확인 
-bool ASunnyEnemy::IsDie()
+bool ASunnyRealTTank::IsDie()
 {
 	return bDie;
 }
 
 
 // 빔 길이 결정
-void ASunnyEnemy::SetBeamLocation()
+void ASunnyRealTTank::SetBeamLocation()
 {
 	FVector Start = ProjectileSpawnPoint->GetComponentLocation();
 	FVector ForwardVector = ProjectileSpawnPoint->GetForwardVector();
@@ -298,7 +341,7 @@ void ASunnyEnemy::SetBeamLocation()
 }
 
 // 빔 표시
-void ASunnyEnemy::DrawBeam(FVector Start, FVector End)
+void ASunnyRealTTank::DrawBeam(FVector Start, FVector End)
 {
 	if (BeamNiagara)
 	{
@@ -310,4 +353,3 @@ void ASunnyEnemy::DrawBeam(FVector Start, FVector End)
 		}
 	}
 }
-

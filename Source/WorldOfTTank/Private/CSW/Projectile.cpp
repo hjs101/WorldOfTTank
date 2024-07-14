@@ -9,7 +9,6 @@
 #include "HJS/AITankCPU_1.h"
 #include "GameFramework/DamageType.h"
 #include "HJS/FractureWall.h"
-#include "HJS/Obstacle.h"
 #include "Particles/ParticleSystemComponent.h"
 
 // Sets default values

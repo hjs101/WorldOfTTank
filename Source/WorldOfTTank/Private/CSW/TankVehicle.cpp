@@ -5,6 +5,7 @@
 #include "ChaosVehicleMovementComponent.h"
 #include "CSW/Projectile.h"
 #include "CSW/TankVehicleAnimInstance.h"
+#include "HJS/AITankCPU_1.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
@@ -137,13 +138,15 @@ void ATankVehicle::Brake()
 	GetVehicleMovementComponent()->SetBrakeInput(0);
 }
 
-FVector ATankVehicle::GetCurrentHitPoint() const
+void ATankVehicle::GetCurrentHitPoint(FHitResult& Hit) const
 {
 	FVector Start = ProjectileSpawnPoint->GetComponentLocation() ;
 	FVector End = Start + ProjectileSpawnPoint->GetForwardVector() * 100000000000;
-	FHitResult	Hit;
-	GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldStatic);
-	return Hit.ImpactPoint;
+	
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	
+	GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldStatic, Params);
 }
 
 void ATankVehicle::SetPlayerTankDamage(float Damage)

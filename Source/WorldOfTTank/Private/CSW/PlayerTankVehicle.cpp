@@ -6,7 +6,9 @@
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/WidgetComponent.h"
+#include "CSW/ChasingAim.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "HJS/AITankCPU_1.h"
 
 APlayerTankVehicle::APlayerTankVehicle()
 {
@@ -46,7 +48,14 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	ChasingAim->SetWorldLocation(GetCurrentHitPoint());
+	FHitResult hit;
+	GetCurrentHitPoint(hit);
+	AActor* tmp = hit.GetActor();
+	if (Cast<AAITankCPU_1>(tmp))
+		Cast<UChasingAim>(ChasingAim->GetUserWidgetObject())->SetIsHit(true);
+	else
+		Cast<UChasingAim>(ChasingAim->GetUserWidgetObject())->SetIsHit(false);
+	ChasingAim->SetWorldLocation(hit.ImpactPoint);
 	FRotator Cam = FpsCameraComp->GetComponentRotation();
 	if (CamDist[CamIdx] != SpringArmComp->TargetArmLength)
 		LerpZoom(DeltaSeconds);
@@ -121,7 +130,7 @@ void APlayerTankVehicle::LerpZoom(float DeltaSeconds)
 void APlayerTankVehicle::ChangeToFps()
 {
 	CameraComp->Deactivate();
-	FRotator look = (GetCurrentHitPoint() - FpsCameraComp->GetComponentLocation()).Rotation();
+	FRotator look = (GetCursorTarget() - FpsCameraComp->GetComponentLocation()).Rotation();
 	FpsCameraComp->SetWorldRotation(look);
 	FpsCameraComp->Activate();
 
@@ -157,7 +166,9 @@ void APlayerTankVehicle::ZoomIn()
 	if (IsFps == false && CamIdx == 0)
 		ChangeToFps();
 	if (IsFps == true && FpsCameraComp->FieldOfView != 5)
-			FpsCameraComp->FieldOfView /= 2;
+	{
+		FpsCameraComp->FieldOfView /= 2;
+	}
 	else if (IsFps == false)
 			CamIdx--;
 }

@@ -36,7 +36,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	class ASunnyEnemy* AiEnemy;
+	class ASunnyNewTTank* SunnyAi;
 
 
 	float GetHealth() const { return Health; }

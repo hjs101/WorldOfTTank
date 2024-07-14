@@ -29,7 +29,7 @@ public:
 	void	RotateTurret(float Value);
 	void	RotateBarrel(float Value);
 	USceneComponent* GetProjectileSpawnPoint() const;
-	FVector GetCurrentHitPoint() const;
+	void GetCurrentHitPoint(FHitResult& Hit) const;
 private:
 	float MoveState;
 

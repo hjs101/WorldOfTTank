@@ -2,12 +2,16 @@
 
 
 #include "Sunny/SunnyProjectile.h"
+
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
-#include "CSW/Tank.h"
+
+#include "CSW/PlayerTankVehicle.h"
 #include "HJS/AITankCPU_1.h"
+
+
 // Sets default values
 ASunnyProjectile::ASunnyProjectile()
 {
@@ -52,14 +56,18 @@ void ASunnyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	UE_LOG(LogTemp, Warning, TEXT("OtherComp: %s"), *OtherComp->GetName());*/
 	
 	auto MyOwner = GetOwner();
-	if (MyOwner == nullptr) return;
+	if (MyOwner == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SunnyProjectile::OnHit()  --> NO MyOwner"));
+		return;
+	}
 
 	auto MyOwnerInstigator = MyOwner->GetInstigatorController();
 	auto DamageTypeClass = UDamageType::StaticClass();
 
 
 	// Player일때
-	ATank* PlayerTank = Cast<ATank>(OtherActor);
+	APlayerTankVehicle* PlayerTank = Cast<APlayerTankVehicle>(OtherActor);
 	if (PlayerTank != nullptr)
 	{
 		PlayerTank->SetPlayerTankDamage(Damage);
@@ -67,7 +75,7 @@ void ASunnyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 
 	AAITankCPU_1* AITank = Cast<AAITankCPU_1>(OtherActor);
 
-	if (AITank != nullptr)
+	if (AITank != nullptr) 
 	{
 		AITank->HealthDown(Damage);
 	}

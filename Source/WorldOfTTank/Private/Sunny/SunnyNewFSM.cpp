@@ -115,28 +115,28 @@ void USunnyNewFSM::IdleState()
 
 void USunnyNewFSM::MoveState()
 {
-	UE_LOG(LogTemp, Warning, TEXT("MoveState()"));
+	//UE_LOG(LogTemp, Warning, TEXT("MoveState()"));
 
 	FVector destination;
 	// 타깃이 존재하는지 확인
 	if (Target)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Target Found"));
+		//UE_LOG(LogTemp, Warning, TEXT("Target Found"));
 		destination = Target->GetActorLocation();
 
 		if (nullptr != Me)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Rotate Turret"));
+			//(LogTemp, Warning, TEXT("Rotate Turret"));
 			Me->CalcTurretRotation(Target);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Rotate Tank"));
+		//UE_LOG(LogTemp, Warning, TEXT("Rotate Tank"));
 		Me->RotateTank(destination);
 	}
 	else
 	{
 		// 타깃이 없다면 Idle 상태로 전환
 		SunnyAiState = ESunnyAiState::Idle;
-		UE_LOG(LogTemp, Warning, TEXT("Change MoveState->IdleState"));
+		//UE_LOG(LogTemp, Warning, TEXT("Change MoveState->IdleState"));
 		return;
 	}
 
@@ -163,22 +163,36 @@ void USunnyNewFSM::MoveState()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ENavigationQueryResult::Success"));
 		
-		// 타깃쪽으로 이동
+		// 타깃쪽으로 이동 // 저번에 그래서...어떻게 해야해? 애니메이션 하는 거랑. 뭐.. 한다고 했는데. 안되서. ㅋㅋ
+		// 몸돌리는 거 + 이동을 분리할 건데, 이동도 이미 있어요  에이아이컨트롤러에서 만들ㅇ이ㅓ야/하/ㄴ ㅡ그래?? ㅇ오옹
+
 		AiController->MoveToLocation(destination);
 		UE_LOG(LogTemp, Warning, TEXT("AiController->MoveToLocation(destination)"));
 
-		/*if (nullptr != Me)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Move Sunny Ai TTank"));
-			Me->Move(1);
-			UE_LOG(LogTemp, Warning, TEXT("Move Forward"));
-		}*/
+		//if (nullptr != Me)
+		//{
+		//	UE_LOG(LogTemp, Warning, TEXT("Move Sunny Ai TTank"));
+		//	Me->Move(1);
+		//	UE_LOG(LogTemp, Warning, TEXT("Move Forward"));
+		//}
 	}
 	else
 	{
-		// 랜덤 위치로 이동
+		// 보다시피  이제 무브투로케이션으로 못움직이죠 응으 ㅇ 몸체 트는 것도 안 되는 건가?? 몸 돌리는 것도 안되네요 응응 그거 목 돌리듯이 바꿔볼게.
+		// 몸 돌리는 건   목 돌리는 거랑 달라서  setyawinput> 저부분 참고해ㅑ 하구여
+		// 플레이어 방향으로 회전 -> 회전 다 끝났으면 직진 -> 이런방식으로 해야 하는데
+		// nav mesh 시스템하고도 연계해야 해요
+		// 힣잉.,... 어려운가?? 
+		// 좀 어렵긴 해요 어디 부분 참고해서 볼까?? 
+		// 제 코드중에 에이아이 컨트롤러 부분 있는데, 누나는 지금 에이아이 컨트롤러 없으니까 기존 에이아이 컨트롤러 상속받아서 만들어야하고
+		// 적어드릴게여
+		// 1. 에이아이 컨트롤러 만들기
+		// 2. nav path 경로대로 회전 -> 이동의 무브 함수 만들기 -> AITankController 참고
+		// 3. nav path 를 탐색해서 ai controller 에 path 설정 해주기 FindPositionToAttack 참고
+		// 일단 시도만 해보고 안될 거 같으면 베타로 넘겨요 :) ㅋㅋ 나 다 못 할거 같은 느낌... ㅋㅋㅋ 우선... 체력바 안 깍이는 거 먼저 좀 봐줘... 그래야 내일 영상이라도 찍지. ㅋㅋ
+		// //랜덤 위치로 이동
 		auto result = AiController->MoveToLocation(RandomPos);
-		// 목적지에 도착하면
+		 //목적지에 도착하면
 		if (result == EPathFollowingRequestResult::AlreadyAtGoal)
 		{
 			// 새로운 랜덤 위치 가져오기
@@ -186,12 +200,12 @@ void USunnyNewFSM::MoveState()
 		}
 	}
 
-	if (nullptr != Me)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Move Sunny Ai TTank"));
-		Me->Move(1);
-		UE_LOG(LogTemp, Warning, TEXT("Move Forward"));
-	}
+	//if (nullptr != Me)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Move Sunny Ai TTank"));
+	//	Me->Move(1);
+	//	UE_LOG(LogTemp, Warning, TEXT("Move Forward"));
+	//}
 
 
 	// 타깃과 가까워지면 공격 상태로 전환하고 싶다
@@ -207,7 +221,6 @@ void USunnyNewFSM::MoveState()
 		if (nullptr != Me)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Attack Sunny Ai TTank"));
-			Me->EnemyMove->StopMovementImmediately();
 			Me->Move(0);
 			UE_LOG(LogTemp, Warning, TEXT("Stop Move"));
 		}
@@ -216,7 +229,7 @@ void USunnyNewFSM::MoveState()
 
 void USunnyNewFSM::AttackState()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AttackState()"));
+	//UE_LOG(LogTemp, Warning, TEXT("AttackState()"));
 
 	if (isTimerSeted == false)
 	{
@@ -248,4 +261,19 @@ void USunnyNewFSM::AttackState()
 void USunnyNewFSM::DieState()
 {
 
+	UE_LOG(LogTemp, Warning, TEXT("DieState()"));
+	//UE_LOG(LogTemp, Warning, TEXT("Entering DieState for %s"), *Me->GetName());
+
+	if (Me)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("OnDie() 호출"));
+		Me->Dead();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Me is null in DieState"));
+	}
+
+	// Tick Enabled
+	SetComponentTickEnabled(false);
 }

@@ -187,7 +187,6 @@ void USunnyEnemyFSM::MoveState()
 
 		// 2. 공격 상태로 전환하고 싶다
 		EnemyState = EEnemyState::Attack;
-		Me->EnemyMove->StopMovementImmediately();
 	}
 }
 
@@ -250,7 +249,7 @@ void USunnyEnemyFSM::DieState()
 	if (Me)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("OnDie() 호출"));
-		Me->OnDie();
+		Me->Dead();
 	}
 	else
 	{

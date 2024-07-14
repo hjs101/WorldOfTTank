@@ -15,6 +15,8 @@ class WORLDOFTTANK_API ASunnyRealTankPawn : public AWheeledVehiclePawn
 public:
 	ASunnyRealTankPawn();
 
+	virtual void Tick(float DeltaTime) override;
+
 	
 	// 탱크 몸체 회전
 	void RotateTank(FVector LookAtTarget);
@@ -25,6 +27,7 @@ public:
 
 
 	// 이동
+	UFUNCTION()
 	void Move(float value);
 
 	// 발사
@@ -33,11 +36,6 @@ public:
 
 	// 특정 폰 파괴
 	void HandleDestruction();
-
-
-	// 미사일 발사 지점  
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class USceneComponent* ProjectileSpawnPoint;
 
 
 	// 재질
@@ -49,18 +47,23 @@ public:
 
 
 	// 탱크 머리, 몸체가 타겟을 향할 때
-	bool isFound = false;
+	bool bFound = false;
+
+
+	UFUNCTION()
+	void SetSpeed();
 
 
 protected:
 	virtual void BeginPlay() override;
 
+	// 미사일 발사 지점  
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* ProjectileSpawnPoint;
+
 	
 
-
-
 private:
-
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class ASunnyProjectile> ProjectileClass;
 
@@ -68,7 +71,12 @@ private:
 	// 탱크 머리 각도
 	float TurretAngle;
 
-	
+	// 이동 상태 표시
+	float MoveState;
+
+	// 회전 변수
+	//bool bStopTurn = false;
+	float VehicleYaw = 0.f;
 
 
 	 

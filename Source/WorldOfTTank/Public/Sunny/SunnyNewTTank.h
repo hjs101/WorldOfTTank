@@ -78,17 +78,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FSMComponent)
 	class USunnyNewFSM* FSM;
 
-	// 적 움직임 (플레이어 움직임에 따라 폰 반응 : 중력 고려 x)
-	UPROPERTY(VisibleAnywhere, BlueprintreadOnly, Category = Movement)
-	class UFloatingPawnMovement* EnemyMove;
-
 	// 공격 타이머 설정
 	void SetFireTimer();
 	// 공격 타이머 해제
 	void ClearFIreTimer();
 
 	//  죽음 상태 호출
-	void OnDie();
+	void Dead();
 
 
 
@@ -121,7 +117,7 @@ public:
 
 	void SetHealthPercent(float health, float maxHealth);
 
-	bool bDie = false;
+	bool bDead = false;
 
 
 	// Enemy Indicator

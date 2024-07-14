@@ -17,7 +17,7 @@ class WORLDOFTTANK_API USunnyVehicleAnimationInstance : public UVehicleAnimation
 public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	void RotateWheel(float DeltaSeconds);
-	
+
 	UFUNCTION()
 	float GetSpeedOffset() const;
 	UFUNCTION()

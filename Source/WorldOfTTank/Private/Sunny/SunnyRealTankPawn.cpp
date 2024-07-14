@@ -17,6 +17,11 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
+
+#include "Kismet/GameplayStatics.h"
 
 
 
@@ -30,6 +35,12 @@ ASunnyRealTankPawn::ASunnyRealTankPawn()
 	// Projectile 발사 위치
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
 	ProjectileSpawnPoint->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("gun_jntSocket"));
+
+	// Fire 이펙트 나이아가라 컴포넌트 추가
+	FireNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FireNiagara"));
+	FireNiagara->SetupAttachment(ProjectileSpawnPoint);
+	FireNiagara->bAutoActivate = false; // 처음에는 비활성 상태로 설정
+	FireNiagara->SetRelativeScale3D(FVector(1.f)); // 필요에 따라 크기 조정
 
 }
 
@@ -99,7 +110,7 @@ void ASunnyRealTankPawn::RotateTank(FVector LookAtTarget)
 // 탱크 머리 돌리기
 void ASunnyRealTankPawn::RotateTurret(FVector LookAtTarget)
 {
-	UE_LOG(LogTemp, Warning, TEXT("RotateTurret()"));
+	//UE_LOG(LogTemp, Warning, TEXT("RotateTurret()"));
 	if (nullptr == GetMesh())
 	{
 		return;
@@ -181,6 +192,19 @@ void ASunnyRealTankPawn::Fire()
 
 	ASunnyProjectile* Projectile = GetWorld()->SpawnActor<ASunnyProjectile>(ProjectileClass, Location, Rotation);
 	Projectile->SetOwner(this);
+
+	if (FireNiagara) {
+		// ProjectileSpawnPoint의 위치와 회전에 Niagara 이펙트를 재생합니다.
+		FireNiagara->SetWorldLocationAndRotation(Location, Rotation);
+		FireNiagara->Activate(); // Niagara 이펙트 활성화
+	}
+
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+	}
+
+
 }
 
 void ASunnyRealTankPawn::HandleDestruction()

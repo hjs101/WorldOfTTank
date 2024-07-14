@@ -130,7 +130,7 @@ void USunnyNewFSM::MoveState()
 			Me->CalcTurretRotation(Target);
 		}
 		//UE_LOG(LogTemp, Warning, TEXT("Rotate Tank"));
-		Me->RotateTank(destination);
+		//Me->RotateTank(destination);
 	}
 	else
 	{

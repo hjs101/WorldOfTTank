@@ -11,6 +11,10 @@
 #include "CSW/PlayerTankVehicle.h"
 #include "HJS/AITankCPU_1.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
+
 
 // Sets default values
 ASunnyProjectile::ASunnyProjectile()
@@ -85,6 +89,9 @@ void ASunnyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
 		Destroy();
 	}
+
+
+	
 
 }
 

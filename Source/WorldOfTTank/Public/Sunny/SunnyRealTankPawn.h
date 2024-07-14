@@ -54,6 +54,16 @@ public:
 	void SetSpeed();
 
 
+	// NiagaraSystem
+	UPROPERTY(EditAnyWhere, Category = "Combat")
+	class UNiagaraComponent* FireNiagara;
+
+	// 발사 소리
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class USoundBase* FireSound;
+
+
+
 protected:
 	virtual void BeginPlay() override;
 

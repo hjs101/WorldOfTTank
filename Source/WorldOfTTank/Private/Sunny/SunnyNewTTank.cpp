@@ -43,6 +43,7 @@ ASunnyNewTTank::ASunnyNewTTank()
 	// Enemy Indicator 컴포넌트 추가
 	EnemyIndicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Enemy Indicator"));
 	EnemyIndicator->SetupAttachment(GetMesh());
+
 }
 
 
@@ -53,8 +54,9 @@ void ASunnyNewTTank::Tick(float DeltaTime)
 	if (FSM && InFireRange())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ASunnyNewTTank::Tick() ---> InFireRange()"))
-		RotateTurret(PlayerTTank->GetActorLocation());
-		RotateTank(PlayerTTank->GetActorLocation());
+		CalcTurretRotation(PlayerTTank);
+		//RotateTurret(PlayerTTank->GetActorLocation());
+		//RotateTank(PlayerTTank->GetActorLocation());
 	}
 	
 
@@ -318,8 +320,7 @@ void ASunnyNewTTank::DrawBeam(FVector Start, FVector End)
 {
 	if (BeamNiagara)
 	{
-		UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-			GetWorld(), BeamNiagara, Start, FRotator::ZeroRotator);
+		UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BeamNiagara, Start, FRotator::ZeroRotator);
 		if (NiagaraComponent)
 		{
 			NiagaraComponent->SetVectorParameter(TEXT("Beam End"), End);

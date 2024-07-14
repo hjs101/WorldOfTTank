@@ -41,7 +41,7 @@ EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeCompone
         return EBTNodeResult::Failed;
     }
 
-    APawn* MainTarget = Cast<APawn>(BlackboardComp->GetValueAsObject(FName("MainTarget")));
+    AWheeledVehiclePawn* MainTarget = Cast<AWheeledVehiclePawn>(BlackboardComp->GetValueAsObject(FName("MainTarget")));
     if (MainTarget == nullptr)
     {
         return EBTNodeResult::Failed;
@@ -58,7 +58,10 @@ EBTNodeResult::Type UBTTask_HideBehindObstacle::ExecuteTask(UBehaviorTreeCompone
             continue;
         }
 
-        FVector EndLocation = MainTarget->GetActorLocation();
+        FVector EndLocation = MainTarget->GetMesh()->GetSocketLocation(FName("turret_jnt"));
+
+        
+
 
         FHitResult HitResult;
         FCollisionQueryParams CollisionParams;

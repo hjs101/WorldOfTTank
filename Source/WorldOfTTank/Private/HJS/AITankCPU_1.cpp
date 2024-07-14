@@ -5,7 +5,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "Perception/PawnSensingComponent.h"
 #include "HJS/AITankPlayer_1.h"
-#include "CSW/PlayerTank.h"
+#include "CSW/PlayerTankVehicle.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "HJS/AITankController_1.h"
 #include "NavigationSystem.h"
@@ -20,6 +20,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Sunny/SunnyEnemy.h"
+#include "Sunny/SunnyGameMode.h"
 
 AAITankCPU_1::AAITankCPU_1()
 {
@@ -39,7 +40,11 @@ AAITankCPU_1::AAITankCPU_1()
 	{
 		HpBar->SetWidgetClass(WidgetClass.Class);
 	}
-
+	OnDieMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OnDieMeshComp"));
+	OnDieMeshComp->SetupAttachment(RootComponent);
+	OnDieMeshComp->SetVisibility(false);
+	OnDieMeshComp->SetCollisionProfileName("NoCollision");
+	OnDieMeshComp->SetCanEverAffectNavigation(false);
 }
 
 void AAITankCPU_1::BeginPlay()
@@ -187,17 +192,22 @@ FVector AAITankCPU_1::GetHeadLocation()
 }
 
 // 레이저 쏴서 일직선 상에 있는지 확인하는 함수
-bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AActor* TargetActor) const
+bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,AActor* TargetActor) const
 {
 	// 타겟이 없으면 false 리턴
 	if (!TargetActor)
 	{
 		return false;
 	}
-	FVector StartVector = StartLocation;
-	StartVector.Z = StartVector.Z + 50.f;
+
+	AWheeledVehiclePawn* TargetTank = Cast<AWheeledVehiclePawn>(TargetActor);
+	if (TargetTank == nullptr)
+	{
+		return true;
+	}
+	
 	// 종료 위치는 타겟의 Vector
-	FVector EndLocation = TargetActor->GetActorLocation();
+	FVector EndLocation = TargetTank->GetMesh()->GetSocketLocation(FName("turret_jnt"));
 	// HitResult 선언
 	FHitResult HitResult;
 	// CollisionQueryParams 선언
@@ -206,17 +216,22 @@ bool AAITankCPU_1::HasLineOfSightToTarget(const FVector StartLocation ,const AAc
 	CollisionParams.AddIgnoredActor(this);
 	// 타겟도 무시
 	CollisionParams.AddIgnoredActor(TargetActor);
-	float SphereRadius = 40.f;
+	float SphereRadius = 30.f;
 	// 라인트레이싱 실행
 	bool bHit = GetWorld()->SweepSingleByChannel(
 		HitResult,
-		StartVector,
+		StartLocation,
 		EndLocation,
 		FQuat::Identity,
 		ECC_Visibility, // 가시성 채널 사용 
 		FCollisionShape::MakeSphere(SphereRadius),
 		CollisionParams
 	);
+	//if (bHit)
+	//{
+	//	//DrawDebugLine(GetWorld(), StartLocation, HitResult.Location, FColor::Green, false, 1, 0, 1);
+	//}
+
 	return bHit;
 }
 
@@ -229,13 +244,19 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor)
 		return true;
 	}
 
+	AWheeledVehiclePawn* TargetTank = Cast<AWheeledVehiclePawn>(TargetActor);
+	if (TargetTank == nullptr)
+	{
+		return true;
+	}
+
 	USkeletalMeshComponent* SkelMesh = GetMesh();
 	if (SkelMesh == nullptr)
 	{
 		return true;
 	}
 	// 타겟 방향 벡터 구하기
-	FVector ToTarget = TargetActor->GetActorLocation() - SkelMesh->GetSocketLocation(FName("turret_jnt"));
+	FVector ToTarget = TargetTank->GetMesh()->GetSocketLocation(FName("turret_jnt")) - SkelMesh->GetSocketLocation(FName("turret_jnt"));
 	FRotator ToTargetRotation = ToTarget.Rotation();
 	FRotator MyRotation = SkelMesh->GetSocketRotation(FName("turret_jnt"));
 	RotateTurret(ToTarget);
@@ -246,8 +267,10 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor)
 	ToTarget = TargetActor->GetActorLocation() - SkelMesh->GetSocketLocation(FName("gun_jnt"));
 	ToTargetRotation = ToTarget.Rotation();
 	MyRotation = SkelMesh->GetSocketRotation(FName("gun_jnt"));
+
+
 	// 2. 고도 확인하기
-	RotateBarrel(TargetActor->GetActorLocation());
+	RotateBarrel(TargetTank->GetMesh()->GetSocketLocation(FName("turret_jnt")));
 	if (abs(LookPitch - MyRotation.Pitch) > 2) {
 		// 2-1. 피치가 다르면서 한계고도 안쪽일 경우 false
 		if (LookPitch < UpLimit && LookPitch > DownLimit) {
@@ -270,7 +293,7 @@ void AAITankCPU_1::OnSeePawn(APawn* Pawn)
 	{
 		return;
 	}
-	if (Cast<APlayerTank>(Pawn)) 
+	if (Cast<APlayerTankVehicle>(Pawn)) 
 	{
 		BlackboardComp->SetValueAsObject(FName("TargetPlayer"), Pawn);
 	}
@@ -294,12 +317,12 @@ void AAITankCPU_1::Fire()
 }
 
 // 공격 유효지점 찾기
-FVector AAITankCPU_1::FindValidAttackPosition(float SampleRadius,const AActor* TargetActor)
+FVector AAITankCPU_1::FindValidAttackPosition(float SampleRadius,AActor* TargetActor)
 {
 
 
 	// 시작위치 불러오기
-	FVector StartLocation = GetActorLocation();
+	FVector StartLocation = GetMesh()->GetSocketLocation(FName("turret_jnt"));
 
 	if (TargetActor == nullptr) {
 		return StartLocation;
@@ -437,7 +460,7 @@ bool AAITankCPU_1::CheckForNearbyObstacle()
 
 	// 현재 위치를 기준으로 탐색 반경 설정
 	FVector StartLocation = GetActorLocation();
-	float SearchRadius = 2000.f;  // 예시로 반경 1000 설정
+	float SearchRadius = 5000.f;  // 예시로 반경 1000 설정
 
 	// 탐색 결과를 저장할 배열
 	TArray<FOverlapResult> OverlapResults;
@@ -545,8 +568,35 @@ void AAITankCPU_1::Die()
 		{
 			PawnSensingComponent->SetActive(false);
 		}
+		Move(0.f);
+		BodyTurn(0.f);
+		// 메시 스위칭
+		GetMesh()->SetVisibility(false);
+		GetMesh()->SetCollisionProfileName("NoCollision");
+		OnDieMeshComp->SetVisibility(true);
+		OnDieMeshComp->SetCollisionProfileName("Vehicle");
+		OnDieMeshComp->SetCanEverAffectNavigation(true);
+		
+		// 죽은 뒤 불 이펙트
+		if (OnDieFire)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),OnDieFire,GetActorLocation(),GetActorRotation());
+		}
 
-		// 죽는 순간 네비에 탐지
+		// 폭발 사운드
+		if (DieExplosionSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), DieExplosionSound, GetActorLocation());
+		}
+
+		// UI 갱신
+		ASunnyGameMode* gm = Cast<ASunnyGameMode>(GetWorld()->GetAuthGameMode());
+
+		if (gm)
+		{
+			gm->OnEnemyDie();
+		}
+
 		// bDie 활성화
 		bDie = true;
 	}
@@ -566,7 +616,7 @@ void AAITankCPU_1::SetBlackBoardTarget(AActor* OtherActor)
 		return;
 	}
 
-	if (Cast<APlayerTank>(OtherActor))
+	if (Cast<APlayerTankVehicle>(OtherActor))
 	{
 		BlackboardComp->SetValueAsObject("TargetPlayer", OtherActor);
 	}

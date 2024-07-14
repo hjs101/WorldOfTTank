@@ -53,7 +53,7 @@ protected:
 	USceneComponent* ProjecttileSpawnPoint;
 	// 한계 고도 변수
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float DownLimit = -5.f;
+	float DownLimit = -3.f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float UpLimit = 30.f;
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
@@ -61,6 +61,13 @@ protected:
 
 
 private:	
+	
+    UPROPERTY(VisibleAnywhere, Category = "SFX")
+    UAudioComponent* TrackSoundComp;
+
+    // Sound cue for the engine sound
+    UPROPERTY(EditAnywhere, Category = "SFX")
+    class USoundCue* TrackSoundCue;
 
 	// 변수
 	UPROPERTY(EditAnywhere, Category = "Movement")
@@ -83,9 +90,16 @@ private:
 	UFUNCTION()
 	float CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, float TargetHeight);
 
+	UPROPERTY(EditAnywhere, Category="Combat")
+	UParticleSystem* GunFire;
+
 	float TurretAngle;
 	float GunElevation;
+	UPROPERTY(EditAnywhere,Category="SFX")
+	class UAudioComponent* FireSoundComp;
+	UPROPERTY(EditAnywhere,Category="SFX")
+	class USoundBase* FireSound;
 
-	UFUNCTION()
-	bool IsRotationCompleted(FRotator CurrentRotation, FRotator TargetRotation, float Tolerance = 1.0f);
+private:
+	void UpdateMovementSound();
 };

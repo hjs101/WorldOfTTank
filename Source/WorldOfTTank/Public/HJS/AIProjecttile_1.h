@@ -42,4 +42,12 @@ private:
 	UPROPERTY(EditAnywhere, Category="Decal")
 	UMaterial* DecalMaterial = nullptr;
 
+	UPROPERTY(EditAnywhere, Category="Components")
+	UParticleSystemComponent* BoomSys;
+
+	UPROPERTY()
+	FTimerHandle BulletTimerHandle;
+
+	void BulletDestroy();
+
 };

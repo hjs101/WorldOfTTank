@@ -15,23 +15,46 @@ class WORLDOFTTANK_API ASunnyGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	ASunnyGameMode();
 
 	void ActorDied(AActor* DeadActor);
 
-	UPROPERTY(EditAnywhere, Category = "MiniMap")
-	class USceneCaptureComponent2D* SceneCaptureComp;
+	void OnEnemyDie();
 
 protected:
 
 	virtual void BeginPlay() override;
 
-	
-
 
 private:
 
-	//class ASunnyTTank* TTank;
-	//class ASunnyPlayerController* TTanksPlayerController;
+	class ASunnyTTank* TTank;
+	class ASunnyPlayerController* TTanksPlayerController;
+	UPROPERTY(EditAnywhere,Category="SFX")
+	class USoundBase* BGM;
+
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UAudioComponent* BGMComponent;
+
+	FTimerHandle BGMTimerHandle;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UTotalState> TotalStateUIFactory;
+
+	int32 EnemyCount = 2;
+
+	UPROPERTY()
+	class UTotalState* TotalStateUI;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UEndGameWidget> EndGameUIFactory;
+
+	UPROPERTY()
+	class UEndGameWidget* EndGameUI;
+
+	UFUNCTION()
+	void VolumeDown();
+
+	UPROPERTY(EditAnywhere)
+	float BGMRate = 15.f;
 	
 };

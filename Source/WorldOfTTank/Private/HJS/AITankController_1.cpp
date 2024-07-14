@@ -84,16 +84,18 @@ void AAITankController_1::MoveAlongPath(float DeltaTime)
 		}
 		if (PathPoints.Num() > 1)
 		{
-			FVector CurrentLocation = GetPawn()->GetActorLocation();
+			FVector CurrentLocation = FVector::ZeroVector;
 			FVector TargetLocation = FVector::ZeroVector;
 			if (CurrentPathPointIndex < PathPoints.Num())
 			{
 				TargetLocation = PathPoints[CurrentPathPointIndex];
 			}
-			FVector Direction = (TargetLocation - CurrentLocation).GetSafeNormal();
+			TargetLocation.Z = TargetLocation.Z + 30.f;
+			//DrawDebugSphere(GetWorld(),TargetLocation,50.f,12,FColor::Green,false,5.f);
 			AAITankCPU_1* AITank = Cast<AAITankCPU_1>(GetPawn());
 			if(AITank)
 			{
+				CurrentLocation = AITank->GetMesh()->GetSocketLocation(FName("turret_jnt"));
 				MoveState=1;
 				TurnState = AITank->RotateTank(TargetLocation);
 				if(AITank->GetFireState() && !bNonStop)

@@ -35,7 +35,7 @@ public:
 
 	// 특정 액터 방향으로 라인트레이싱 사용 함수
 	UFUNCTION()
-	bool HasLineOfSightToTarget(const FVector StartLocation, const AActor* TargetActor) const;
+	bool HasLineOfSightToTarget(const FVector StartLocation, AActor* TargetActor) const;
 	
 	// 터렛 회전 종료 확인 함수
 	UFUNCTION()
@@ -44,7 +44,7 @@ public:
 	virtual void Fire() override;
 	// 공격 유효 지점을 찾는 함수
 	UFUNCTION()
-	FVector FindValidAttackPosition(float SampleRadius,const AActor* TargetLocation);
+	FVector FindValidAttackPosition(float SampleRadius,AActor* TargetLocation);
 	// 사정거리 안으로 이동하도록 위치를 잡는 함수
 	UFUNCTION()
 	FVector FindValidAttackRange(const AActor* TargetActor);
@@ -74,11 +74,19 @@ private:
 	void LaserBeamSetting();
 	void LaserBeam(FVector Start, FVector End);
 
+	UPROPERTY(EditAnywhere, Category="Combat")
+	UParticleSystem* OnDieFire;
+
+	UPROPERTY(EditAnywhere, Category="SFX")
+	USoundBase* DieExplosionSound;
 
 	// 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UPawnSensingComponent* PawnSensingComponent;
 	
+	UPROPERTY(VisibleAnywhere,Category="Components")
+	UStaticMeshComponent* OnDieMeshComp;
+
 	// 위젯 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	class UWidgetComponent* HpBar;

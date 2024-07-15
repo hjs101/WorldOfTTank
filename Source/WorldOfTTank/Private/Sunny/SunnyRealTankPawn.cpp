@@ -194,7 +194,7 @@ void ASunnyRealTankPawn::Fire()
 	Projectile->SetOwner(this);
 
 	if (FireNiagara) {
-		// ProjectileSpawnPoint의 위치와 회전에 Niagara 이펙트를 재생합니다.
+		// ProjectileSpawnPoint의 위치와 회전에 Niagara 이펙트 재생
 		FireNiagara->SetWorldLocationAndRotation(Location, Rotation);
 		FireNiagara->Activate(); // Niagara 이펙트 활성화
 	}

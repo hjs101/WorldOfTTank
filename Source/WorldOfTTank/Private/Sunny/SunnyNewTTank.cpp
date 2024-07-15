@@ -44,6 +44,11 @@ ASunnyNewTTank::ASunnyNewTTank()
 	EnemyIndicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Enemy Indicator"));
 	EnemyIndicator->SetupAttachment(GetMesh());
 
+	OnDieMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OnDieMeshComp"));
+	OnDieMeshComp->SetupAttachment(RootComponent);
+	OnDieMeshComp->SetVisibility(false);
+	OnDieMeshComp->SetCollisionProfileName("NoCollision");
+	OnDieMeshComp->SetCanEverAffectNavigation(false);
 }
 
 
@@ -233,16 +238,16 @@ void ASunnyNewTTank::Dead()
 	UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
 	bDead = true;
 	// 머리 날리기
-	//HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-	//HeadMesh->SetSimulatePhysics(true);
-	//HeadMesh->AddImpulse(FVector(0, 0, 2000), NAME_None, true);
 
 	// 종료
 	ClearFIreTimer();
 
+	// 에너미 다이 처리
+	ASunnyGameMode* GM = Cast<ASunnyGameMode>(GetWorld()->GetAuthGameMode());
+	GM->OnEnemyDie();
 
 	// 실행창에 상태 메세지 출력하기
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("Enemy 격추 효과"));
+	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("Enemy 격추 효과"));
 
 	if (bDead)
 	{
@@ -251,11 +256,16 @@ void ASunnyNewTTank::Dead()
 		EnemyIndicator->SetVisibility(false);
 
 		// 죽는 순간  내비에 탐지
-		GetMesh()->SetCanEverAffectNavigation(true);
+		GetMesh()->SetVisibility(false);
+		GetMesh()->SetCollisionProfileName("NoCollision");
+		OnDieMeshComp->SetVisibility(true);
+		OnDieMeshComp->SetCollisionProfileName("Vehicle");
+		OnDieMeshComp->SetCanEverAffectNavigation(true);
+
+		PrimaryActorTick.SetTickFunctionEnable(false);
+		SetActorTickEnabled(false);
 	}
 
-	PrimaryActorTick.SetTickFunctionEnable(false);
-	SetActorTickEnabled(false);
 }
 
 // Enemy Delete

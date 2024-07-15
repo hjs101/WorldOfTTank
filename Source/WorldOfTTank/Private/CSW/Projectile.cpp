@@ -2,7 +2,7 @@
 
 
 #include "CSW/Projectile.h"
-#include "Sunny/SunnyEnemy.h"
+#include "Sunny/SunnyNewTTank.h"
 #include "GameFrameWork/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/DecalComponent.h"
@@ -120,7 +120,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		if (MyOwnerInstigator != nullptr) 
 		{
 			UClass* DamageTypeClass = UDamageType::StaticClass();
-			ASunnyEnemy* SunnyEnemy = Cast<ASunnyEnemy>(OtherActor);
+			ASunnyNewTTank* SunnyEnemy = Cast<ASunnyNewTTank>(OtherActor);
 			if (SunnyEnemy != nullptr)
 			{
 				UGameplayStatics::ApplyDamage(OtherActor, 50.f, MyOwnerInstigator, this, DamageTypeClass);

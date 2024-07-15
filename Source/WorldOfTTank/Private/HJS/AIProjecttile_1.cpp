@@ -99,7 +99,7 @@ void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	ATankVehicle* PlayerTank = Cast<ATankVehicle>(OtherActor);
 	if (PlayerTank != nullptr)
 	{
-		//PlayerTank->SetPlayerTankDamage(50.0);
+		PlayerTank->SetPlayerTankDamage(50.0);
 	}
 
 	AActor* MyOwner = GetOwner();

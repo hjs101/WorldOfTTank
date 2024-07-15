@@ -48,6 +48,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	class UWidgetComponent* ChasingAim;
 	
+	UPROPERTY(EditAnywhere)
+	class UPaperSpriteComponent* Indicator;
+
 	bool IsFps = false;
 \
 	void	LerpZoom(float DeltaSeconds);

@@ -31,8 +31,20 @@ ASunnyGameMode::ASunnyGameMode()
 void ASunnyGameMode::OnEnemyDie()
 {
 	TotalStateUI->UpdateTotalStateUI(--EnemyCount);
+	if (EnemyCount <= 0)
+	{
+		bVictory = true;
+		EndGame();
+	}
+}
+
+void ASunnyGameMode::OnPlayerDie()
+{
+	bVictory = false;
 	EndGame();
 }
+
+
 
 
 void ASunnyGameMode::BeginPlay()
@@ -167,8 +179,16 @@ void ASunnyGameMode::EndGame()
 	LoadRankingData();
 	AccPlayTime = GetWorld()->GetTimeSeconds()-StartTime;
 	
+	if (bVictory)
+	{
+		EndGameUI->VictorySetting(AccPlayTime);
 
-	EndGameUI->VictorySetting(AccPlayTime);
+	}
+	else
+	{
+		EndGameUI->LoseSetting();
+	}
+
 
 	ConvertRankingToString();
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();

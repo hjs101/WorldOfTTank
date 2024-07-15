@@ -63,7 +63,7 @@ void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	// 실행창에 상태 메세지 출력하기
 	FString logMsg = UEnum::GetValueAsString(EnemyState);
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
+	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
 	switch (EnemyState)
 	{
@@ -92,7 +92,7 @@ void USunnyEnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 // 대기 상태
 void USunnyEnemyFSM::IdleState()
 {
-	UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Idle"));
+	//UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Idle"));
 
 	// 1. 시간이 흘렀으니까
 	CurrentTime += GetWorld()->DeltaTimeSeconds;
@@ -113,7 +113,7 @@ void USunnyEnemyFSM::IdleState()
 // 이동 상태
 void USunnyEnemyFSM::MoveState() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Move"));
+	//UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Move"));
 
 	FVector destination;
 
@@ -159,7 +159,7 @@ void USunnyEnemyFSM::MoveState()
 	if (r.Result == ENavigationQueryResult::Success)
 	{
 		// 타깃쪽으로 몸을 돌리고 
-		UE_LOG(LogTemp, Warning, TEXT("SunnyEnemyFSM->Me->RotateTank()"));
+		//UE_LOG(LogTemp, Warning, TEXT("SunnyEnemyFSM->Me->RotateTank()"));
 		
 		Me->RotateTank(Target->GetActorLocation());
 		
@@ -193,7 +193,7 @@ void USunnyEnemyFSM::MoveState()
 // 공격 상태
 void USunnyEnemyFSM::AttackState() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Attack"));
+	//UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Attack"));
 
 	if (isTimerSeted == false)
 	{
@@ -243,7 +243,7 @@ void USunnyEnemyFSM::AttackState()
 // 죽음 상태
 void USunnyEnemyFSM::DieState() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Die"));
+	//UE_LOG(LogTemp, Warning, TEXT("EEnemyState::Die"));
 	//UE_LOG(LogTemp, Warning, TEXT("Entering DieState for %s"), *Me->GetName());
 
 	if (Me)

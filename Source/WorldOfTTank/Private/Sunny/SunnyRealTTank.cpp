@@ -56,7 +56,7 @@ void ASunnyRealTTank::Tick(float DeltaTime)
 
 	if (InFireRange())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Tick()->InFireRange()"))
+		//UE_LOG(LogTemp, Warning, TEXT("Tick()->InFireRange()"))
 		RotateTurret(PlayerTTank->GetActorLocation());
 	}
 
@@ -190,7 +190,7 @@ void ASunnyRealTTank::ClearFIreTimer()
 // 발사할지 여부 확인
 void ASunnyRealTTank::CheckFireCondition()
 {
-	UE_LOG(LogTemp, Warning, TEXT("CheckFireCondition()"));
+	//UE_LOG(LogTemp, Warning, TEXT("CheckFireCondition()"));
 	if (InFireRange())
 	{
 		Fire();
@@ -254,7 +254,7 @@ void ASunnyRealTTank::SetHealthPercent(float Health, float MaxHealth)
 // 체력이 0 이면  죽음
 void ASunnyRealTTank::OnDie()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
+	//UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
 	bDie = true;
 	// 머리 날리기
 	//HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
@@ -267,7 +267,7 @@ void ASunnyRealTTank::OnDie()
 
 
 	// 실행창에 상태 메세지 출력하기
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("Enemy 격추 효과"));
+	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("Enemy 격추 효과"));
 
 	if (bDie)
 	{

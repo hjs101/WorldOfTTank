@@ -58,7 +58,7 @@ void ASunnyNewTTank::Tick(float DeltaTime)
 
 	if (FSM && InFireRange())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ASunnyNewTTank::Tick() ---> InFireRange()"))
+		//UE_LOG(LogTemp, Warning, TEXT("ASunnyNewTTank::Tick() ---> InFireRange()"))
 		CalcTurretRotation(PlayerTTank);
 		//RotateTurret(PlayerTTank->GetActorLocation());
 		//RotateTank(PlayerTTank->GetActorLocation());
@@ -169,7 +169,7 @@ void ASunnyNewTTank::ClearFIreTimer()
 // 발사할지 여부 확인
 void ASunnyNewTTank::CheckFireCondition()
 {
-	UE_LOG(LogTemp, Warning, TEXT("CheckFireCondition()"));
+	//UE_LOG(LogTemp, Warning, TEXT("CheckFireCondition()"));
 	if (InFireRange())
 	{
 		Fire();
@@ -197,7 +197,7 @@ bool ASunnyNewTTank::InFireRange()
 // 체력바 설정
 void ASunnyNewTTank::SetHealthPercent(float Health, float MaxHealth)
 {
-	UE_LOG(LogTemp, Warning, TEXT("SetHealthPercent()"));
+	//UE_LOG(LogTemp, Warning, TEXT("SetHealthPercent()"));
 
 	if (HealthBar)
 	{
@@ -235,7 +235,7 @@ void ASunnyNewTTank::SetHealthPercent(float Health, float MaxHealth)
 // 체력이 0 이면  죽음
 void ASunnyNewTTank::Dead()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
+	//UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
 	bDead = true;
 	// 머리 날리기
 

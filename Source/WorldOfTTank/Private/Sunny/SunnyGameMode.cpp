@@ -51,6 +51,14 @@ void ASunnyGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+
+	APlayerTankVehicle* Player = Cast<APlayerTankVehicle>(PlayerController->GetPawn());
+
+	PlayerController->bShowMouseCursor = false;
+
+	PlayerController->SetInputMode(FInputModeGameOnly());
+
 	if (BGM)
 	{
 		BGMComponent = UGameplayStatics::SpawnSound2D(GetWorld(), BGM);
@@ -112,11 +120,11 @@ void ASunnyGameMode::UpdateRanking(FString Name, float Playtime)
 	// 데이터 테이블 파일에 저장
 	if (FFileHelper::SaveStringToFile(RankingDataTable->GetPathName(), *FilePath))
 	{
-		UE_LOG(LogTemp, Log, TEXT("DataTable saved to %s"), *FilePath);
+		//UE_LOG(LogTemp, Log, TEXT("DataTable saved to %s"), *FilePath);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to save DataTable to %s"), *FilePath);
+		//UE_LOG(LogTemp, Error, TEXT("Failed to save DataTable to %s"), *FilePath);
 	}
 	// 이후 랭킹 다시 세팅 (UI갱신)
 	LoadRankingData();
@@ -146,7 +154,7 @@ void ASunnyGameMode::LoadRankingData()
 			Data.PlayTime = Row->PlayTime;
 			Ranking.Add(Data);
 			// 여기서 데이터를 사용하여 UI를 업데이트합니다.
-			UE_LOG(LogTemp, Warning, TEXT("Player: %s, PlayTime: %f"), *Data.PlayerName, Data.PlayTime);
+			//UE_LOG(LogTemp, Warning, TEXT("Player: %s, PlayTime: %f"), *Data.PlayerName, Data.PlayTime);
 
 		}
 	}

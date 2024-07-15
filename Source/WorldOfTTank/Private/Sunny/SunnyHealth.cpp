@@ -17,9 +17,9 @@ USunnyHealth::USunnyHealth()
 
 	// 초기 체력 설정
 	SetMaxHealth(MaxHealth);
-	UE_LOG(LogTemp, Error, TEXT("SetMaxHealth() : %.f"), MaxHealth);
+	//UE_LOG(LogTemp, Error, TEXT("SetMaxHealth() : %.f"), MaxHealth);
 	SetHealth(GetMaxHealth());
-	UE_LOG(LogTemp, Error, TEXT("SetHealth() : %.f"), Health);
+	//UE_LOG(LogTemp, Error, TEXT("SetHealth() : %.f"), Health);
 }
 
 
@@ -54,7 +54,7 @@ void USunnyHealth::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 // 데미지 받았을 때 (1. 체력 깍기  2. 체력이 0이면 죽기
 void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* Instigator, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Error, TEXT("Get Damage!!!"));
+	//UE_LOG(LogTemp, Error, TEXT("Get Damage!!!"));
 
 	if (Damage <= 0.f) return;
 
@@ -74,7 +74,7 @@ void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamage
 		if (fsm)
 		{
 			fsm->SunnyAiState = ESunnyAiState::Die;
-			UE_LOG(LogTemp, Warning, TEXT("Setting EnemyState to Die for %s"), *SunnyAi->GetName());
+			//UE_LOG(LogTemp, Warning, TEXT("Setting EnemyState to Die for %s"), *SunnyAi->GetName());
 		}
 
 	}

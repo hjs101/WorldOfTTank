@@ -90,7 +90,7 @@ void URankingWidget::SetRanking(TArray<FString> FileLines)
 			PlayerText->SetFont(FontInfo);
 			PlayerText->SetColorAndOpacity(FSlateColor(FLinearColor::White));  // Set the font color
 			
-			UE_LOG(LogTemp,Warning,TEXT("%s"),*Str);
+			//UE_LOG(LogTemp,Warning,TEXT("%s"),*Str);
 			PlayerText->SetText(FText::FromString(Str));
 			SizeBox->AddChild(PlayerText);
 

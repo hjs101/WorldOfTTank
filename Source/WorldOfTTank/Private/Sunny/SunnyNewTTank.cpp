@@ -34,9 +34,6 @@ ASunnyNewTTank::ASunnyNewTTank()
 	// EnemyFSM 컴포넌트 추가
 	FSM = CreateDefaultSubobject<USunnyNewFSM>(TEXT("FSM"));
 
-	// Pawn Move 컴포넌트 추가
-	EnemyMove = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MOVEMENT"));
-
 	// Health Bar Widget 컴포넌트 추가
 	HealthWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HEALTH BAR"));
 	HealthWidgetComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
@@ -46,6 +43,7 @@ ASunnyNewTTank::ASunnyNewTTank()
 	// Enemy Indicator 컴포넌트 추가
 	EnemyIndicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Enemy Indicator"));
 	EnemyIndicator->SetupAttachment(GetMesh());
+
 }
 
 
@@ -56,8 +54,9 @@ void ASunnyNewTTank::Tick(float DeltaTime)
 	if (FSM && InFireRange())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ASunnyNewTTank::Tick() ---> InFireRange()"))
-		RotateTurret(PlayerTTank->GetActorLocation());
-		RotateTank(PlayerTTank->GetActorLocation());
+		CalcTurretRotation(PlayerTTank);
+		//RotateTurret(PlayerTTank->GetActorLocation());
+		//RotateTank(PlayerTTank->GetActorLocation());
 	}
 	
 
@@ -109,8 +108,6 @@ void ASunnyNewTTank::BeginPlay()
 	}
 	SetHealthPercent(HealthComp->GetHealth(), HealthComp->GetMaxHealth());
 
-	//EnemyIndicator->SetVisibility(true);
-
 
 	if (FSM)
 	{
@@ -119,11 +116,6 @@ void ASunnyNewTTank::BeginPlay()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("FSM component is null in ASunnyNewTTank::BeginPlay"));
-	}
-
-	if (EnemyMove == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("EnemyMove component is null in ASunnyNewTTank::BeginPlay"));
 	}
 }
 
@@ -200,6 +192,8 @@ bool ASunnyNewTTank::InFireRange()
 // 체력바 설정
 void ASunnyNewTTank::SetHealthPercent(float Health, float MaxHealth)
 {
+	UE_LOG(LogTemp, Warning, TEXT("SetHealthPercent()"));
+
 	if (HealthBar)
 	{
 		HealthBar->SetPercent(Health / MaxHealth);
@@ -234,10 +228,10 @@ void ASunnyNewTTank::SetHealthPercent(float Health, float MaxHealth)
 
 
 // 체력이 0 이면  죽음
-void ASunnyNewTTank::OnDie()
+void ASunnyNewTTank::Dead()
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
-	bDie = true;
+	bDead = true;
 	// 머리 날리기
 	//HeadMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	//HeadMesh->SetSimulatePhysics(true);
@@ -245,13 +239,12 @@ void ASunnyNewTTank::OnDie()
 
 	// 종료
 	ClearFIreTimer();
-	EnemyMove->StopMovementImmediately();
 
 
 	// 실행창에 상태 메세지 출력하기
 	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, TEXT("Enemy 격추 효과"));
 
-	if (bDie)
+	if (bDead)
 	{
 		// 체력바, 화살표 끄기
 		HealthWidgetComp->SetVisibility(false);
@@ -275,7 +268,7 @@ void ASunnyNewTTank::HandleDestruction()
 // 진성 AI 죽음 확인 
 bool ASunnyNewTTank::IsDead()
 {
-	return bDie;
+	return bDead;
 }
 
 
@@ -327,8 +320,7 @@ void ASunnyNewTTank::DrawBeam(FVector Start, FVector End)
 {
 	if (BeamNiagara)
 	{
-		UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-			GetWorld(), BeamNiagara, Start, FRotator::ZeroRotator);
+		UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BeamNiagara, Start, FRotator::ZeroRotator);
 		if (NiagaraComponent)
 		{
 			NiagaraComponent->SetVectorParameter(TEXT("Beam End"), End);

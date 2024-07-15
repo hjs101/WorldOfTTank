@@ -2,9 +2,8 @@
 
 
 #include "Sunny/SunnyHealth.h"
-//#include "Sunny/SunnyGameMode.h"
-#include "Sunny/SunnyEnemy.h"
-#include "Sunny/SunnyEnemyFSM.h"
+#include "Sunny/SunnyNewTTank.h"
+#include "Sunny/SunnyNewFSM.h"
 
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
@@ -29,17 +28,17 @@ void USunnyHealth::BeginPlay()
 {
 	Super::BeginPlay();
 
-
 	// Enemy 컴포넌트 추가
-	AiEnemy = Cast<ASunnyEnemy>(GetOwner());
+	SunnyAi = Cast<ASunnyNewTTank>(GetOwner());
 
-	if (AiEnemy == nullptr)
+	if (SunnyAi == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("AiEnemy is null in USunnyHealth::BeginPlay"));
 		return;
 	}
 
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &USunnyHealth::DamageTaken);
+
 }
 
 
@@ -55,26 +54,27 @@ void USunnyHealth::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 // 데미지 받았을 때 (1. 체력 깍기  2. 체력이 0이면 죽기
 void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* Instigator, AActor* DamageCauser)
 {
+	UE_LOG(LogTemp, Error, TEXT("Get Damage!!!"));
+
 	if (Damage <= 0.f) return;
 
 	SetHealth(GetHealth() - Damage);
 
 	//// 체력 갱신
-	if (AiEnemy && !AiEnemy->bDie)
+	if (SunnyAi && !SunnyAi->bDead)
 	{
-		AiEnemy->SetHealthPercent(GetHealth(), GetMaxHealth());
+		SunnyAi->SetHealthPercent(GetHealth(), GetMaxHealth());
 	}
-	//AiEnemy->GetHealthPercent(Health, MaxHealth);
 
 
-	if (GetHealth() <= 0.f && AiEnemy && !AiEnemy->bDie)
+	if (GetHealth() <= 0.f && SunnyAi && !SunnyAi->bDead)
 	{
-		USunnyEnemyFSM* fsm = Cast<USunnyEnemyFSM>(AiEnemy->Fsm);
+		USunnyNewFSM* fsm = Cast<USunnyNewFSM>(SunnyAi->FSM);
 
 		if (fsm)
 		{
-			fsm->EnemyState = EEnemyState::Die;
-			UE_LOG(LogTemp, Warning, TEXT("Setting EnemyState to Die for %s"), *AiEnemy->GetName());
+			fsm->SunnyAiState = ESunnyAiState::Die;
+			UE_LOG(LogTemp, Warning, TEXT("Setting EnemyState to Die for %s"), *SunnyAi->GetName());
 		}
 
 	}

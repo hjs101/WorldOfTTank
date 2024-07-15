@@ -17,7 +17,11 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 
+#include "Kismet/GameplayStatics.h"
 
 
 
@@ -32,53 +36,92 @@ ASunnyRealTankPawn::ASunnyRealTankPawn()
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
 	ProjectileSpawnPoint->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("gun_jntSocket"));
 
-}
+	// Fire 이펙트 나이아가라 컴포넌트 추가
+	FireNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FireNiagara"));
+	FireNiagara->SetupAttachment(ProjectileSpawnPoint);
+	FireNiagara->bAutoActivate = false; // 처음에는 비활성 상태로 설정
+	FireNiagara->SetRelativeScale3D(FVector(1.f)); // 필요에 따라 크기 조정
 
+}
 
 void ASunnyRealTankPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
 	// Tank physics settings
-	//BodyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
-	//TracksMaterial = GetMesh()->CreateDynamicMaterialInstance(1);
+	BodyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
+	TracksMaterial = GetMesh()->CreateDynamicMaterialInstance(1);
 }
+
+void ASunnyRealTankPawn::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	//SetSpeed();
+
+}
+
+
+
+void ASunnyRealTankPawn::SetSpeed()
+{
+	USunnyVehicleAnimationInstance* SunnyAiAnim = Cast<USunnyVehicleAnimationInstance>(GetMesh()->GetAnimInstance());
+	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
+	if (nullptr == VehicleMovement)
+	{
+		return;
+	}
+	float speed = FMath::Clamp(VehicleMovement->GetForwardSpeed(), -500, 500);
+	SunnyAiAnim->SetWheelSpeed(speed);
+}
+
 
 
 // 탱크 몸체 돌리기
 void ASunnyRealTankPawn::RotateTank(FVector LookAtTarget)
 {
 	UE_LOG(LogTemp, Warning, TEXT("RotateTank()"));
-	if (LookAtTarget == FVector::ZeroVector)
+
+	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
+	
+	int value = 0;
+	if (FVector::DotProduct(GetMesh()->GetPhysicsLinearVelocity(), GetActorForwardVector()) < 0)
 	{
-		return;
+		VehicleYaw = -1;
 	}
-	FVector ToTarget = LookAtTarget - GetMesh()->GetComponentLocation();
-	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
+	else
+	{
+		VehicleYaw = 1;
+	}
 
-	// 부드러운 회전을 위해 RInterpTo 함수를 사용
-	FRotator CurrentRotation = GetMesh()->GetComponentRotation();
-	FRotator InterpRotation = FMath::RInterpTo(CurrentRotation, LookAtRotation, UGameplayStatics::GetWorldDeltaSeconds(this), 2.f);
+	VehicleMovement->SetYawInput(VehicleYaw);
 
-	GetMesh()->SetWorldRotation(InterpRotation);
+	/*if (value != 0 && MoveState == 0)
+	{
+		Move(0.2f);
+	}
+	if (value == 0)
+	{
+		VehicleMovement->SetYawInput(0.f);
+	}*/
+
 }
 
 
 // 탱크 머리 돌리기
 void ASunnyRealTankPawn::RotateTurret(FVector LookAtTarget)
 {
-	UE_LOG(LogTemp, Warning, TEXT("RotateTurret()"));
+	//UE_LOG(LogTemp, Warning, TEXT("RotateTurret()"));
 	if (nullptr == GetMesh())
 	{
 		return;
 	}
 
-	if (!isFound)
+	if (!bFound)
 	{
-		isFound = true;
+		bFound = true;
 	}
 
-	if (isFound)
+	if (bFound)
 	{ 
 		// 현재 탱크의 Yaw 회전과 목표 위치의 Yaw 회전 차이를 계산
 		float Angle = -(GetActorRotation().Yaw - LookAtTarget.Rotation().Yaw);
@@ -110,10 +153,12 @@ void ASunnyRealTankPawn::RotateTurret(FVector LookAtTarget)
 
 
 // 타켓 방향으로 탱크 움직이기
-void ASunnyRealTankPawn::Move(float value)
+void ASunnyRealTankPawn::Move(float value)  
 {
 	UE_LOG(LogTemp, Warning, TEXT("Move()"));
 	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
+	UE_LOG(LogTemp, Warning, TEXT("%f"), value);
+	MoveState = value;
 
 	if (VehicleMovement == nullptr)
 	{
@@ -130,10 +175,11 @@ void ASunnyRealTankPawn::Move(float value)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Setting brake to %f"), -1 * value);
-		VehicleMovement->SetThrottleInput(0.f);
-		VehicleMovement->SetBrakeInput(-1 * value);
+		UE_LOG(LogTemp, Warning, TEXT("Setting brake to %f"), -1 * value);  
+		VehicleMovement->SetThrottleInput(value);
+		VehicleMovement->SetBrakeInput(-1.f * value);
 	}
+	return;
 }
 
 
@@ -146,6 +192,19 @@ void ASunnyRealTankPawn::Fire()
 
 	ASunnyProjectile* Projectile = GetWorld()->SpawnActor<ASunnyProjectile>(ProjectileClass, Location, Rotation);
 	Projectile->SetOwner(this);
+
+	if (FireNiagara) {
+		// ProjectileSpawnPoint의 위치와 회전에 Niagara 이펙트를 재생합니다.
+		FireNiagara->SetWorldLocationAndRotation(Location, Rotation);
+		FireNiagara->Activate(); // Niagara 이펙트 활성화
+	}
+
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+	}
+
+
 }
 
 void ASunnyRealTankPawn::HandleDestruction()

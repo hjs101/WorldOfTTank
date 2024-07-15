@@ -7,6 +7,7 @@
 #include "CSW/TankVehicleAnimInstance.h"
 #include "HJS/AITankCPU_1.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 
 ATankVehicle::ATankVehicle()
@@ -26,6 +27,14 @@ ATankVehicle::ATankVehicle()
 		GunFire->bAutoActivate = false;
 	}
 	GunFire->SetupAttachment(ProjectileSpawnPoint);
+
+	FireSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("FireSoundComp"));
+	FireSoundComp->SetupAttachment(RootComponent);
+	FireSoundComp->bAutoActivate = false;
+
+	TrackSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("TrackSoundComp"));
+	TrackSoundComp->SetupAttachment(RootComponent);
+	TrackSoundComp->bAutoActivate = false;
 }
 
 void ATankVehicle::BeginPlay()
@@ -35,7 +44,8 @@ void ATankVehicle::BeginPlay()
 	GetMesh()->CreateDynamicMaterialInstance(1);
 	GetMesh()->SetAnimInstanceClass(AnimInstanceClass);
 
-	SetPlayerTankDamage(50);
+	FireSoundComp->SetSound(FireSound);
+	TrackSoundComp->SetSound(TrackSound);
 }
 
 void ATankVehicle::Tick(float DeltaSeconds)
@@ -126,7 +136,7 @@ void ATankVehicle::Fire()
 		ProjectileSpawnPoint->GetComponentRotation());
 	CurrentReloadTime = 0;
 	GunFire->Activate();
-
+	FireSoundComp->Play(0.f);
 	
 	Projectile->SetOwner(this);
 }
@@ -155,4 +165,23 @@ void ATankVehicle::SetPlayerTankDamage(float Damage)
 		Hp -= Damage;
 	else
 		Hp = 0;
+}
+
+void ATankVehicle::UpdateMovementSound()
+{
+	FVector Velocity = GetMesh()->GetPhysicsLinearVelocity();
+	float Speed = Velocity.Size();
+
+	if (Speed > 0.0f){
+		if (!TrackSoundComp->IsPlaying())
+			TrackSoundComp->Play();
+
+		float Pitch = FMath::GetMappedRangeValueClamped(FVector2D(0.f,1000.f), FVector2D(0.5f,1.5f),Speed);
+		TrackSoundComp->SetPitchMultiplier(Pitch);
+	}
+	else
+	{
+		if (TrackSoundComp->IsPlaying())
+			TrackSoundComp->Stop();
+	}
 }

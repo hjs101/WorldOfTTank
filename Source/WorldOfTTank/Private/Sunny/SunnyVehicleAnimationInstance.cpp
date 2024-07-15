@@ -16,12 +16,13 @@ void USunnyVehicleAnimationInstance::NativeUpdateAnimation(float DeltaSeconds)
 }
 
 
+
 void USunnyVehicleAnimationInstance::RotateWheel(float DeltaSeconds)
 {
 	SpeedOffset = std::fmod((SpeedOffset + DeltaSeconds), 360.f);
 	FRotator NewRotator = FRotator(0, SpeedOffset * WheelSpeed * -1, 0);
 	WheelRotation = NewRotator;
-}
+} // 값 설정 안해줘서 그런가?? ㅜㅜ 거의 다 왔네요 제가 생각하는 게 맞다면 아마 해결될듯진 아닌가벸ㅋㅋ
 
 float USunnyVehicleAnimationInstance::GetSpeedOffset() const
 {

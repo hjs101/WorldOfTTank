@@ -20,7 +20,9 @@ class WORLDOFTTANK_API ASunnyGameMode : public AGameModeBase
 
 public:
 
-	void ActorDied(AActor* DeadActor);
+	ASunnyGameMode();
+
+	//void ActorDied(AActor* DeadActor);
 
 	void OnEnemyDie();
 
@@ -43,8 +45,10 @@ protected:
 
 private:
 
-	class ASunnyTTank* TTank;
-	class ASunnyPlayerController* TTanksPlayerController;
+	//class ASunnyTTank* TTank;
+	//class ASunnyPlayerController* TTanksPlayerController;
+
+
 	UPROPERTY(EditAnywhere,Category="SFX")
 	class USoundBase* BGM;
 
@@ -72,6 +76,10 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float BGMRate = 15.f;
+
+
+	// 미니맵 카메라
+	class USceneCaptureComponent2D* MiniMapCamera;
 	
 	UPROPERTY(EditAnywhere, Category = "Ranking")
 	class UDataTable* RankingDataTable;

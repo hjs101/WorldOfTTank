@@ -8,7 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/DecalComponent.h"
 #include "HJS/FractureWall.h"
-#include "Sunny/SunnyEnemy.h"
+#include "Sunny/SunnyNewTTank.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "CSW/PlayerTankVehicle.h"
 // Sets default values
@@ -111,7 +111,7 @@ void AAIProjecttile_1::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		if (MyOwnerInstigator != nullptr)
 		{
 			UClass* DamageTypeClass = UDamageType::StaticClass();
-			ASunnyEnemy* SunnyEnemy = Cast<ASunnyEnemy>(OtherActor);
+			ASunnyNewTTank* SunnyEnemy = Cast<ASunnyNewTTank>(OtherActor);
 			if (SunnyEnemy != nullptr)
 			{
 				UGameplayStatics::ApplyDamage(OtherActor, 50.f, MyOwnerInstigator, this, DamageTypeClass);

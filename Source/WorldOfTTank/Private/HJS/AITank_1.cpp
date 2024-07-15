@@ -22,7 +22,7 @@ AAITank_1::AAITank_1()
 
 	// 스폰 포인트 생성
 	ProjecttileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("AITank_1 Spawn Point"));
-	ProjecttileSpawnPoint->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("gun_1_jntSocket"));
+	ProjecttileSpawnPoint->SetupAttachment(GetMesh(), FName("gun_1_jntSocket"));
 
 	TrackSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("MovementAudioComponent"));
 	TrackSoundComp->SetupAttachment(RootComponent);

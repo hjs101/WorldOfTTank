@@ -34,7 +34,7 @@ ASunnyRealTankPawn::ASunnyRealTankPawn()
 
 	// Projectile 발사 위치
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
-	ProjectileSpawnPoint->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("gun_jntSocket"));
+	ProjectileSpawnPoint->SetupAttachment(GetMesh(), FName("gun_jntSocket"));
 
 	// Fire 이펙트 나이아가라 컴포넌트 추가
 	FireNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FireNiagara"));

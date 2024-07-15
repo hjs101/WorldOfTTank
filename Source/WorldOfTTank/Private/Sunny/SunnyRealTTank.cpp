@@ -2,7 +2,7 @@
 
 
 #include "Sunny/SunnyRealTTank.h"
-#include "Sunny/SunnyEnemyFSM.h"
+//#include "Sunny/SunnyEnemyFSM.h"
 #include "Sunny/SunnyGameMode.h"
 #include "Sunny/SunnyTTank.h"
 #include "Sunny/SunnyHealth.h"
@@ -32,7 +32,7 @@
 ASunnyRealTTank::ASunnyRealTTank()
 {
 	// EnemyFSM 컴포넌트 추가
-	Fsm = CreateDefaultSubobject<USunnyEnemyFSM>(TEXT("FSM"));
+	//Fsm = CreateDefaultSubobject<USunnyEnemyFSM>(TEXT("FSM"));
 
 	// Pawn Move 컴포넌트 추가
 	EnemyMove = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MOVEMENT"));

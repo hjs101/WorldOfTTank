@@ -5,12 +5,13 @@
 
 void UMissionResultUI::PlayAnim()
 {
-}
-
-void UMissionResultUI::NativeConstruct()
-{
 	if (FadeIn)
 	{
 		PlayAnimation(FadeIn);
 	}
+}
+
+void UMissionResultUI::NativeConstruct()
+{
+	Super::NativeConstruct();
 }

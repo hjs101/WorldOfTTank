@@ -3,12 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HJS/RankingStruct.h"
 #include "GameFramework/GameModeBase.h"
 #include "SunnyGameMode.generated.h"
 
 /**
  * 
  */
+
+struct FRankingData;
+
 UCLASS()
 class WORLDOFTTANK_API ASunnyGameMode : public AGameModeBase
 {
@@ -20,9 +24,21 @@ public:
 
 	void OnEnemyDie();
 
+	void RestartGame();
+
+	void QuitGame();
+
+	void UpdateRanking(FString Name, float Playtime);
+	
+	void LoadRankingData();
+
+	void EndGame();
+
+	void ConvertRankingToString();
 protected:
 
 	virtual void BeginPlay() override;
+	
 
 
 private:
@@ -57,4 +73,13 @@ private:
 	UPROPERTY(EditAnywhere)
 	float BGMRate = 15.f;
 	
+	UPROPERTY(EditAnywhere, Category = "Ranking")
+	class UDataTable* RankingDataTable;
+
+	TArray<FRankingData> Ranking;
+	
+	bool bVictory;
+
+	float StartTime;
+	float AccPlayTime;
 };

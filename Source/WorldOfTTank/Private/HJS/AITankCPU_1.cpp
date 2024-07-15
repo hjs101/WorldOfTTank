@@ -19,7 +19,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "Sunny/SunnyEnemy.h"
+#include "Sunny/SunnyNewTTank.h"
 #include "Sunny/SunnyGameMode.h"
 
 AAITankCPU_1::AAITankCPU_1()
@@ -35,11 +35,6 @@ AAITankCPU_1::AAITankCPU_1()
 	HpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("HpBar"));
 	HpBar->SetupAttachment(RootComponent);
 	HpBar->SetWidgetSpace(EWidgetSpace::Screen);
-	ConstructorHelpers::FClassFinder<UUserWidget> WidgetClass(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/HJS/UI/WBP_AIHpBarWidget.WBP_AIHpBarWidget'")); // 위젯 블루프린트 경로 설정
-	if (WidgetClass.Succeeded())
-	{
-		HpBar->SetWidgetClass(WidgetClass.Class);
-	}
 	OnDieMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OnDieMeshComp"));
 	OnDieMeshComp->SetupAttachment(RootComponent);
 	OnDieMeshComp->SetVisibility(false);
@@ -299,7 +294,7 @@ void AAITankCPU_1::OnSeePawn(APawn* Pawn)
 	}
 	else 
 	{
-		if(Cast<ASunnyEnemy>(Pawn)){
+		if(Cast<ASunnyNewTTank>(Pawn)){
 			BlackboardComp->SetValueAsObject(FName("TargetCPU"), Pawn);
 		}
 	}

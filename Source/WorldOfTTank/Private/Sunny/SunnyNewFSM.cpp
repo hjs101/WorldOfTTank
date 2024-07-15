@@ -20,7 +20,7 @@ USunnyNewFSM::USunnyNewFSM()
 	// 초기화 시 Null 포인터 접근을 방지하기 위해 Owner 확인
 	if (GetOwner() == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("USunnyEnemyFSM constructor called with null owner!"));
+		//UE_LOG(LogTemp, Error, TEXT("USunnyEnemyFSM constructor called with null owner!"));
 		return;
 	}
 

@@ -44,11 +44,19 @@ ASunnyNewTTank::ASunnyNewTTank()
 	EnemyIndicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Enemy Indicator"));
 	EnemyIndicator->SetupAttachment(GetMesh());
 
+	// 데미지 메시 추가
 	OnDieMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OnDieMeshComp"));
 	OnDieMeshComp->SetupAttachment(RootComponent);
 	OnDieMeshComp->SetVisibility(false);
 	OnDieMeshComp->SetCollisionProfileName("NoCollision");
 	OnDieMeshComp->SetCanEverAffectNavigation(false);
+
+	// 데이미 나이아가라 이펙트 추가
+	// Fire 이펙트 나이아가라 컴포넌트 추가
+	DamageNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DamageNiagara"));
+	DamageNiagara->SetupAttachment(RootComponent);
+	DamageNiagara->bAutoActivate = false; // 처음에는 비활성 상태로 설정
+	DamageNiagara->SetRelativeScale3D(FVector(1.f)); // 필요에 따라 크기 조정
 }
 
 
@@ -255,7 +263,7 @@ void ASunnyNewTTank::Dead()
 		HealthWidgetComp->SetVisibility(false);
 		EnemyIndicator->SetVisibility(false);
 
-		// 죽는 순간  내비에 탐지
+		// 데미지 메시로 변경
 		GetMesh()->SetVisibility(false);
 		GetMesh()->SetCollisionProfileName("NoCollision");
 		OnDieMeshComp->SetVisibility(true);
@@ -264,6 +272,20 @@ void ASunnyNewTTank::Dead()
 
 		PrimaryActorTick.SetTickFunctionEnable(false);
 		SetActorTickEnabled(false);
+
+		// 데미지 이펙트 & 사운드
+		FVector Location = RootComponent->GetComponentLocation();
+		FRotator Rotation = RootComponent->GetComponentRotation();
+		if (DamageNiagara) {
+			// RootComponent의 위치와 회전에 Niagara 이펙트 재생
+			DamageNiagara->SetWorldLocationAndRotation(Location, Rotation);
+			DamageNiagara->Activate(); // Niagara 이펙트 활성화
+		}
+
+		if (DamageSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, DamageSound, GetActorLocation());
+		}
 	}
 
 }

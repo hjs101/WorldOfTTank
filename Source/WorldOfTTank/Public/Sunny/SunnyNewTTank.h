@@ -124,5 +124,14 @@ public:
 	// Enemy Indicator
 	UPROPERTY(EditAnywhere)
 	class UPaperSpriteComponent* EnemyIndicator;
+
+
+	// NiagaraSystem
+	UPROPERTY(EditAnyWhere, Category = "Combat")
+	class UNiagaraComponent* DamageNiagara;
+
+	// 발사 소리
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class USoundBase* DamageSound;
 	
 };

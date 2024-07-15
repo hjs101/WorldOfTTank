@@ -57,7 +57,7 @@ void USunnyNewFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 	// 실행창에 상태 메세지 출력하기
 	FString logMsg = UEnum::GetValueAsString(SunnyAiState);
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
+	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
 	switch (SunnyAiState)
 	{
@@ -93,7 +93,7 @@ bool USunnyNewFSM::GetRandomPositionInNavMesh(FVector centerLocaion, float radiu
 
 void USunnyNewFSM::IdleState()
 {
-	UE_LOG(LogTemp, Warning, TEXT("IdleState()"));
+	//UE_LOG(LogTemp, Warning, TEXT("IdleState()"));
 
 	//1. 시간이 흘렀으니까
 	CurrentTime += GetWorld()->DeltaTimeSeconds;
@@ -103,7 +103,7 @@ void USunnyNewFSM::IdleState()
 	{
 		// 3. 이동 상태로 전환하고 싶다
 		SunnyAiState = ESunnyAiState::Move;
-		UE_LOG(LogTemp, Warning, TEXT("Change IdleState->MoveState"));
+		//UE_LOG(LogTemp, Warning, TEXT("Change IdleState->MoveState"));
 		// 경과 시간 초기화
 		CurrentTime = 0;
 
@@ -161,13 +161,13 @@ void USunnyNewFSM::MoveState()
 	// 목적지까지의 길 찾기 성공 여부 확인
 	if (r.Result == ENavigationQueryResult::Success)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ENavigationQueryResult::Success"));
+		//UE_LOG(LogTemp, Warning, TEXT("ENavigationQueryResult::Success"));
 		
 		// 타깃쪽으로 이동 // 저번에 그래서...어떻게 해야해? 애니메이션 하는 거랑. 뭐.. 한다고 했는데. 안되서. ㅋㅋ
 		// 몸돌리는 거 + 이동을 분리할 건데, 이동도 이미 있어요  에이아이컨트롤러에서 만들ㅇ이ㅓ야/하/ㄴ ㅡ그래?? ㅇ오옹
 
 		AiController->MoveToLocation(destination);
-		UE_LOG(LogTemp, Warning, TEXT("AiController->MoveToLocation(destination)"));
+		//UE_LOG(LogTemp, Warning, TEXT("AiController->MoveToLocation(destination)"));
 
 		//if (nullptr != Me)
 		//{
@@ -220,9 +220,9 @@ void USunnyNewFSM::MoveState()
 
 		if (nullptr != Me)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Attack Sunny Ai TTank"));
+			//UE_LOG(LogTemp, Warning, TEXT("Attack Sunny Ai TTank"));
 			Me->Move(0);
-			UE_LOG(LogTemp, Warning, TEXT("Stop Move"));
+			//UE_LOG(LogTemp, Warning, TEXT("Stop Move"));
 		}
 	}
 }
@@ -261,7 +261,7 @@ void USunnyNewFSM::AttackState()
 void USunnyNewFSM::DieState()
 {
 
-	UE_LOG(LogTemp, Warning, TEXT("DieState()"));
+	//UE_LOG(LogTemp, Warning, TEXT("DieState()"));
 	//UE_LOG(LogTemp, Warning, TEXT("Entering DieState for %s"), *Me->GetName());
 
 	if (Me)

@@ -79,7 +79,7 @@ void ASunnyRealTankPawn::SetSpeed()
 // 탱크 몸체 돌리기
 void ASunnyRealTankPawn::RotateTank(FVector LookAtTarget)
 {
-	UE_LOG(LogTemp, Warning, TEXT("RotateTank()"));
+	//UE_LOG(LogTemp, Warning, TEXT("RotateTank()"));
 
 	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
 	
@@ -155,9 +155,9 @@ void ASunnyRealTankPawn::RotateTurret(FVector LookAtTarget)
 // 타켓 방향으로 탱크 움직이기
 void ASunnyRealTankPawn::Move(float value)  
 {
-	UE_LOG(LogTemp, Warning, TEXT("Move()"));
+	//UE_LOG(LogTemp, Warning, TEXT("Move()"));
 	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
-	UE_LOG(LogTemp, Warning, TEXT("%f"), value);
+	//UE_LOG(LogTemp, Warning, TEXT("%f"), value);
 	MoveState = value;
 
 	if (VehicleMovement == nullptr)
@@ -166,16 +166,16 @@ void ASunnyRealTankPawn::Move(float value)
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("move value : %f"), value);
+	//UE_LOG(LogTemp, Warning, TEXT("move value : %f"), value);
 
 	if (value > 0.f) {
-		UE_LOG(LogTemp, Warning, TEXT("Setting throttle to %f"), value);
+		//UE_LOG(LogTemp, Warning, TEXT("Setting throttle to %f"), value);
 		VehicleMovement->SetThrottleInput(value);
 		VehicleMovement->SetBrakeInput(0.f);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Setting brake to %f"), -1 * value);  
+		//UE_LOG(LogTemp, Warning, TEXT("Setting brake to %f"), -1 * value);  
 		VehicleMovement->SetThrottleInput(value);
 		VehicleMovement->SetBrakeInput(-1.f * value);
 	}

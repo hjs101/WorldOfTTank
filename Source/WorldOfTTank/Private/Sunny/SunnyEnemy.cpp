@@ -222,7 +222,7 @@ void ASunnyEnemy::OnDie()
 	
 
 	// 실행창에 상태 메세지 출력하기
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan,TEXT("Enemy 격추 효과"));
+	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan,TEXT("Enemy 격추 효과"));
 
 	if (bDie)
 	{

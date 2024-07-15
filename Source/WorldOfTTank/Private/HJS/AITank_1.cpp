@@ -11,6 +11,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Sound/SoundCue.h"
 #include "Components/AudioComponent.h"
+#include "PaperSpriteComponent.h"
 
 // Sets default values
 AAITank_1::AAITank_1()
@@ -30,6 +31,10 @@ AAITank_1::AAITank_1()
 	FireSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("FireSoundComponent"));
 	FireSoundComp->SetupAttachment(RootComponent);
 	FireSoundComp->bAutoActivate = false; 
+
+	// Enemy Indicator 컴포넌트 추가
+	Indicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Indicator"));
+	Indicator->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned

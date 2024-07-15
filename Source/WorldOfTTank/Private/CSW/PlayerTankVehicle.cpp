@@ -9,6 +9,7 @@
 #include "CSW/ChasingAim.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "HJS/AITankCPU_1.h"
+#include "PaperSpriteComponent.h"
 
 APlayerTankVehicle::APlayerTankVehicle()
 {
@@ -35,6 +36,10 @@ APlayerTankVehicle::APlayerTankVehicle()
 
 	ChasingAim = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChasingAim"));
 	ChasingAim->SetupAttachment(SpringArmComp);
+
+	// Indicator 컴포넌트 추가
+	Indicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Indicator"));
+	Indicator->SetupAttachment(RootComponent);
 }
 void APlayerTankVehicle::BeginPlay()
 {

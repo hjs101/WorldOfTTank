@@ -64,8 +64,8 @@ void AAITankCPU_1::BeginPlay()
 
 void AAITankCPU_1::LaserBeamSetting()
 {
-	FVector TraceStart = GetMesh()->GetSocketLocation(FName("turret_jnt"));
-	FVector ForwardVector = GetMesh()->GetSocketLocation(FName("turret_jnt")).ForwardVector;
+	FVector TraceStart = ProjecttileSpawnPoint->GetComponentLocation();
+	FVector ForwardVector = ProjecttileSpawnPoint->GetForwardVector();
 	FVector TraceEnd = ((ForwardVector * 20000.f) + TraceStart);
 
 	FHitResult HitResult;

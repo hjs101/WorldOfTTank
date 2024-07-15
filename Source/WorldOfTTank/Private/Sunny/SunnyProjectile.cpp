@@ -87,9 +87,8 @@ void ASunnyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	if (OtherActor && OtherActor != this && OtherActor != MyOwner)
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
-		Destroy();
 	}
-
+	Destroy();
 
 	
 

@@ -100,6 +100,9 @@ private:
 	UPROPERTY(EditAnywhere,Category="SFX")
 	class USoundBase* FireSound;
 
+	UPROPERTY(EditAnywhere)
+	class UPaperSpriteComponent* Indicator;
+
 private:
 	void UpdateMovementSound();
 };

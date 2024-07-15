@@ -26,6 +26,8 @@ public:
 
 	void OnEnemyDie();
 
+	void OnPlayerDie();
+
 	void RestartGame();
 
 	void QuitGame();

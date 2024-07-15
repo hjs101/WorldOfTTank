@@ -49,7 +49,7 @@ private:
 	float FireRange = 2000.f;
 
 	FTimerHandle FireRateTimerHandle;
-	float FireRate = 2.f;
+	float FireRate = 5.f;
 	void CheckFireCondition();
 	bool InFireRange();
 
@@ -77,6 +77,9 @@ public:
 	// 적 AI 관리 컴포넌트 클래스
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FSMComponent)
 	class USunnyNewFSM* FSM;
+
+	UPROPERTY(VisibleAnywhere,Category="Components")
+	UStaticMeshComponent* OnDieMeshComp;
 
 	// 공격 타이머 설정
 	void SetFireTimer();

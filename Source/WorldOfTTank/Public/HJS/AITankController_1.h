@@ -46,7 +46,7 @@ private:
 	bool bHasTarget;
 	FNavPathSharedPtr CurrentPath;
 	int32 CurrentPathPointIndex = 0;
-	float AcceptanceRadius = 500.f;
+	float AcceptanceRadius = 300.f;
 
 	float CurrentTime = 0.f;
 	float EndTime = 10.f;

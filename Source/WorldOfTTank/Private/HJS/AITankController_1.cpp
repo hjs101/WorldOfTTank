@@ -64,10 +64,6 @@ void AAITankController_1::Tick(float DeltaTime)
 	AAITankCPU_1* AITank = Cast<AAITankCPU_1>(GetPawn());
 	if (AITank)
 	{
-		if(TurnState != 0)
-		{
-			MoveState = 0;
-		};
 		AITank->Move(MoveState);
 		AITank->BodyTurn(TurnState);
 	}
@@ -90,14 +86,21 @@ void AAITankController_1::MoveAlongPath(float DeltaTime)
 			{
 				TargetLocation = PathPoints[CurrentPathPointIndex];
 			}
-			TargetLocation.Z = TargetLocation.Z + 30.f;
+			TargetLocation.Z = TargetLocation.Z + 50.f;
 			//DrawDebugSphere(GetWorld(),TargetLocation,50.f,12,FColor::Green,false,5.f);
 			AAITankCPU_1* AITank = Cast<AAITankCPU_1>(GetPawn());
 			if(AITank)
 			{
 				CurrentLocation = AITank->GetMesh()->GetSocketLocation(FName("turret_jnt"));
-				MoveState=1;
 				TurnState = AITank->RotateTank(TargetLocation);
+				if (TurnState == 0)
+				{
+					MoveState = 1;
+				}
+				else
+				{
+					MoveState = 0;
+				}
 				if(AITank->GetFireState() && !bNonStop)
 				{
 					FinishMove(true);

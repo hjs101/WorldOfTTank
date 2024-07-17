@@ -48,6 +48,12 @@ public:
 	UFUNCTION()
 	void SetGun();
 
+	UFUNCTION()
+	void OnOutLine();
+
+	UFUNCTION()
+	void OffOutLine();
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Conponents", BlueprintReadOnly, meta = (AllowPrivateAccess = true));
 	USceneComponent* ProjecttileSpawnPoint;
@@ -62,6 +68,9 @@ protected:
 
 private:	
 	
+	//UPROPERTY(VisibleAnywhere, Category = "Components")
+	//USkeletalMeshComponent* OutlineMesh;
+
     UPROPERTY(VisibleAnywhere, Category = "SFX")
     UAudioComponent* TrackSoundComp;
 

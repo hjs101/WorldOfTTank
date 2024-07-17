@@ -35,6 +35,20 @@ AAITank_1::AAITank_1()
 	// Enemy Indicator 컴포넌트 추가
 	Indicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Indicator"));
 	Indicator->SetupAttachment(RootComponent);
+
+	//OutlineMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("OutlineMesh"));
+	//OutlineMesh->SetupAttachment(RootComponent);
+
+	//if (GetMesh()->SkeletalMesh)
+	//{
+	//	OutlineMesh->SkeletalMesh = GetMesh()->SkeletalMesh;
+	//}
+
+	//if (GetMesh()->GetAnimClass())
+	//{
+	//	OutlineMesh->SetAnimInstanceClass(GetMesh()->GetAnimClass());
+	//}
+
 }
 
 // Called when the game starts or when spawned
@@ -53,6 +67,8 @@ void AAITank_1::BeginPlay()
 	{
 		FireSoundComp->SetSound(FireSound);
 	}
+	//OnOutLine();
+	//OffOutLine();
 }
 
 // Called every frame
@@ -60,7 +76,7 @@ void AAITank_1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	bStopTurn = (GetMesh()->GetPhysicsAngularVelocityInDegrees().Length() > 50);
+	bStopTurn = (GetMesh()->GetPhysicsAngularVelocityInDegrees().Length() > 40);
 	SetSpeed();
 	UpdateMovementSound();
 }
@@ -191,16 +207,32 @@ float AAITank_1::RotateTank(FVector LookAtTarget)
 		return 0.f;
 	}
 	FVector RightVector = GetMesh()->GetRightVector().GetSafeNormal();
-	FVector ForWordVector = GetMesh()->GetForwardVector().GetSafeNormal();
+	FVector ForWardVector = GetMesh()->GetForwardVector().GetSafeNormal();
 	//FRotator CurrentRotation = GetMesh()->GetComponentRotation();
 	FVector ToTarget = LookAtTarget - GetMesh()->GetComponentLocation();
 	ToTarget.Z = 0.f;
 	ToTarget.Normalize();
 	float result = FVector::DotProduct(RightVector, ToTarget);
-	float result2 = FVector::DotProduct(ForWordVector, ToTarget);
-	if ((result > -0.15f && result < 0.15f) && (result2 > 0.9f))
+	float result2 = FVector::DotProduct(ForWardVector, ToTarget);
+	//UE_LOG(LogTemp, Warning, TEXT("RightVector Dot : %f"), result);
+	//UE_LOG(LogTemp, Warning, TEXT("FordardVector Dot : %f"), result2);
+	if ((result > -0.1f && result < 0.1f) && (result2 > 0.9f))
 		return 0;
-	return result < 0.f ? -1.f : 1.f;
+	// Right 양 Forward양일때
+	if (result > 0.f && result2 > 0.f)
+	{
+		return 1.f;
+	// Right 양, Forward 음일때
+	}
+	else if (result > 0.f && result2 < 0.f)
+	{
+		return 1.f;
+	}
+	// 나머지 ( 음음, 음양 , 0)
+	else
+	{
+		return -1.f;
+	}
 }
 
 float AAITank_1::CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, float TargetHeight)
@@ -283,4 +315,14 @@ void AAITank_1::SetGun()
 	{
 		AnimInstance->SetGunElevation(GunElevation);
 	}
+}
+
+void AAITank_1::OnOutLine()
+{
+	GetMesh()->bRenderCustomDepth = true;
+}
+
+void AAITank_1::OffOutLine()
+{
+	GetMesh()->bRenderCustomDepth = false;
 }

@@ -70,4 +70,8 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UTankVehicleAnimInstance> AnimInstanceClass;
+
+public:
+	UAudioComponent* GetFireSoundComp() const;
+	UAudioComponent* GetTrackSoundComp() const;
 };

@@ -28,9 +28,13 @@ ATankVehicle::ATankVehicle()
 	}
 	GunFire->SetupAttachment(ProjectileSpawnPoint);
 
-	FireSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("FireSoundComp"));
-	FireSoundComp->SetupAttachment(RootComponent);
-	FireSoundComp->bAutoActivate = false;
+	InnerFireSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("InnerFireSoundComp"));
+	InnerFireSoundComp->SetupAttachment(RootComponent);
+	InnerFireSoundComp->bAutoActivate = false;
+
+	OuterFireSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("OuterFireSoundComp"));
+	OuterFireSoundComp->SetupAttachment(RootComponent);
+	OuterFireSoundComp->bAutoActivate = false;
 
 	TrackSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("TrackSoundComp"));
 	TrackSoundComp->SetupAttachment(RootComponent);
@@ -43,9 +47,6 @@ void ATankVehicle::BeginPlay()
 
 	GetMesh()->CreateDynamicMaterialInstance(1);
 	GetMesh()->SetAnimInstanceClass(AnimInstanceClass);
-
-	FireSoundComp->SetSound(FireSound);
-	TrackSoundComp->SetSound(TrackSound);
 }
 
 void ATankVehicle::Tick(float DeltaSeconds)
@@ -127,6 +128,7 @@ void	ATankVehicle::RotateBarrel(float Value)
 	animIns->SetTurretElevation(lerp);
 }
 
+
 void ATankVehicle::Fire()
 {
 	if (CurrentReloadTime != ReloadTime)
@@ -137,7 +139,8 @@ void ATankVehicle::Fire()
 		ProjectileSpawnPoint->GetComponentRotation());
 	CurrentReloadTime = 0;
 	GunFire->Activate();
-	FireSoundComp->Play(0.f);
+	InnerFireSoundComp->Play(0.3f);
+	OuterFireSoundComp->Play(0.f);
 	
 	Projectile->SetOwner(this);
 }
@@ -180,9 +183,15 @@ void ATankVehicle::UpdateMovementSound()
 	TrackSoundComp->SetPitchMultiplier(Pitch);
 }
 
-UAudioComponent* ATankVehicle::GetFireSoundComp() const
+
+UAudioComponent* ATankVehicle::GetOuterFireSoundComp() const
 {
-	return FireSoundComp;
+	return OuterFireSoundComp;
+}
+
+UAudioComponent* ATankVehicle::GetInnerFireSoundComp() const
+{
+	return InnerFireSoundComp;
 }
 
 UAudioComponent* ATankVehicle::GetTrackSoundComp() const

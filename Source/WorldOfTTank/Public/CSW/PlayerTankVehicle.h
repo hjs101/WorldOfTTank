@@ -51,6 +51,16 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UPaperSpriteComponent* Indicator;
 
+	UPROPERTY(EditAnywhere, Category="FX")
+	USoundBase* OuterFireSound;
+
+	UPROPERTY(EditAnywhere, Category="FX")
+	USoundBase* InnerFireSound;
+	
+	UPROPERTY(EditAnywhere, Category="FX")
+	USoundBase* TrackSound;
+	
+
 	bool IsFps = false;
 \
 	void	LerpZoom(float DeltaSeconds);

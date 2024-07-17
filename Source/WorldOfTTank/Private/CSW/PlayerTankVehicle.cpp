@@ -48,6 +48,9 @@ void APlayerTankVehicle::BeginPlay()
 
 	ChangeToTps();
 	ControllerRef = Cast<APlayerController>(GetController());
+	GetInnerFireSoundComp()->SetSound(InnerFireSound);
+	GetOuterFireSoundComp()->SetSound(OuterFireSound);
+	GetTrackSoundComp()->SetSound(TrackSound);
 }
 
 void APlayerTankVehicle::Tick(float DeltaSeconds)
@@ -58,13 +61,15 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 	{
 		float dist = SpringArmComp->TargetArmLength;
 		float volume = FMath::GetMappedRangeValueClamped(FVector2D(0.f, 2000.f), FVector2D(1.f, 0.5f), dist);
+		GetOuterFireSoundComp()->SetVolumeMultiplier(volume);
 		GetTrackSoundComp()->SetVolumeMultiplier(volume);
-		GetFireSoundComp()->SetVolumeMultiplier(volume);
+		GetInnerFireSoundComp()->SetVolumeMultiplier(0.f);
 	}
 	else
 	{
-		GetTrackSoundComp()->SetVolumeMultiplier(0.3f);
-		GetFireSoundComp()->SetVolumeMultiplier(0.3f);
+		GetInnerFireSoundComp()->SetVolumeMultiplier(1.f);
+		GetTrackSoundComp()->SetVolumeMultiplier(0.1f);
+		GetOuterFireSoundComp()->SetVolumeMultiplier(0.f);
 	}
 	
 	FHitResult hit;

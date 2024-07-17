@@ -57,21 +57,20 @@ private:
 	UParticleSystemComponent* GunFire;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
-	UAudioComponent* FireSoundComp;
+	UAudioComponent* OuterFireSoundComp;
+
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UAudioComponent* InnerFireSoundComp;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UAudioComponent* TrackSoundComp;
-
-	UPROPERTY(EditAnywhere, Category="FX")
-	USoundBase* FireSound;
-
-	UPROPERTY(EditAnywhere, Category="FX")
-	USoundBase* TrackSound;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UTankVehicleAnimInstance> AnimInstanceClass;
 
 public:
-	UAudioComponent* GetFireSoundComp() const;
+	UAudioComponent* GetOuterFireSoundComp() const;
+	UAudioComponent* GetInnerFireSoundComp() const;
 	UAudioComponent* GetTrackSoundComp() const;
+
 };

@@ -60,6 +60,7 @@ void ATankVehicle::Tick(float DeltaSeconds)
 	float speed = GetVehicleMovementComponent()->GetForwardSpeed();
 	
 	animIns->SetWheelSpeed(FMath::Clamp(speed, -500, 500));
+	UpdateMovementSound();
 }
 
 USceneComponent* ATankVehicle::GetProjectileSpawnPoint() const
@@ -171,17 +172,20 @@ void ATankVehicle::UpdateMovementSound()
 {
 	FVector Velocity = GetMesh()->GetPhysicsLinearVelocity();
 	float Speed = Velocity.Size();
-
-	if (Speed > 0.0f){
+	
 		if (!TrackSoundComp->IsPlaying())
 			TrackSoundComp->Play();
 
-		float Pitch = FMath::GetMappedRangeValueClamped(FVector2D(0.f,1000.f), FVector2D(0.5f,1.5f),Speed);
-		TrackSoundComp->SetPitchMultiplier(Pitch);
-	}
-	else
-	{
-		if (TrackSoundComp->IsPlaying())
-			TrackSoundComp->Stop();
-	}
+	float Pitch = FMath::GetMappedRangeValueClamped(FVector2D(0.f,1000.f), FVector2D(0.5f,1.5f),Speed);
+	TrackSoundComp->SetPitchMultiplier(Pitch);
+}
+
+UAudioComponent* ATankVehicle::GetFireSoundComp() const
+{
+	return FireSoundComp;
+}
+
+UAudioComponent* ATankVehicle::GetTrackSoundComp() const
+{
+	return TrackSoundComp;
 }

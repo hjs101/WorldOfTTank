@@ -10,6 +10,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "HJS/AITankCPU_1.h"
 #include "PaperSpriteComponent.h"
+#include "Components/AudioComponent.h"
 
 APlayerTankVehicle::APlayerTankVehicle()
 {
@@ -53,6 +54,19 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (!IsFps)
+	{
+		float dist = SpringArmComp->TargetArmLength;
+		float volume = FMath::GetMappedRangeValueClamped(FVector2D(0.f, 2000.f), FVector2D(1.f, 0.5f), dist);
+		GetTrackSoundComp()->SetVolumeMultiplier(volume);
+		GetFireSoundComp()->SetVolumeMultiplier(volume);
+	}
+	else
+	{
+		GetTrackSoundComp()->SetVolumeMultiplier(0.3f);
+		GetFireSoundComp()->SetVolumeMultiplier(0.3f);
+	}
+	
 	FHitResult hit;
 	GetCurrentHitPoint(hit);
 	AActor* tmp = hit.GetActor();
@@ -101,6 +115,7 @@ FVector APlayerTankVehicle::GetCursorTarget() const
 	ControllerRef->DeprojectScreenPositionToWorld(viewportSize.X / 2, viewportSize.Y * hieghtRate, org, dir);
 	FVector end = org + dir * 1000000000;
 
+	
 	FHitResult hitResult;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);

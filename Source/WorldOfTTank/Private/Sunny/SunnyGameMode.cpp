@@ -116,16 +116,34 @@ void ASunnyGameMode::UpdateRanking(FString Name, float Playtime)
 	// 데이터 테이블에 Row 추가
 	RankingDataTable->AddRow(NewRowName, NewRankingData);
 	// 파일 경로 설정
-	FString FilePath = FPaths::ProjectContentDir() / TEXT("Data/Ranking.uasset");
-	// 데이터 테이블 파일에 저장
-	if (FFileHelper::SaveStringToFile(RankingDataTable->GetPathName(), *FilePath))
+	RankingDataTable->MarkPackageDirty();
+
+	// 패키지 저장
+	FString PackagePath = RankingDataTable->GetOutermost()->GetName();
+	UPackage* Package = RankingDataTable->GetOutermost();
+	FString FilePath = FPackageName::LongPackageNameToFilename(PackagePath, FPackageName::GetAssetPackageExtension());
+
+	bool bSuccess = UPackage::SavePackage(
+		Package,
+		RankingDataTable,
+		EObjectFlags::RF_Public | EObjectFlags::RF_Standalone,
+		*FilePath,
+		GError,
+		nullptr,
+		true,
+		true,
+		SAVE_NoError
+	);
+
+	if (bSuccess)
 	{
-		//UE_LOG(LogTemp, Log, TEXT("DataTable saved to %s"), *FilePath);
+		UE_LOG(LogTemp, Log, TEXT("DataTable saved successfully: %s"), *FilePath);
 	}
 	else
 	{
-		//UE_LOG(LogTemp, Error, TEXT("Failed to save DataTable to %s"), *FilePath);
+		UE_LOG(LogTemp, Error, TEXT("Failed to save DataTable: %s"), *FilePath);
 	}
+
 	// 이후 랭킹 다시 세팅 (UI갱신)
 	LoadRankingData();
 	ConvertRankingToString();

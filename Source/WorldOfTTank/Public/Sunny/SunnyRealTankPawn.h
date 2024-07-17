@@ -49,6 +49,8 @@ public:
 	// 탱크 머리, 몸체가 타겟을 향할 때
 	bool bFound = false;
 
+	// 각속도 확인
+	bool bStopTurn = false;
 
 	UFUNCTION()
 	void SetSpeed();
@@ -82,7 +84,7 @@ private:
 	float TurretAngle;
 
 	// 이동 상태 표시
-	float MoveState;
+	float MoveState = 0.f;
 
 	// 회전 변수
 	//bool bStopTurn = false;

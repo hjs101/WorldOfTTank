@@ -11,6 +11,7 @@ UENUM(BlueprintType)
 enum class ESunnyAiState : uint8
 {
 	Idle,
+	Find,
 	Move,
 	Attack,
 	Die,
@@ -42,6 +43,8 @@ public:
 
 	// 대기 상태
 	void IdleState();
+	// 찾기 상태
+	void FindState();
 	// 이동 상태
 	void MoveState();
 	// 공격 상태
@@ -90,10 +93,10 @@ public:
 
 	// Enemy를 소유하고 있는 AIContoller
 	UPROPERTY()
-	class AAIController* AiController;
+	class ASunnyAIController* AiController;
 
 	// 길 찾기 수행시 랜덤 위치
 	FVector RandomPos;
 	// 랜덤 위치 가져오기
-	bool GetRandomPositionInNavMesh(FVector centerLocaion, float radius, FVector& dest);
+	//bool GetRandomPositionInNavMesh(FVector centerLocaion, float radius, FVector& dest);
 };

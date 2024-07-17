@@ -19,8 +19,6 @@
 #include "Components/WidgetComponent.h"
 #include "Components/progressBar.h"
 #include "Components/TextBlock.h"
-
-//#include "Components/CapsuleComponent.h"
 #include "PaperSpriteComponent.h"
 
 #include "Components/SkeletalMeshComponent.h"
@@ -60,20 +58,12 @@ ASunnyNewTTank::ASunnyNewTTank()
 }
 
 
+int state;
+
 void ASunnyNewTTank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (FSM && InFireRange())
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("ASunnyNewTTank::Tick() ---> InFireRange()"))
-		CalcTurretRotation(PlayerTTank);
-		//RotateTurret(PlayerTTank->GetActorLocation());
-		//RotateTank(PlayerTTank->GetActorLocation());
-	}
-	
-
-	SetBeamLocation();
 }
 
 
@@ -81,7 +71,7 @@ void ASunnyNewTTank::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 캐릭터가 위를 바라봤을 때 화살표가 안 보이게끔 설정 <-- 왜 안 돼?
+	// 캐릭터가 위를 바라봤을 때 화살표가 안 보이게끔 설정
 	//EnemyIndicator->SetHiddenInGame(true);
 	EnemyIndicator->bVisibleInSceneCaptureOnly = true;
 
@@ -134,24 +124,24 @@ void ASunnyNewTTank::BeginPlay()
 
 
 // 탱크 머리 회전 계산
-void ASunnyNewTTank::CalcTurretRotation(AActor* TargetActor)
-{
-	// 타겟이 없으면 리턴
-	if (!TargetActor)
-	{
-		return;
-	}
-
-	USkeletalMeshComponent* SkelMesh = GetMesh();
-	if (nullptr == SkelMesh)
-	{
-		return;
-	}
-
-	// 타겟 방향 벡터 구하기
-	FVector ToTarget = TargetActor->GetActorLocation() - SkelMesh->GetSocketLocation(FName("turret_jnt"));
-	RotateTurret(ToTarget);
-}
+//void ASunnyNewTTank::CalcTurretRotation(AActor* TargetActor)
+//{
+//	// 타겟이 없으면 리턴
+//	if (!TargetActor)
+//	{
+//		return;
+//	}
+//
+//	USkeletalMeshComponent* SkelMesh = GetMesh();
+//	if (nullptr == SkelMesh)
+//	{
+//		return;
+//	}
+//
+//	// 타겟 방향 벡터 구하기
+//	FVector ToTarget = TargetActor->GetActorLocation() - SkelMesh->GetSocketLocation(FName("turret_jnt"));
+//	RotateTurret(ToTarget);
+//}
 
 
 

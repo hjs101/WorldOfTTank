@@ -28,7 +28,7 @@ public:
 	// 이펙트, 사운드 삭제
 	void HandleDestruction();
 
-
+	
 	bool IsDead();
 
 
@@ -41,6 +41,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	class UWidgetComponent* HealthWidgetComp;
 
+	
 
 private:
 	class APlayerTankVehicle* PlayerTTank;
@@ -80,6 +81,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere,Category="Components")
 	UStaticMeshComponent* OnDieMeshComp;
+
 
 	// 공격 타이머 설정
 	void SetFireTimer();
@@ -133,5 +135,8 @@ public:
 	// 발사 소리
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	class USoundBase* DamageSound;
+
+
+	bool InFireRange();
 	
 };

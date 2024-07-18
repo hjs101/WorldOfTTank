@@ -3,6 +3,7 @@
 
 #include "CSW/TankVehicle.h"
 #include "ChaosVehicleMovementComponent.h"
+#include "NiagaraComponent.h"
 #include "CSW/Projectile.h"
 #include "CSW/TankVehicleAnimInstance.h"
 #include "HJS/AITankCPU_1.h"
@@ -27,6 +28,10 @@ ATankVehicle::ATankVehicle()
 		GunFire->bAutoActivate = false;
 	}
 	GunFire->SetupAttachment(ProjectileSpawnPoint);
+
+	GunRipple = CreateDefaultSubobject<UNiagaraComponent>(TEXT("GunRipple"));
+	GunRipple->bAutoActivate = false;
+	GunRipple->SetupAttachment(ProjectileSpawnPoint);
 
 	InnerFireSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("InnerFireSoundComp"));
 	InnerFireSoundComp->SetupAttachment(RootComponent);
@@ -139,9 +144,10 @@ void ATankVehicle::Fire()
 		ProjectileSpawnPoint->GetComponentRotation());
 	CurrentReloadTime = 0;
 	GunFire->Activate();
+	GunRipple->Activate();
 	InnerFireSoundComp->Play(0.3f);
 	OuterFireSoundComp->Play(0.f);
-	GetMesh()->AddImpulse(-1000000 * ProjectileSpawnPoint->GetForwardVector());
+	GetMesh()->AddImpulse(-2000000 * ProjectileSpawnPoint->GetForwardVector());
 	
 	Projectile->SetOwner(this);
 }

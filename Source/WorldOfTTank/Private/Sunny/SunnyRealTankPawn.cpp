@@ -179,12 +179,6 @@ void ASunnyRealTankPawn::RotateTank(FVector LookAtTarget)
 // 탱크 머리 돌리기
 void ASunnyRealTankPawn::RotateTurret(FVector lookAtTarget)
 {
-	// 타겟이 없으면 리턴
-	if (nullptr == lookAtTarget)
-	{
-		return;
-	}
-
 	USkeletalMeshComponent* SkelMesh = GetMesh();
 	if (nullptr == SkelMesh)
 	{

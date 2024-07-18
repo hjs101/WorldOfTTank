@@ -134,7 +134,7 @@ void USunnyNewFSM::MoveState()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("MoveState()"));
 	FVector destination;
-	float DeltaTime;
+	//float DeltaTime;
 
 	// 타깃이 존재하는지 확인
 	if (Target)
@@ -147,7 +147,7 @@ void USunnyNewFSM::MoveState()
 			//UE_LOG(LogTemp, Warning, TEXT("MoveState()  -->  Rotate Turret"));
 			AiController = Cast<ASunnyAIController>(Me->GetController());
 			AiController->FindTargetPath(destination);
-			AiController->MoveAlongPath(DeltaTime);
+			//AiController->MoveAlongPath(DeltaTime);
 
 			Me->RotateTank(destination);
 		}

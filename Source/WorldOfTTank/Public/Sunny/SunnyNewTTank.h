@@ -52,7 +52,7 @@ private:
 	FTimerHandle FireRateTimerHandle;
 	float FireRate = 5.f;
 	void CheckFireCondition();
-	bool InFireRange();
+	//bool InFireRange();
 
 
 	// 탱크 머리 각도

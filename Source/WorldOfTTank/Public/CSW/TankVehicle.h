@@ -57,6 +57,9 @@ private:
 	UParticleSystemComponent* GunFire;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
+	class UNiagaraComponent* GunRipple;
+
+	UPROPERTY(VisibleAnywhere, Category="Components")
 	UAudioComponent* OuterFireSoundComp;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")

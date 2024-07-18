@@ -134,7 +134,7 @@ void ASunnyAIController::MoveAlongPath(float DeltaTime)
 				SunnyNewTTank->RotateTank(TargetLocation);
 
 				// AI 탱크가 Attack 상태이고 FireRange이면 종료
-				if (SunnyNewTTank->InFireRange() && )
+				if (SunnyNewTTank->InFireRange())
 				{
 					FinishMove(true);
 				}

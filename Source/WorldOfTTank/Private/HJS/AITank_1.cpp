@@ -196,6 +196,7 @@ float AAITank_1::RotateTank(FVector LookAtTarget)
 	FVector RightVector = GetMesh()->GetRightVector().GetSafeNormal();
 	FVector ForWardVector = GetMesh()->GetForwardVector().GetSafeNormal();
 	FVector ToTarget = LookAtTarget - GetActorLocation();
+	ToTarget.Z = 0;
 	ToTarget.Normalize();
 	float result = FVector::DotProduct(RightVector, ToTarget);
 	float result2 = FVector::DotProduct(ForWardVector, ToTarget);

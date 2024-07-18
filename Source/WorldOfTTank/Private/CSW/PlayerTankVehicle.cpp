@@ -3,6 +3,8 @@
 
 #include "CSW/PlayerTankVehicle.h"
 
+#include "AudioDevice.h"
+#include "AudioDeviceManager.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/WidgetComponent.h"
@@ -46,6 +48,7 @@ void APlayerTankVehicle::BeginPlay()
 {
 	Super::BeginPlay();
 
+	
 	ChangeToTps();
 	ControllerRef = Cast<APlayerController>(GetController());
 	GetInnerFireSoundComp()->SetSound(InnerFireSound);
@@ -57,19 +60,22 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	
 	if (!IsFps)
 	{
 		float dist = SpringArmComp->TargetArmLength;
 		float volume = FMath::GetMappedRangeValueClamped(FVector2D(0.f, 2000.f), FVector2D(1.f, 0.5f), dist);
 		GetOuterFireSoundComp()->SetVolumeMultiplier(volume);
 		GetTrackSoundComp()->SetVolumeMultiplier(volume);
+		USoundClass* SoundClass = LoadObject<USoundClass>(nullptr, TEXT("/Script/Engine.SoundClass'/Game/CSW/OuterSound.OuterSound'"));
+		SoundClass->Properties.Volume = 1.f;
 		GetInnerFireSoundComp()->SetVolumeMultiplier(0.f);
 	}
 	else
 	{
+		USoundClass* SoundClass = LoadObject<USoundClass>(nullptr, TEXT("/Script/Engine.SoundClass'/Game/CSW/OuterSound.OuterSound'"));
+		SoundClass->Properties.Volume = 0.3f;
 		GetInnerFireSoundComp()->SetVolumeMultiplier(1.f);
-		GetTrackSoundComp()->SetVolumeMultiplier(0.1f);
-		GetOuterFireSoundComp()->SetVolumeMultiplier(0.f);
 	}
 	
 	FHitResult hit;
@@ -128,14 +134,11 @@ FVector APlayerTankVehicle::GetCursorTarget() const
 	if (!(GetWorld()->LineTraceSingleByChannel(hitResult, org , end, ECollisionChannel::ECC_WorldStatic, Params)))
 		return FVector::ZeroVector;
 	static AAITankCPU_1* tmp;
-	// if (tmp)
-	// 	tmp->OffOutLine();
+	if (tmp)
+		tmp->OffOutLine();
 	tmp = Cast<AAITankCPU_1>(hitResult.GetActor());
 	if (tmp)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OnOutline"));
 		tmp->OnOutLine();
-	}
 	return hitResult.Location;
 }
 

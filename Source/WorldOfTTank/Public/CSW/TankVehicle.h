@@ -66,12 +66,18 @@ private:
 	UAudioComponent* InnerFireSoundComp;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
+	UAudioComponent* HitSoundComp;
+	
+	UPROPERTY(VisibleAnywhere, Category="Components")
 	UAudioComponent* TrackSoundComp;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UTankVehicleAnimInstance> AnimInstanceClass;
 
 public:
+	UFUNCTION()
+	void	OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	
 	UAudioComponent* GetOuterFireSoundComp() const;
 	UAudioComponent* GetInnerFireSoundComp() const;
 	UAudioComponent* GetTrackSoundComp() const;

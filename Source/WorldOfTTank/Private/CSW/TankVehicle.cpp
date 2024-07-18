@@ -41,6 +41,10 @@ ATankVehicle::ATankVehicle()
 	OuterFireSoundComp->SetupAttachment(RootComponent);
 	OuterFireSoundComp->bAutoActivate = false;
 
+	HitSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("HitSoundComp"));
+	HitSoundComp->SetupAttachment(RootComponent);
+	HitSoundComp->bAutoActivate = false;
+
 	TrackSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("TrackSoundComp"));
 	TrackSoundComp->SetupAttachment(RootComponent);
 	TrackSoundComp->bAutoActivate = false;
@@ -52,6 +56,8 @@ void ATankVehicle::BeginPlay()
 
 	GetMesh()->CreateDynamicMaterialInstance(1);
 	GetMesh()->SetAnimInstanceClass(AnimInstanceClass);
+
+	GetMesh()->OnComponentHit.AddDynamic(this, &ATankVehicle::OnHit);
 }
 
 void ATankVehicle::Tick(float DeltaSeconds)
@@ -204,4 +210,9 @@ UAudioComponent* ATankVehicle::GetInnerFireSoundComp() const
 UAudioComponent* ATankVehicle::GetTrackSoundComp() const
 {
 	return TrackSoundComp;
+}
+
+void ATankVehicle::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	HitSoundComp->Activate();
 }

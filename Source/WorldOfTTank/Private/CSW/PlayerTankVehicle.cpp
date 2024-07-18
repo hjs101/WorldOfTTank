@@ -74,7 +74,7 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 	else
 	{
 		USoundClass* SoundClass = LoadObject<USoundClass>(nullptr, TEXT("/Script/Engine.SoundClass'/Game/CSW/OuterSound.OuterSound'"));
-		SoundClass->Properties.Volume = 0.3f;
+		SoundClass->Properties.Volume = 0.2f;
 		GetInnerFireSoundComp()->SetVolumeMultiplier(1.f);
 	}
 	

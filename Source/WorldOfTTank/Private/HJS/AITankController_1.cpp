@@ -87,7 +87,7 @@ void AAITankController_1::MoveAlongPath(float DeltaTime)
 				TargetLocation = PathPoints[CurrentPathPointIndex];
 			}
 			TargetLocation.Z = TargetLocation.Z + 50.f;
-			//DrawDebugSphere(GetWorld(),TargetLocation,50.f,12,FColor::Green,false,5.f);
+			DrawDebugSphere(GetWorld(),TargetLocation,50.f,12,FColor::Green,false,5.f);
 			AAITankCPU_1* AITank = Cast<AAITankCPU_1>(GetPawn());
 			if(AITank)
 			{

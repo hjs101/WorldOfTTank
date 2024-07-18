@@ -116,21 +116,9 @@ void AAITank_1::BodyTurn(float value)
 		}
 		else
 		{
-			if (FVector::DotProduct(GetMesh()->GetPhysicsLinearVelocity(), GetActorForwardVector()) < 0)
-			{
-				VehicleYaw = -value;
-			}
-			else
-			{
-				VehicleYaw = value;
-			}
-			
+			VehicleYaw = value;			
 			VehicleMovement->SetYawInput(VehicleYaw);
 		}
-	}
-	if (value != 0 && MoveState == 0)
-	{
-		Move(0.2f);
 	}
 	if (value == 0)
 	{
@@ -153,7 +141,6 @@ void AAITank_1::Fire()
 	{
 		FireSoundComp->Play(0.f);
 	}
-
 	FVector ProjecttileSpawnPointLocation = ProjecttileSpawnPoint->GetComponentLocation();
 	FRotator ProjecttileSpawnPoinRotation = ProjecttileSpawnPoint->GetComponentRotation();
 	if (ProjecttileClass) {
@@ -208,31 +195,14 @@ float AAITank_1::RotateTank(FVector LookAtTarget)
 	}
 	FVector RightVector = GetMesh()->GetRightVector().GetSafeNormal();
 	FVector ForWardVector = GetMesh()->GetForwardVector().GetSafeNormal();
-	//FRotator CurrentRotation = GetMesh()->GetComponentRotation();
-	FVector ToTarget = LookAtTarget - GetMesh()->GetComponentLocation();
-	ToTarget.Z = 0.f;
+	FVector ToTarget = LookAtTarget - GetActorLocation();
 	ToTarget.Normalize();
 	float result = FVector::DotProduct(RightVector, ToTarget);
 	float result2 = FVector::DotProduct(ForWardVector, ToTarget);
-	//UE_LOG(LogTemp, Warning, TEXT("RightVector Dot : %f"), result);
-	//UE_LOG(LogTemp, Warning, TEXT("FordardVector Dot : %f"), result2);
 	if ((result > -0.1f && result < 0.1f) && (result2 > 0.9f))
 		return 0;
-	// Right 양 Forward양일때
-	if (result > 0.f && result2 > 0.f)
-	{
-		return 1.f;
-	// Right 양, Forward 음일때
-	}
-	else if (result > 0.f && result2 < 0.f)
-	{
-		return 1.f;
-	}
-	// 나머지 ( 음음, 음양 , 0)
-	else
-	{
-		return -1.f;
-	}
+
+	return result > 0? 1.f:-1.f;
 }
 
 float AAITank_1::CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, float TargetHeight)
@@ -319,10 +289,10 @@ void AAITank_1::SetGun()
 
 void AAITank_1::OnOutLine()
 {
-	GetMesh()->bRenderCustomDepth = true;
+	GetMesh()->SetRenderCustomDepth(true);
 }
 
 void AAITank_1::OffOutLine()
 {
-	GetMesh()->bRenderCustomDepth = false;
+	GetMesh()->SetRenderCustomDepth(false);
 }

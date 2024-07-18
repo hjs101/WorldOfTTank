@@ -62,6 +62,7 @@ private:
 	
 
 	bool IsFps = false;
+	class AAITankCPU_1* EncounterEnemy;
 \
 	void	LerpZoom(float DeltaSeconds);
 	void	ZoomIn();

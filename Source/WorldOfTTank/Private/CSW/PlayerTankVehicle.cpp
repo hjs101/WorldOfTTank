@@ -74,8 +74,8 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 	
 	FHitResult hit;
 	GetCurrentHitPoint(hit);
-	AActor* tmp = hit.GetActor();
-	if (Cast<AAITankCPU_1>(tmp))
+	AAITankCPU_1* tmp = Cast<AAITankCPU_1>(hit.GetActor());
+	if (tmp)
 		Cast<UChasingAim>(ChasingAim->GetUserWidgetObject())->SetIsHit(true);
 	else
 		Cast<UChasingAim>(ChasingAim->GetUserWidgetObject())->SetIsHit(false);
@@ -125,18 +125,33 @@ FVector APlayerTankVehicle::GetCursorTarget() const
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
 
-	if (GetWorld()->LineTraceSingleByChannel(hitResult, org , end, ECollisionChannel::ECC_WorldStatic, Params))
-		return hitResult.Location;
-	return FVector::ZeroVector;
+	if (!(GetWorld()->LineTraceSingleByChannel(hitResult, org , end, ECollisionChannel::ECC_WorldStatic, Params)))
+		return FVector::ZeroVector;
+	static AAITankCPU_1* tmp;
+	// if (tmp)
+	// 	tmp->OffOutLine();
+	tmp = Cast<AAITankCPU_1>(hitResult.GetActor());
+	if (tmp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnOutline"));
+		tmp->OnOutLine();
+	}
+	return hitResult.Location;
 }
 
 void APlayerTankVehicle::LookUpDown(float Value)
 {
+	// Value = FMath::Clamp(Value, 60, -60);
+	if (!IsFps &&
+		((CameraComp->GetComponentRotation().Pitch >= 30 && Value < 0) ||
+		(CameraComp->GetComponentRotation().Pitch <= -50) && Value > 0))
+		return ;
 	AddControllerPitchInput(Value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
-
-
+	
 	FVector goal = GetCursorTarget() - GetProjectileSpawnPoint()->GetComponentLocation();
-	RotateBarrel(goal.Rotation().Pitch - GetMesh()->GetBoneTransform(FName("turret_jnt")).Rotator().Pitch);
+	float newPitch = goal.Rotation().Pitch - GetMesh()->GetBoneTransform(FName("turret_jnt")).Rotator().Pitch;
+	newPitch = FMath::Clamp(newPitch, -3.f, 20.f);
+	RotateBarrel(newPitch);
 
 }
 

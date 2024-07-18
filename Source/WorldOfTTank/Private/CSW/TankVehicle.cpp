@@ -141,6 +141,7 @@ void ATankVehicle::Fire()
 	GunFire->Activate();
 	InnerFireSoundComp->Play(0.3f);
 	OuterFireSoundComp->Play(0.f);
+	GetMesh()->AddImpulse(-1000000 * ProjectileSpawnPoint->GetForwardVector());
 	
 	Projectile->SetOwner(this);
 }

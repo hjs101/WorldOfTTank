@@ -72,70 +72,64 @@ void AAITankController_1::Tick(float DeltaTime)
 void AAITankController_1::MoveAlongPath(float DeltaTime)
 {
 
-	if(CurrentPath)
+	if(!CurrentPath)
 	{
-		TArray<FNavPathPoint> PathPoints = CurrentPath->GetPathPoints();
-		if (PathPoints.Num() <= 0) {
-			FinishMove(false);
-		}
-		if (PathPoints.Num() > 1)
+		CurrentPathPointIndex = 0;
+		return;
+	}
+
+	TArray<FNavPathPoint> PathPoints = CurrentPath->GetPathPoints();
+	if (PathPoints.Num() <= 0) {
+		FinishMove(false);
+		return;
+	}
+	if (PathPoints.Num() > 1)
+	{
+		FVector CurrentLocation = FVector::ZeroVector;
+		FVector TargetLocation = FVector::ZeroVector;
+		if (CurrentPathPointIndex < PathPoints.Num())
 		{
-			FVector CurrentLocation = FVector::ZeroVector;
-			FVector TargetLocation = FVector::ZeroVector;
-			if (CurrentPathPointIndex < PathPoints.Num())
+			TargetLocation = PathPoints[CurrentPathPointIndex];
+		}
+		TargetLocation.Z = TargetLocation.Z + TargetHeightOffset;
+		//DrawDebugSphere(GetWorld(),TargetLocation,50.f,12,FColor::Green,false,5.f);
+		AAITankCPU_1* AITank = Cast<AAITankCPU_1>(GetPawn());
+		if(AITank)
+		{
+			CurrentLocation = AITank->GetMesh()->GetSocketLocation(FName("turret_jnt"));
+			TurnState = AITank->RotateTank(TargetLocation);
+			MoveState = (TurnState == 0) ? 1 : 0;
+			if(AITank->GetFireState() && !bNonStop)
 			{
-				TargetLocation = PathPoints[CurrentPathPointIndex];
+				FinishMove(true);
 			}
-			TargetLocation.Z = TargetLocation.Z + 50.f;
-			DrawDebugSphere(GetWorld(),TargetLocation,50.f,12,FColor::Green,false,5.f);
-			AAITankCPU_1* AITank = Cast<AAITankCPU_1>(GetPawn());
-			if(AITank)
+			if (AITank->GetFireState() && bAttackMode == true)
 			{
-				CurrentLocation = AITank->GetMesh()->GetSocketLocation(FName("turret_jnt"));
-				TurnState = AITank->RotateTank(TargetLocation);
-				if (TurnState == 0)
+				AActor* Target = Cast<AActor>(BlackboardComponent->GetValueAsObject(FName("MainTarget")));
+				if (Target != nullptr)
 				{
-					MoveState = 1;
-				}
-				else
-				{
-					MoveState = 0;
-				}
-				if(AITank->GetFireState() && !bNonStop)
-				{
-					FinishMove(true);
-				}
-				if (AITank->GetFireState() && bAttackMode == true)
-				{
-					AActor* Target = Cast<AActor>(BlackboardComponent->GetValueAsObject(FName("MainTarget")));
-					if (Target != nullptr)
+					bool bNotAbleAttack = AITank->HasLineOfSightToTarget(CurrentLocation, Target);
+					if (!bNotAbleAttack)
 					{
-						bool bNotAbleAttack = AITank->HasLineOfSightToTarget(CurrentLocation, Target);
-						if (!bNotAbleAttack)
-						{
-							FinishMove(true);
-						}
+						FinishMove(true);
 					}
 				}
 			}
-			
-			if (FVector::Dist(CurrentLocation, TargetLocation) < AcceptanceRadius)
+		}
+		
+		if (FVector::Dist(CurrentLocation, TargetLocation) < AcceptanceRadius)
+		{
+			CurrentPathPointIndex++;
+			if (CurrentPathPointIndex >= PathPoints.Num())
 			{
-				CurrentPathPointIndex++;
-				if (CurrentPathPointIndex >= PathPoints.Num())
-				{
-					// 경로 완료
-					FinishMove(true);
-				}
+				// 경로 완료
+				FinishMove(true);
 			}
 		}
-		CurrentTime += DeltaTime;
-		if (CurrentTime > EndTime) {
-			FinishMove(false);
-		}
 	}
-	else {
-		CurrentPathPointIndex = 0;
+	CurrentTime += DeltaTime;
+	if (CurrentTime > EndTime) {
+		FinishMove(false);
 	}
 }
 

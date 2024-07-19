@@ -46,10 +46,11 @@ private:
 	bool bHasTarget;
 	FNavPathSharedPtr CurrentPath;
 	int32 CurrentPathPointIndex = 0;
-	float AcceptanceRadius = 500.f;
+	const float AcceptanceRadius = 500.f;
 
 	float CurrentTime = 0.f;
-	float EndTime = 10.f;
+	const float EndTime = 10.f;
+	const float TargetHeightOffset = 50.f;
 
 	bool bNonStop = false;
 	bool bAttackMode = false;

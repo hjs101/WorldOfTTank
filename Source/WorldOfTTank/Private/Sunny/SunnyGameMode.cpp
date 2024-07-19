@@ -182,9 +182,9 @@ void ASunnyGameMode::LoadRankingData()
 	});
 
 	// 상위 10개의 항목만 유지
-	if (Ranking.Num() > 10)
+	if (Ranking.Num() > 5)
 	{
-		Ranking.SetNum(10);
+		Ranking.SetNum(5);
 	}
 }
 
@@ -238,7 +238,7 @@ void ASunnyGameMode::ConvertRankingToString()
 	// 랭킹 정보를 이름 + 분:초:밀리초로 변환
 	// 분, 초, 밀리초로 나누기
 	TArray<FString> RankingText;
-	RankingText.Reserve(10);
+	RankingText.Reserve(5);
 	int32 Count = 1;
 	for (const FRankingData& Rank : Ranking)
 	{

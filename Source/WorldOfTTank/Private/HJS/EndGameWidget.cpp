@@ -12,7 +12,7 @@ void UEndGameWidget::VictorySetting(float ClearTime)
 	VictoryUI->SetVisibility(ESlateVisibility::Visible);
 	VictoryUI->PlayAnim();
 	// 2. 페이드 인이 끝나는 시간과 동시에 UI 창 띄우기
-	GetWorld()->GetTimerManager().SetTimer(FadeInTimerHandle, this, &UEndGameWidget::ResultUIToVisible, 2.f, true);
+	GetWorld()->GetTimerManager().SetTimer(FadeInTimerHandle, this, &UEndGameWidget::ResultUIToVisible, 3.f, true);
 	RankingUI->SetResultTime(ClearTime);
 }
 
@@ -22,7 +22,7 @@ void UEndGameWidget::LoseSetting()
 	LoseUI->SetVisibility(ESlateVisibility::Visible);
 	LoseUI->PlayAnim();
 	// 2. 페이드 인이 끝나는 시간과 동시에 UI 창 띄우기
-	GetWorld()->GetTimerManager().SetTimer(FadeInTimerHandle, this, &UEndGameWidget::ResultUIToVisible, 2.f, true);
+	GetWorld()->GetTimerManager().SetTimer(FadeInTimerHandle, this, &UEndGameWidget::ResultUIToVisible, 3.f, true);
 	// Add 버튼 비활성화
 	RankingUI->SetDisableAddButton();
 }

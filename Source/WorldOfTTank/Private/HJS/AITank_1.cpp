@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "HJS/AITank_1.h"
 #include "Kismet/GameplayStatics.h"
-#include "GameFramework/FloatingPawnMovement.h"
 #include "Components/CapsuleComponent.h"
 #include "HJS/AIProjecttile_1.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -128,21 +127,23 @@ void AAITank_1::BodyTurn(float value)
 
 void AAITank_1::Fire()
 {
+	FVector ProjecttileSpawnPointLocation = ProjecttileSpawnPoint->GetComponentLocation();
+	FRotator ProjecttileSpawnPoinRotation = ProjecttileSpawnPoint->GetComponentRotation();
 	if (GunFire)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(
 		GetWorld(),
 		GunFire,
-		ProjecttileSpawnPoint->GetComponentLocation(),
-		ProjecttileSpawnPoint->GetComponentRotation());
+		ProjecttileSpawnPointLocation,
+		ProjecttileSpawnPoinRotation
+		);
 	}
 
 	if (FireSound && FireSoundComp)
 	{
 		FireSoundComp->Play(0.f);
 	}
-	FVector ProjecttileSpawnPointLocation = ProjecttileSpawnPoint->GetComponentLocation();
-	FRotator ProjecttileSpawnPoinRotation = ProjecttileSpawnPoint->GetComponentRotation();
+
 	if (ProjecttileClass) {
 		AAIProjecttile_1* Projectile = GetWorld()->SpawnActor<AAIProjecttile_1>(ProjecttileClass, ProjecttileSpawnPointLocation, ProjecttileSpawnPoinRotation);
 		Projectile->SetOwner(this);
@@ -174,12 +175,7 @@ void AAITank_1::RotateBarrel(FVector LookAtTarget)
 	LookAtRotation.Pitch = CalculateLaunchAngle(FireSpeed, TargetDistance, TargetHeight);
 	LookPitch = LookAtRotation.Pitch;
 	// 포신 각도 제한
-	if (LookAtRotation.Pitch < DownLimit) {
-		LookAtRotation.Pitch = DownLimit;
-	}
-	if (LookAtRotation.Pitch > UpLimit) {
-		LookAtRotation.Pitch = UpLimit;
-	}
+	LookAtRotation.Pitch = FMath::Clamp(LookAtRotation.Pitch, DownLimit, UpLimit);
 
 	float ToAngle = -(GetActorRotation().Pitch - LookAtRotation.Pitch);
 	GunElevation = ToAngle;
@@ -198,12 +194,12 @@ float AAITank_1::RotateTank(FVector LookAtTarget)
 	FVector ToTarget = LookAtTarget - GetActorLocation();
 	ToTarget.Z = 0;
 	ToTarget.Normalize();
-	float result = FVector::DotProduct(RightVector, ToTarget);
-	float result2 = FVector::DotProduct(ForWardVector, ToTarget);
-	if ((result > -0.1f && result < 0.1f) && (result2 > 0.9f))
+	float Result = FVector::DotProduct(RightVector, ToTarget);
+	float Result2 = FVector::DotProduct(ForWardVector, ToTarget);
+	if ((FMath::Abs(Result) < 0.1f) && (Result2 > 0.9f))
 		return 0;
 
-	return result > 0? 1.f:-1.f;
+	return Result > 0? 1.f:-1.f;
 }
 
 float AAITank_1::CalculateLaunchAngle(float LaunchSpeed, float TargetDistance, float TargetHeight)

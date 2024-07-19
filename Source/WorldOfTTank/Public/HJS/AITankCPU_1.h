@@ -44,7 +44,7 @@ public:
 	virtual void Fire() override;
 	// 공격 유효 지점을 찾는 함수
 	UFUNCTION()
-	FVector FindValidAttackPosition(float SampleRadius,AActor* TargetLocation);
+	FVector CalculateAttackPosition(float SampleRadius,AActor* TargetLocation);
 	// 사정거리 안으로 이동하도록 위치를 잡는 함수
 	UFUNCTION()
 	FVector FindValidAttackRange(const AActor* TargetActor);
@@ -71,7 +71,7 @@ private:
 	// 나이아가라 시스템
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* NiagaraSystem;
-	void LaserBeamSetting();
+	void UpdateLaserBeam();
 	void LaserBeam(FVector Start, FVector End);
 
 	UPROPERTY(EditAnywhere, Category="Combat")
@@ -95,13 +95,13 @@ private:
 	class UNavigationSystemV1* NavSys;
 	// 변수
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float FireRange = 1300.f;
+	float FireRange = 12000.f;
 	UPROPERTY(EditAnywhere, Category = "combat")
 	float DetectRate = 1.f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float DetectRange = 10000.f;
+	float DetectRange = 40000.f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float FireRate = 4.f;
+	float FireRate = 7.f;
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	bool bReadyFire = true;
 
@@ -139,4 +139,11 @@ private:
 	UFUNCTION()
 	void SetFalseVisibility();
 
+	UFUNCTION()
+	UBlackboardComponent* GetBlackboardComponentSafe() const;
+	UPROPERTY()
+	UBlackboardComponent* BlackboardComp;
+
+	UFUNCTION()
+	void CheckAndClearBlackboardValue(FName KeyName);
 };

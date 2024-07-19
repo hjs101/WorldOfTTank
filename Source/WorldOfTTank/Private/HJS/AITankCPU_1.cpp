@@ -52,12 +52,12 @@ void AAITankCPU_1::BeginPlay()
 	TankAIController = Cast<AAITankController_1>(GetController());
 	
 	CurrentHP = MaxHP;
-
+	BlackboardComp = GetBlackboardComponentSafe();
 	UpdateHealthBar();
 	SetFalseVisibility();
 }
 
-void AAITankCPU_1::LaserBeamSetting()
+void AAITankCPU_1::UpdateLaserBeam()
 {
 	FVector TraceStart = ProjecttileSpawnPoint->GetComponentLocation();
 	FVector ForwardVector = ProjecttileSpawnPoint->GetForwardVector();
@@ -109,7 +109,7 @@ void AAITankCPU_1::Tick(float DeltaTime)
 		FRotator NewRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
 		HpBar->SetWorldRotation(NewRotation);
 	}
-	LaserBeamSetting();
+	UpdateLaserBeam();
 	RotateTurretToMainTarget();
 	CheckWidgetVisibility();
 }
@@ -117,42 +117,27 @@ void AAITankCPU_1::Tick(float DeltaTime)
 // 일정 거리 이상 벗어났는 지 확인하는 함수
 void AAITankCPU_1::CheckDistance()
 {
-	// AIController 불러오기
-	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
-	if (AIController == nullptr) 
-	{
-		// 컨트롤러 불러오기 실패
-		return;
-	}
 	// 블랙보드 불러오기
-	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
 	if (BlackboardComp == nullptr) 
 	{
 		return;
 	}
 
-	// 타겟 플레이어 호출
-	APawn* TargetPlayer = Cast<APawn>(BlackboardComp->GetValueAsObject(FName("TargetPlayer")));
-	// 블랙보드에 값이 존재하면
-	if (TargetPlayer != nullptr) 
-	{
-		float Distance = FVector::Dist(GetActorLocation(), TargetPlayer->GetActorLocation());
-		if (Distance > DetectRange) {
-			BlackboardComp->ClearValue("TargetPlayer");
-		}
-	}
-
-	// 타겟 CPU 호출
-	APawn* TargetCPU = Cast<APawn>(BlackboardComp->GetValueAsObject(FName("TargetCPU")));
-	if (TargetCPU != nullptr)
-	{
-		float Distance = FVector::Dist(GetActorLocation(), TargetCPU->GetActorLocation());
-		if (Distance > DetectRange) {
-			BlackboardComp->ClearValue("TargetCPU");
-		}
-	}
+	CheckAndClearBlackboardValue(FName("TargetPlayer"));
+	CheckAndClearBlackboardValue(FName("TargetCPU"));
 	return;
 }	
+
+void AAITankCPU_1::CheckAndClearBlackboardValue(FName KeyName)
+{
+	// 타겟 호출
+	APawn* Target = Cast<APawn>(BlackboardComp->GetValueAsObject(KeyName));
+	// 블랙보드에 값이 존재하면
+	if (Target && FVector::Dist(GetActorLocation(), Target->GetActorLocation()) > DetectRange)
+	{
+		BlackboardComp->ClearValue(KeyName);
+	}
+}
 
 // 사정거리 확인하는 함수
 bool AAITankCPU_1::InFireRange(APawn* OtherActor)
@@ -278,12 +263,6 @@ bool AAITankCPU_1::IsTurretRotationComplete(AActor* TargetActor)
 // Pawn 감지 이벤트 콜백 함수
 void AAITankCPU_1::OnSeePawn(APawn* Pawn)
 {
-	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
-	if (AIController == nullptr)
-	{
-		return;
-	}
-	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
 	if (BlackboardComp == nullptr)
 	{
 		return;
@@ -312,7 +291,7 @@ void AAITankCPU_1::Fire()
 }
 
 // 공격 유효지점 찾기
-FVector AAITankCPU_1::FindValidAttackPosition(float SampleRadius,AActor* TargetActor)
+FVector AAITankCPU_1::CalculateAttackPosition(float SampleRadius,AActor* TargetActor)
 {
 
 
@@ -441,13 +420,6 @@ FVector AAITankCPU_1::FindValidAttackRange(const AActor* TargetActor)
 
 bool AAITankCPU_1::CheckForNearbyObstacle()
 {
-	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
-
-	if (AIController == nullptr)
-	{
-		return false;
-	}
-	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
 	if (BlackboardComp == nullptr)
 	{
 		return false;
@@ -599,13 +571,6 @@ void AAITankCPU_1::Die()
 
 void AAITankCPU_1::SetBlackBoardTarget(AActor* OtherActor)
 {
-	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
-
-	if (AIController == nullptr)
-	{
-		return;
-	}
-	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
 	if (BlackboardComp == nullptr)
 	{
 		return;
@@ -638,13 +603,6 @@ void AAITankCPU_1::UpdateHealthBar() const
 
 void AAITankCPU_1::RotateTurretToMainTarget()
 {
-	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
-
-	if (AIController == nullptr)
-	{
-		return;
-	}
-	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
 	if (BlackboardComp == nullptr)
 	{
 		return;
@@ -691,4 +649,14 @@ void AAITankCPU_1::CheckWidgetVisibility()
 void AAITankCPU_1::SetFalseVisibility()
 {
 	HpBar->SetVisibility(false);
+}
+
+UBlackboardComponent* AAITankCPU_1::GetBlackboardComponentSafe() const
+{
+	AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
+	if (AIController)
+	{
+		return AIController->GetBlackboardComponent();
+	}
+	return nullptr;
 }

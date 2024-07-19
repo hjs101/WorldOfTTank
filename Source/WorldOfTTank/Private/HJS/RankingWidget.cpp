@@ -84,7 +84,7 @@ void URankingWidget::SetRanking(TArray<FString> FileLines)
 			UTextBlock* PlayerText = NewObject<UTextBlock>(SizeBox);
 
 			FSlateFontInfo FontInfo = PlayerText->Font;
-			FontInfo.Size = 40;
+			FontInfo.Size = 30;
 			FontInfo.TypefaceFontName = FName(TEXT("Bold"));
 
 			PlayerText->SetFont(FontInfo);

@@ -30,9 +30,10 @@ EBTNodeResult::Type UBTTask_FindPositionToAttack::ExecuteTask(UBehaviorTreeCompo
         return EBTNodeResult::Failed;
     }
     FVector AttackPosition = FVector::ZeroVector;
+    float SampleRadius;
     for (int32 i = 5; i <= 120; i++) {
-        float SampleRadius = i * 100;
-        AttackPosition = AITank->FindValidAttackPosition(SampleRadius,Target);
+        SampleRadius = i * 100;
+        AttackPosition = AITank->CalculateAttackPosition(SampleRadius,Target);
         // 유효한 공격 위치 찾기
         if (AttackPosition != AITank->GetHeadLocation()) {
             break;

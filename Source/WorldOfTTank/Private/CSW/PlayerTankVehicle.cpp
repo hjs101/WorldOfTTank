@@ -13,6 +13,7 @@
 #include "HJS/AITankCPU_1.h"
 #include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
+#include "Sunny/SunnyNewTTank.h"
 
 APlayerTankVehicle::APlayerTankVehicle()
 {
@@ -44,6 +45,7 @@ APlayerTankVehicle::APlayerTankVehicle()
 	Indicator = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Indicator"));
 	Indicator->SetupAttachment(RootComponent);
 }
+
 void APlayerTankVehicle::BeginPlay()
 {
 	Super::BeginPlay();
@@ -74,14 +76,13 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 	else
 	{
 		USoundClass* SoundClass = LoadObject<USoundClass>(nullptr, TEXT("/Script/Engine.SoundClass'/Game/CSW/OuterSound.OuterSound'"));
-		SoundClass->Properties.Volume = 0.3f;
+		SoundClass->Properties.Volume = 0.2f;
 		GetInnerFireSoundComp()->SetVolumeMultiplier(1.f);
 	}
 	
 	FHitResult hit;
 	GetCurrentHitPoint(hit);
-	AAITankCPU_1* tmp = Cast<AAITankCPU_1>(hit.GetActor());
-	if (tmp)
+	if (Cast<AAITankCPU_1>(hit.GetActor()) || Cast<ASunnyNewTTank>(hit.GetActor()))
 		Cast<UChasingAim>(ChasingAim->GetUserWidgetObject())->SetIsHit(true);
 	else
 		Cast<UChasingAim>(ChasingAim->GetUserWidgetObject())->SetIsHit(false);

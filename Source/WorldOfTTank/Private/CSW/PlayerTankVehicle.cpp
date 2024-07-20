@@ -4,7 +4,7 @@
 #include "CSW/PlayerTankVehicle.h"
 
 #include "AudioDevice.h"
-#include "AudioDeviceManager.h"
+#include "ChaosVehicleMovementComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/WidgetComponent.h"
@@ -20,7 +20,7 @@ APlayerTankVehicle::APlayerTankVehicle()
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComp->SetupAttachment(RootComponent, FName("turret_jnt"));
 	SpringArmComp->bUsePawnControlRotation = true;
-	SpringArmComp->TargetArmLength = 2000;
+	SpringArmComp->TargetArmLength = 1200;
 	SpringArmComp->SetRelativeLocation(FVector(0,0,500));
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -37,6 +37,9 @@ APlayerTankVehicle::APlayerTankVehicle()
 	FpsCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FpsCamera"));
 	FpsCameraComp->SetupAttachment(FpsSpringArmComp);
 	FpsCameraComp->FieldOfView = 80;
+	
+	IntroCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("IntroCameraComp"));
+	IntroCameraComp->SetupAttachment(RootComponent);
 
 	ChasingAim = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChasingAim"));
 	ChasingAim->SetupAttachment(SpringArmComp);
@@ -50,18 +53,27 @@ void APlayerTankVehicle::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
-	ChangeToTps();
+
+	IntroCameraComp->Activate();
+	CameraComp->Deactivate();
+	FpsCameraComp->Deactivate();
+	ChasingAim->SetVisibility(false);
+	// ChangeToTps();
 	ControllerRef = Cast<APlayerController>(GetController());
 	GetInnerFireSoundComp()->SetSound(InnerFireSound);
 	GetOuterFireSoundComp()->SetSound(OuterFireSound);
 	GetTrackSoundComp()->SetSound(TrackSound);
+	GetVehicleMovement()->SetThrottleInput(1);
+}
+
+void APlayerTankVehicle::EndIntro()
+{
+	GetWorld()->GetTimerManager().SetTimer(Timer, this, &APlayerTankVehicle::MoveIntroCamera, 0.01f, true, 0.0f);
 }
 
 void APlayerTankVehicle::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
 	
 	if (!IsFps)
 	{
@@ -87,7 +99,6 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 	else
 		Cast<UChasingAim>(ChasingAim->GetUserWidgetObject())->SetIsHit(false);
 	ChasingAim->SetWorldLocation(hit.ImpactPoint);
-	FRotator Cam = FpsCameraComp->GetComponentRotation();
 	if (CamDist[CamIdx] != SpringArmComp->TargetArmLength)
 		LerpZoom(DeltaSeconds);
 }
@@ -95,7 +106,7 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 void APlayerTankVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	
 	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &APlayerTankVehicle::Move);
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APlayerTankVehicle::Turn);
 
@@ -112,7 +123,8 @@ void APlayerTankVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void APlayerTankVehicle::LookRightLeft(float Value) 
 {
-	AddControllerYawInput(Value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
+	if (!IsIntro)
+		AddControllerYawInput(Value * ViewRotationRate * GetWorld()->GetDeltaSeconds());
 	FVector goal = GetCursorTarget() - GetProjectileSpawnPoint()->GetComponentLocation();
 	RotateTurret(goal.Rotation().Yaw - GetMesh()->GetComponentRotation().Yaw);
 	
@@ -146,7 +158,7 @@ FVector APlayerTankVehicle::GetCursorTarget() const
 void APlayerTankVehicle::LookUpDown(float Value)
 {
 	// Value = FMath::Clamp(Value, 60, -60);
-	if (!IsFps &&
+	if (!IsFps && !IsIntro &&
 		((CameraComp->GetComponentRotation().Pitch >= 30 && Value < 0) ||
 		(CameraComp->GetComponentRotation().Pitch <= -50) && Value > 0))
 		return ;
@@ -157,6 +169,38 @@ void APlayerTankVehicle::LookUpDown(float Value)
 	newPitch = FMath::Clamp(newPitch, -3.f, 20.f);
 	RotateBarrel(newPitch);
 
+}
+
+void APlayerTankVehicle::MoveIntroCamera()
+{
+	FVector start = IntroCameraComp->GetRelativeLocation();
+	FVector end = FVector(-2000, 0, 500);
+	FVector lerp = FMath::VInterpTo(
+		start,
+		end,
+		GetWorld()->GetDeltaSeconds(),
+		1
+		);
+
+	FRotator rstart = IntroCameraComp->GetRelativeRotation();
+	FRotator rend = FRotator::ZeroRotator;
+	FRotator rlerp = FMath::RInterpTo(
+		rstart,
+		rend,
+		GetWorld()->GetDeltaSeconds(),
+		1);
+	IntroCameraComp->SetRelativeRotation(rlerp);
+
+	IntroCameraComp->SetRelativeLocation(lerp);
+	if (FVector::Dist(lerp, end) < 200.f)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(Timer);
+		IntroCameraComp->SetRelativeRotation(FRotator(0, 0, 0));
+		IntroCameraComp->Deactivate();
+		CameraComp->Activate();
+		ChasingAim->SetVisibility(true);
+		IsIntro = false;
+	}
 }
 
 void APlayerTankVehicle::LerpZoom(float DeltaSeconds)
@@ -170,6 +214,7 @@ void APlayerTankVehicle::LerpZoom(float DeltaSeconds)
 	if (pre == SpringArmComp->TargetArmLength)
 		SpringArmComp->TargetArmLength = CamDist[CamIdx];
 }
+
 
 void APlayerTankVehicle::ChangeToFps()
 {

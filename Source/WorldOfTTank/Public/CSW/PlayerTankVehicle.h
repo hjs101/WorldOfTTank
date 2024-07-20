@@ -20,6 +20,7 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 	FVector GetCursorTarget() const;
+	void	EndIntro();
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Components")
@@ -33,6 +34,9 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	class UCameraComponent* FpsCameraComp;
+
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UCameraComponent* IntroCameraComp;
 
 	UPROPERTY(VisibleAnywhere)
 	APlayerController* ControllerRef;
@@ -62,8 +66,12 @@ private:
 	
 
 	bool IsFps = false;
+	bool IsIntro = true;
 	class AAITankCPU_1* EncounterEnemy;
-\
+
+	void	MoveIntroCamera();
+	FTimerHandle Timer;
+	
 	void	LerpZoom(float DeltaSeconds);
 	void	ZoomIn();
 	void	ZoomOut();
@@ -73,7 +81,7 @@ private:
 	
 	float	ViewRotationRate = 100;
 	float	CamDist[6] = {0, 400, 800, 1200, 1600, 2000};
-	int		CamIdx = 5;
+	int		CamIdx = 4;
 	void	LookRightLeft(float Value);
 	void	LookUpDown(float Value);
 };

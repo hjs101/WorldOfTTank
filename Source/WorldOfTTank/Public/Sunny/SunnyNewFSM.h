@@ -54,12 +54,8 @@ public:
 
 
 
-	// 대기 시간
-	UPROPERTY(EditDefaultsOnly, Category = FSM)
-	float IdleDelayTime = 2.f;
-	// 경과 시간
-	float CurrentTime = 0;
-
+	// 플레이어가 정면에 있는지 여부 확인
+	//bool IsPlayerInFront(FVector PlayerLocation, float AngleThreshold);
 
 
 	// 타깃 (선우 땅크)
@@ -70,6 +66,23 @@ public:
 	UPROPERTY()
 	class ASunnyNewTTank* Me;
 
+	// Enemy를 소유하고 있는 AIContoller
+	UPROPERTY()
+	class ASunnyAIController* AiController;
+
+
+
+
+	// 길 찾기 수행시 랜덤 위치
+	FVector RandomPos;
+	
+
+
+	// 대기 시간
+	UPROPERTY(EditDefaultsOnly, Category = FSM)
+	float IdleDelayTime = 2.f;
+	// 경과 시간
+	float CurrentTime = 0;
 
 
 	// 공격 범위
@@ -81,7 +94,6 @@ public:
 	float AttackDelayTime = 2.0f;
 
 
-
 	// 피격 대기 시간
 	UPROPERTY(EditAnywhere, Category = FSM)
 	float DamageDelayTime = 2.0f;
@@ -90,13 +102,9 @@ public:
 	bool isTimerSeted = false;
 
 
-
-	// Enemy를 소유하고 있는 AIContoller
-	UPROPERTY()
-	class ASunnyAIController* AiController;
-
-	// 길 찾기 수행시 랜덤 위치
-	FVector RandomPos;
-	// 랜덤 위치 가져오기
-	//bool GetRandomPositionInNavMesh(FVector centerLocaion, float radius, FVector& dest);
+	bool bMoving = false;
+	bool bAttacking = false;
+	
+	void SettingbMoving(bool value);
+	void SttingbAttacking(bool value);
 };

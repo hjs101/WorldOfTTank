@@ -29,24 +29,28 @@ void USunnyHealth::BeginPlay()
 	Super::BeginPlay();
 
 	// Enemy 컴포넌트 추가
-	SunnyAi = Cast<ASunnyNewTTank>(GetOwner());
-
-	if (SunnyAi == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("AiEnemy is null in USunnyHealth::BeginPlay"));
-		return;
-	}
-
-	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &USunnyHealth::DamageTaken);
-
+	//SunnyTTank = Cast<ASunnyNewTTank>(GetOwner());
 }
-
 
 // Called every frame
 void USunnyHealth::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+}
+
+
+
+// 데미지 설정
+void USunnyHealth::SettingDamageTaken()
+{
+	if (SunnyTTank == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Health :: AiEnemy is null in USunnyHealth::BeginPlay"));
+		return;
+	}
+
+	SunnyTTank->OnTakeAnyDamage.AddDynamic(this, &USunnyHealth::DamageTaken);
 }
 
 
@@ -61,22 +65,17 @@ void USunnyHealth::DamageTaken(AActor* DamagedActor, float Damage, const UDamage
 	SetHealth(GetHealth() - Damage);
 
 	//// 체력 갱신
-	if (SunnyAi && !SunnyAi->bDead)
+	if (SunnyTTank && !SunnyTTank->bDead)
 	{
-		SunnyAi->SetHealthPercent(GetHealth(), GetMaxHealth());
+		SunnyTTank->SetHealthPercent(GetHealth(), GetMaxHealth());
 	}
 
+	//UE_LOG(LogTemp, Warning, TEXT("DamageTaken()  --> bDead : %d"), SunnyTTank->bDead);
 
-	if (GetHealth() <= 0.f && SunnyAi && !SunnyAi->bDead)
+	if (GetHealth() <= 0.f && SunnyTTank && !SunnyTTank->bDead)
 	{
-		USunnyNewFSM* fsm = Cast<USunnyNewFSM>(SunnyAi->FSM);
-
-		if (fsm)
-		{
-			fsm->SunnyAiState = ESunnyAiState::Die;
-			//UE_LOG(LogTemp, Warning, TEXT("Setting EnemyState to Die for %s"), *SunnyAi->GetName());
-		}
-
+		//UE_LOG(LogTemp, Warning, TEXT("Enter to change AiState to Die!!!! "));
+		SunnyTTank->ChangeStateDie();
 	}
 }
 

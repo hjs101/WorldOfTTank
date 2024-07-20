@@ -24,7 +24,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
-
+#include "Sunny/SunnyAIController.h"
 
 
 ASunnyNewTTank::ASunnyNewTTank()
@@ -64,6 +64,19 @@ void ASunnyNewTTank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (FSM && FSM->SunnyAiState != ESunnyAiState::Die)
+	{
+		RotateTurret(PlayerTTank->GetActorLocation());
+
+		if (InFireRange())
+		{
+			FSM->SunnyAiState = ESunnyAiState::Attack;
+		}
+	}
+	else
+		UE_LOG(LogTemp, Warning, TEXT("NO FSM"));
+
+	SetBeamLocation();
 }
 
 
@@ -76,7 +89,6 @@ void ASunnyNewTTank::BeginPlay()
 	EnemyIndicator->bVisibleInSceneCaptureOnly = true;
 
 	PlayerTTank = Cast<APlayerTankVehicle>(UGameplayStatics::GetPlayerPawn(this, 0));
-
 
 	if (HealthWidgetComp)
 	{
@@ -109,22 +121,46 @@ void ASunnyNewTTank::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("HealthComponent is null in ASunnyEnemy::BeginPlay"));
 		return;
 	}
+	HealthComp->SunnyTTank = this;
+	HealthComp->SettingDamageTaken();
 	SetHealthPercent(HealthComp->GetHealth(), HealthComp->GetMaxHealth());
 
 
 	if (FSM)
 	{
+		FSM->Me = this;
 		UE_LOG(LogTemp, Error, TEXT("FSM component is ok in ASunnyNewTTank::BeginPlay"));
+		AIController = Cast<ASunnyAIController>(GetController());
+		if (AIController)
+		{
+			AIController->FSM = FSM;
+			FSM->AiController = AIController;
+		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("FSM component is null in ASunnyNewTTank::BeginPlay"));
+		FSM = CreateDefaultSubobject<USunnyNewFSM>(TEXT("FSM"));
+
+		if (FSM)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("FSM component is ok in ASunnyNewTTank::BeginPlay"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("FSM component is null 2 in ASunnyNewTTank::BeginPlay"));
+		}
 	}
+
+
+	// 아웃 라이너 초기화
+	OffOutLine();
+
 }
 
 
 // 탱크 머리 회전 계산
-//void ASunnyNewTTank::CalcTurretRotation(AActor* TargetActor)
+//void ASunnyNewTTank::CalcTurretRotation(float value)
 //{
 //	// 타겟이 없으면 리턴
 //	if (!TargetActor)
@@ -180,7 +216,7 @@ bool ASunnyNewTTank::InFireRange()
 	//UE_LOG(LogTemp, Warning, TEXT("InFireRange()"));
 	if (PlayerTTank)
 	{
-		float Distance = FVector::Dist(GetActorLocation(), PlayerTTank->GetActorLocation());
+		float Distance = FVector::Dist(this->GetActorLocation(), PlayerTTank->GetActorLocation());
 
 		if (Distance <= FireRange)
 		{
@@ -233,9 +269,8 @@ void ASunnyNewTTank::SetHealthPercent(float Health, float MaxHealth)
 // 체력이 0 이면  죽음
 void ASunnyNewTTank::Dead()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
+	UE_LOG(LogTemp, Warning, TEXT("OnDie()"));
 	bDead = true;
-	// 머리 날리기
 
 	// 종료
 	ClearFIreTimer();
@@ -331,9 +366,7 @@ void ASunnyNewTTank::SetBeamLocation()
 		}
 	}
 
-
 	//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1, 0, 1);
-
 	DrawBeam(Start, End);
 }
 
@@ -350,3 +383,36 @@ void ASunnyNewTTank::DrawBeam(FVector Start, FVector End)
 	}
 }
 
+
+
+// 아웃 라이너
+
+void ASunnyNewTTank::OnOutLine()
+{
+	GetMesh()->SetRenderCustomDepth(true);
+}
+
+void ASunnyNewTTank::OffOutLine()
+{
+	GetMesh()->SetRenderCustomDepth(false);
+}
+
+
+// 상태 변환
+void ASunnyNewTTank::ChangeStateDie()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("ChangeStateDie()"));
+
+	if (FSM)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("ChangeStateDie()  --> OK FSM"));
+		FSM->isTimerSeted = false;
+		//UE_LOG(LogTemp, Warning, TEXT("FSM->isTimerSeted : %d"), FSM->isTimerSeted);
+		FSM->SunnyAiState = ESunnyAiState::Die;
+		//UE_LOG(LogTemp, Warning, TEXT("ChangeStateDie()  --> OK Change State Die"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NO FSM"));
+	}
+}

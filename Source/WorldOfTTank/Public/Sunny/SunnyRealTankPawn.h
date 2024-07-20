@@ -18,12 +18,17 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	
-	// 탱크 몸체 회전
-	void RotateTank(FVector LookAtTarget);
+	// 탱크 몸체 회전 값 계산 
+	UFUNCTION()
+	float CheckTankBodyRotation(FVector TurnToTarget);
 
 	// 탱크 머리 회전
+	UFUNCTION()
 	void RotateTurret(FVector LookAtTarget);
-	// 탱크 포 회전
+	
+	// 탱크 몸체 회전
+	UFUNCTION()
+	void RotateTank(float value);
 
 
 	// 이동
@@ -47,7 +52,7 @@ public:
 
 
 	// 탱크 머리, 몸체가 타겟을 향할 때
-	bool bFound = false;
+	bool bTargetFound = false;
 
 	// 각속도 확인
 	bool bStopTurn = false;
@@ -72,8 +77,6 @@ protected:
 	// 미사일 발사 지점  
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* ProjectileSpawnPoint;
-
-	
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Combat")

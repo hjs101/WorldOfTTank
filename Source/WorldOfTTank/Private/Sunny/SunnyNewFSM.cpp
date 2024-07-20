@@ -41,12 +41,6 @@ void USunnyNewFSM::BeginPlay()
 	AActor* actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerTankVehicle::StaticClass());
 	// APlayerTank 타입으로 캐스팅
 	Target = Cast<APlayerTankVehicle>(actor);
-	// 소유 객체 가져오기
-	Me = Cast<ASunnyNewTTank>(GetOwner());
-
-	// AAiController 할당
-	AiController = Cast<ASunnyAIController>(Me->GetController());
-	
 }
 
 
@@ -60,25 +54,35 @@ void USunnyNewFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
 	// 대상 옆에 글자 표시
-	DrawDebugString(GetWorld(), Me->GetActorLocation(), logMsg, 0, FColor::Yellow, 0, true);
+	DrawDebugString(GetWorld(), Me->GetActorLocation(), logMsg, 0, FColor::Yellow, 0.f, true);
 
+	//UE_LOG(LogTemp, Warning, TEXT("%d"), SunnyAiState);
 	switch (SunnyAiState)
 	{
 	case ESunnyAiState::Idle:
 		IdleState();
+		//UE_LOG(LogTemp, Warning, TEXT("idle"));
 		break;
 	case ESunnyAiState::Find:
 		FindState();
+		//UE_LOG(LogTemp, Warning, TEXT("Find"));
 		break;
 	case ESunnyAiState::Move:
 		MoveState();
+		//UE_LOG(LogTemp, Warning, TEXT("Move"));
 		break;
 	case ESunnyAiState::Attack:
 		AttackState();
+		//UE_LOG(LogTemp, Warning, TEXT("Attack"));
 		break;
 	case ESunnyAiState::Die:
 		DieState();
+		UE_LOG(LogTemp, Warning, TEXT("Die"));
 		break;
+	default:
+		//UE_LOG(LogTemp, Warning, TEXT("default"));
+		break;
+
 	}
 
 }
@@ -97,6 +101,7 @@ void USunnyNewFSM::IdleState()
 	{
 		// 3. 이동 상태로 전환하고 싶다
 		SunnyAiState = ESunnyAiState::Find;
+		//SunnyAiState = ESunnyAiState::Move;
 		//UE_LOG(LogTemp, Warning, TEXT("Change IdleState->MoveState"));
 		// 경과 시간 초기화
 		CurrentTime = 0;
@@ -107,34 +112,58 @@ void USunnyNewFSM::IdleState()
 			// 최초 램덤한 위치 정해주기
 			if (!AiController->GetRandomPositionInNavMesh(Me->GetActorLocation(), 500, RandomPos))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Failed to get random position in nav mesh."));
+				//UE_LOG(LogTemp, Warning, TEXT("Failed to get random position in nav mesh."));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("AiController or Me is nullptr."));
+			//UE_LOG(LogTemp, Error, TEXT("AiController or Me is nullptr."));
 		}
 	}
 }
 
-/*  ==============================================================================================================================  */
 void USunnyNewFSM::FindState()
 {
-	if (this && Me->InFireRange())
+	//UE_LOG(LogTemp, Warning, TEXT("FindState()"));
+	if (Target)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("ASunnyNewTTank::Tick() ---> InFireRange()"))
-		Me->RotateTurret(Target->GetActorLocation());
-		//RotateTurret(PlayerTTank->GetActorLocation());
-	}
+		FVector direction = Target->GetActorLocation();
+		//Me->RotateTurret(direction);
 
-	Me->SetBeamLocation();
+		if (Me->bTargetFound)
+		{
+			SunnyAiState = ESunnyAiState::Move;
+			Me->bTargetFound = false;
+		}
+
+
+		// 플레이어가 탱크 정면에 있는지 확인
+		//bool bIsPlayerInFront = IsPlayerInFront(direction, 10.f); // 10도 이내를 정면으로 간주
+		//UE_LOG(LogTemp, Warning, TEXT("bIsPlayerInFront : %d"), bIsPlayerInFront);
+
+		//if (bIsPlayerInFront)
+		//{
+		//	SunnyAiState = ESunnyAiState::Move;
+		//}
+		//else
+		//{
+		//	SunnyAiState = ESunnyAiState::Find;
+		//}
+		
+	}
+	
+	
 }
 
 void USunnyNewFSM::MoveState()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("MoveState()"));
 	FVector destination;
-	//float DeltaTime;
+
+	//  AI가 Path를 따라 이동 중일 때는 return
+	if (bMoving)
+	{
+		return;
+	}
 
 	// 타깃이 존재하는지 확인
 	if (Target)
@@ -144,12 +173,12 @@ void USunnyNewFSM::MoveState()
 
 		if (nullptr != Me)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("MoveState()  -->  Rotate Turret"));
-			AiController = Cast<ASunnyAIController>(Me->GetController());
-			AiController->FindTargetPath(destination);
-			//AiController->MoveAlongPath(DeltaTime);
-
-			Me->RotateTank(destination);
+			//UE_LOG(LogTemp, Warning, TEXT("MoveState()  --> Target==ture  --> nullptr != Me"));
+			if (AiController)
+			{
+				AiController->FindTargetPath(destination);
+				//UE_LOG(LogTemp, Warning, TEXT("after %d"), bMoving);
+			}
 		}
 	}
 	else
@@ -159,97 +188,12 @@ void USunnyNewFSM::MoveState()
 		//UE_LOG(LogTemp, Warning, TEXT("Change MoveState->IdleState"));
 		return;
 	}
-
-	// NavigationSystem 객체 얻어오기
-	//auto ns = UNavigationSystemV1::GetCurrent(GetWorld());
-	//if (!ns)
-	//{
-	//	UE_LOG(LogTemp, Error, TEXT("NavigationSystem is null in USunnyEnemyFSM::MoveState"));
-	//	return;
-	//}
-
-	//// 목적지 길 찾기 경로 데이터 검색
-	//FPathFindingQuery query;
-	//FAIMoveRequest req;
-	//// 목적지에서 인지할 수 있는 범위
-	//req.SetAcceptanceRadius(3);
-	//req.SetGoalLocation(destination);
-	//// 길 찾기를 위한 쿼리 생성
-	//AiController->BuildPathfindingQuery(req, query);
-	//// 길 찾기 결과 가져오기
-	//FPathFindingResult r = ns->FindPathSync(query);
-	//// 목적지까지의 길 찾기 성공 여부 확인
-	//if (r.Result == ENavigationQueryResult::Success)
-	//{
-	//	//UE_LOG(LogTemp, Warning, TEXT("ENavigationQueryResult::Success"));
-	//	
-	//	// 타깃쪽으로 이동 // 저번에 그래서...어떻게 해야해? 애니메이션 하는 거랑. 뭐.. 한다고 했는데. 안되서. ㅋㅋ
-	//	// 몸돌리는 거 + 이동을 분리할 건데, 이동도 이미 있어요  에이아이컨트롤러에서 만들ㅇ이ㅓ야/하/ㄴ ㅡ그래?? ㅇ오옹
-
-	//	AiController->MoveToLocation(destination);
-	//	//UE_LOG(LogTemp, Warning, TEXT("AiController->MoveToLocation(destination)"));
-
-	//	//if (nullptr != Me)
-	//	//{
-	//	//	UE_LOG(LogTemp, Warning, TEXT("Move Sunny Ai TTank"));
-	//	//	Me->Move(1);
-	//	//	UE_LOG(LogTemp, Warning, TEXT("Move Forward"));
-	//	//}
-	//}
-	//else
-	//{
-	//	// 보다시피  이제 무브투로케이션으로 못움직이죠 응으 ㅇ 몸체 트는 것도 안 되는 건가?? 몸 돌리는 것도 안되네요 응응 그거 목 돌리듯이 바꿔볼게.
-	//	// 몸 돌리는 건   목 돌리는 거랑 달라서  setyawinput> 저부분 참고해ㅑ 하구여
-	//	// 플레이어 방향으로 회전 -> 회전 다 끝났으면 직진 -> 이런방식으로 해야 하는데
-	//	// nav mesh 시스템하고도 연계해야 해요
-	//	// 힣잉.,... 어려운가?? 
-	//	// 좀 어렵긴 해요 어디 부분 참고해서 볼까?? 
-	//	// 제 코드중에 에이아이 컨트롤러 부분 있는데, 누나는 지금 에이아이 컨트롤러 없으니까 기존 에이아이 컨트롤러 상속받아서 만들어야하고
-	//	// 적어드릴게여
-	//	// 1. 에이아이 컨트롤러 만들기
-	//	// 2. nav path 경로대로 회전 -> 이동의 무브 함수 만들기 -> AITankController 참고
-	//	// 3. nav path 를 탐색해서 ai controller 에 path 설정 해주기 FindPositionToAttack 참고
-	//	// 일단 시도만 해보고 안될 거 같으면 베타로 넘겨요 :) ㅋㅋ 나 다 못 할거 같은 느낌... ㅋㅋㅋ 우선... 체력바 안 깍이는 거 먼저 좀 봐줘... 그래야 내일 영상이라도 찍지. ㅋㅋ
-	//	// //랜덤 위치로 이동
-	//	auto result = AiController->MoveToLocation(RandomPos);
-	//	 //목적지에 도착하면
-	//	if (result == EPathFollowingRequestResult::AlreadyAtGoal)
-	//	{
-	//		// 새로운 랜덤 위치 가져오기
-	//		AiController->GetRandomPositionInNavMesh(Me->GetActorLocation(), 500, RandomPos);
-	//	}
-	//}
-
-	//if (nullptr != Me)
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("Move Sunny Ai TTank"));
-	//	Me->Move(1);
-	//	UE_LOG(LogTemp, Warning, TEXT("Move Forward"));
-	//}
-
-
-	// //타깃과 가까워지면 공격 상태로 전환하고 싶다
-	// //1. 만약 거리가 공격 범위 안에 들어오면
-	//if (FVector::Dist(destination, Me->GetActorLocation()) <= AttackRange)
-	//{
-	//	// 길찾기 기능 정지
-	//	AiController->StopMovement();
-
-	//	// 2. 공격 상태로 전환하고 싶다
-	//	SunnyAiState = ESunnyAiState::Attack;
-
-	//	if (nullptr != Me)
-	//	{
-	//		//UE_LOG(LogTemp, Warning, TEXT("Attack Sunny Ai TTank"));
-	//		Me->Move(0);
-	//		//UE_LOG(LogTemp, Warning, TEXT("Stop Move"));
-	//	}
-	//}
 }
 
 void USunnyNewFSM::AttackState()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("AttackState()"));
+	//AiController->FinishMove();
+	//UE_LOG(LogTemp, Warning, TEXT("Succeed FinishMove()"));
 
 	if (isTimerSeted == false)
 	{
@@ -280,13 +224,12 @@ void USunnyNewFSM::AttackState()
 
 void USunnyNewFSM::DieState()
 {
-
-	//UE_LOG(LogTemp, Warning, TEXT("DieState()"));
+	UE_LOG(LogTemp, Warning, TEXT("DieState()"));
 	//UE_LOG(LogTemp, Warning, TEXT("Entering DieState for %s"), *Me->GetName());
 
 	if (Me)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("OnDie() 호출"));
+		//UE_LOG(LogTemp, Warning, TEXT("Dead() 호출"));
 		Me->Dead();
 	}
 	else
@@ -296,4 +239,45 @@ void USunnyNewFSM::DieState()
 
 	// Tick Enabled
 	SetComponentTickEnabled(false);
+}
+
+
+//bool USunnyNewFSM::IsPlayerInFront(FVector PlayerLocation, float AngleThreshold)
+//{
+//	// 현재 메쉬의 앞쪽 벡터 정규화
+//	FVector forwardVector = Me->GetActorForwardVector().GetSafeNormal();
+//
+//	// 플레이어 위치에서 현재 메쉬 위치를 뺀 벡터를 계산하여 direction에 저장
+//	FVector direction = Target->GetActorLocation() - Me->GetActorLocation();
+//	// 목표와의 높이 차이는 무시하므로 Z 값을 0으로 설정
+//	direction.Z = 0.f;
+//	// 목표 벡터를 정규화
+//	direction.Normalize();
+//
+//	// ForwardVector와 Direction 간의 내적 계산
+//	float forwardDot = FVector::DotProduct(forwardVector, direction);
+//
+//	// 각도 차이를 계산
+//	//float angleDifference = FMath::RadiansToDegrees(acos(forwardDot));
+//
+//	// 디버깅 로그 추가
+//	UE_LOG(LogTemp, Warning, TEXT("ForwardVector: %s, Direction: %s"), *forwardVector.ToString(), *direction.ToString());
+//	UE_LOG(LogTemp, Warning, TEXT("ForwardDot: %f"), forwardDot);
+//	//UE_LOG(LogTemp, Warning, TEXT("ForwardDot: %f, AngleDifference: %f"), forwardDot, angleDifference);
+//
+//	// 각도 차이가 임계값 이하인지 확인하여 플레이어가 정면에 있는지 여부를 반환
+//	//return angleDifference <= AngleThreshold;
+//	return forwardDot > 0.9f;
+//}
+
+
+
+void USunnyNewFSM::SettingbMoving(bool value)
+{
+	bMoving = value;
+}
+
+void USunnyNewFSM::SttingbAttacking(bool value)
+{
+	bAttacking = value;
 }

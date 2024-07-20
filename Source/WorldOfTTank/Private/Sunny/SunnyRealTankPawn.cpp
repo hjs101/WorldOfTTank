@@ -4,6 +4,7 @@
 #include "Sunny/SunnyRealTankPawn.h"
 #include "Sunny/SunnyProjectile.h"
 #include "Sunny/SunnyVehicleAnimationInstance.h"
+#include "Sunny/SunnyAIController.h"
 
 #include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -53,6 +54,7 @@ void ASunnyRealTankPawn::BeginPlay()
 	TracksMaterial = GetMesh()->CreateDynamicMaterialInstance(1);
 }
 
+
 void ASunnyRealTankPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -76,10 +78,11 @@ void ASunnyRealTankPawn::SetSpeed()
 
 
 
-// 탱크 몸체 돌리기
-void ASunnyRealTankPawn::RotateTank(FVector LookAtTarget)
-{
 
+
+// 탱크 몸체 돌리기
+float ASunnyRealTankPawn::CheckTankBodyRotation(FVector TurnToTarget)
+{
 	// 아주 간단한 탱크 몸체 회전 방법
 	/*UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
 	if (nullptr == VehicleMovement)
@@ -96,23 +99,17 @@ void ASunnyRealTankPawn::RotateTank(FVector LookAtTarget)
 	VehicleMovement->SetYawInput(dot);*/
 
 
-
-	float value = 0.f;
-	//UChaosVehicleMovementComponent 가져오기
-	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
-	if (nullptr == VehicleMovement)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NO Get VehicleMovement"));
-		return;
+	if (TurnToTarget == FVector::ZeroVector) {
+		return 0.f;
 	}
-
 
 	// 현재 메쉬의 오른쪽 벡터와 앞쪽 벡터 정규화
 	FVector RightVector = GetMesh()->GetRightVector().GetSafeNormal();
 	FVector ForWordVector = GetMesh()->GetForwardVector().GetSafeNormal();
 
 	// 목표 위치에서 현재 메쉬 위치를 뺀 벡터를 계산하여 direction에 저장
-	FVector direction = LookAtTarget - GetMesh()->GetComponentLocation();
+	FVector direction = TurnToTarget - GetMesh()->GetComponentLocation();
+	direction.Z = 0.f;
 	// 목표 벡터를 정규화
 	direction.Normalize();
 
@@ -121,58 +118,19 @@ void ASunnyRealTankPawn::RotateTank(FVector LookAtTarget)
 	// ForWordVector와 direction 간의 내적 계산
 	float result2 = FVector::DotProduct(ForWordVector, direction);
 
-
 	// 디버깅 로그 추가
-	UE_LOG(LogTemp, Warning, TEXT("RightVector: %s, ForWordVector: %s, direction: %s"), *RightVector.ToString(), *ForWordVector.ToString(), *direction.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("result: %f, result2: %f"), result, result2);
-
+	//UE_LOG(LogTemp, Warning, TEXT("RightVector: %s, ForWordVector: %s, direction: %s"), *RightVector.ToString(), *ForWordVector.ToString(), *direction.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("result: %f, result2: %f"), result, result2);
 
 	if ((result > -0.1f && result < 0.1f) && (result2 > 0.f)) {
-		value = 0.f;
+		return 0.f;
 	}
 	else {
-		value = result > 0 ? 1.f : -1.f; 
+		return result > 0 ? 1.f : -1.f; 
 	}
-
 
 	// 디버깅 로그 추가
-	UE_LOG(LogTemp, Warning, TEXT("Calculated rotation value: %f"), value);
-
-	if (value != 0) {
-		// 회전이 중지된 상태라면
-		if (bStopTurn)
-		{
-			// VehicleYaw를 0으로 선형 보간하고, VehicleMovement의 YawInput 설정
-			VehicleYaw = FMath::Lerp(VehicleYaw, 0.f, 1.f);
-			VehicleMovement->SetYawInput(VehicleYaw);
-			UE_LOG(LogTemp, Warning, TEXT("Setting YawInput: %f"), VehicleYaw);
-		}
-
-		else
-		{		
-			VehicleYaw = value;
-			
-			VehicleMovement->SetYawInput(VehicleYaw);
-			UE_LOG(LogTemp, Warning, TEXT("2. Setting YawInput: %f"), VehicleYaw);
-
-		}
-	}
-
-	
-
-
-	// 회전 값이 0이 아니고 MoveState가 0인 경우에 Move를 호출합니다.
-	/*if (value != 0 && MoveState == 0)
-	{
-		Move(1.0f);
-	}*/
-
-	// 회전 값이 0인 경우, VehicleMovement의 YawInput을 0으로 설정합니다.
-	if (value == 0)
-	{
-		VehicleMovement->SetYawInput(0.f);
-	}
-	
+	//UE_LOG(LogTemp, Warning, TEXT("Calculated rotation value: %f"), value);
 }
 
 
@@ -189,24 +147,23 @@ void ASunnyRealTankPawn::RotateTurret(FVector lookAtTarget)
 	FVector ToTarget = lookAtTarget - SkelMesh->GetSocketLocation(FName("turret_jnt"));
 
 
-	//if (!bFound)
-	//{
-	//	bFound = true;
-	//}
+	/*if (!bTargetFound)
+	{*/
 
-	//if (bFound)
-	//{ 
 	// 현재 탱크의 Yaw 회전과 목표 위치의 Yaw 회전 차이를 계산
-	float Angle = -(GetActorRotation().Yaw - ToTarget.Rotation().Yaw);
+	float angle = -(GetActorRotation().Yaw - ToTarget.Rotation().Yaw);
+	//UE_LOG(LogTemp, Warning, TEXT("Angle: %f"), angle);
 	
 	// 애니메이션 인스턴스를 가져옴
 	USunnyVehicleAnimationInstance* SunnyAiAnim = Cast< USunnyVehicleAnimationInstance>(GetMesh()->GetAnimInstance());
 	
 	// 현재 포탑의 회전을 가져옴
 	FRotator start = SunnyAiAnim->GetTurretRotation();
+	//UE_LOG(LogTemp, Warning, TEXT("start: %s"), *start.ToString());
 
 	// 목표 위치로의 회전 값을 설정 (Yaw 값만 사용)
-	FRotator end = FRotator(0, Angle, 0);
+	FRotator end = FRotator(0, angle, 0);
+	//UE_LOG(LogTemp, Warning, TEXT("end: %s"), *end.ToString());
 
 	// 현재 회전에서 목표 회전으로 일정 속도로 회전
 	FRotator lerp = FMath::RInterpConstantTo(
@@ -219,22 +176,73 @@ void ASunnyRealTankPawn::RotateTurret(FVector lookAtTarget)
 	SunnyAiAnim->SetTurretRotation(lerp);
 
 	// 목표 위치의 회전 값을 설정
-	FRotator LookAtRotation = FRotator(0.f, lookAtTarget.Rotation().Yaw, 0.f);
+	FRotator lookAtRotation = FRotator(0.f, lookAtTarget.Rotation().Yaw, 0.f);
+	//UE_LOG(LogTemp, Warning, TEXT("LookAtRotation: %s"), *lookAtRotation.ToString());
+
+	float gab = end.Yaw - start.Yaw;
+	//UE_LOG(LogTemp, Warning, TEXT("gab: %f"), gab);
+
+	if (0.1 <= gab || -0.1 <= gab)
+	{
+		bTargetFound = true;
+		//UE_LOG(LogTemp, Warning, TEXT("bTargetFound = true"));
+	}
+
 	//}
-	
+
 }
 
+
+void ASunnyRealTankPawn::RotateTank(float value)
+{
+	//UChaosVehicleMovementComponent 가져오기
+	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
+	if (nullptr == VehicleMovement)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("NO Get VehicleMovement"));
+		return;
+	}
+
+	if (value != 0) {
+
+		if (bStopTurn)
+		{
+			// VehicleYaw를 0으로 선형 보간하고, VehicleMovement의 YawInput 설정
+			VehicleYaw = FMath::Lerp(VehicleYaw, 0.f, 1.f);
+			VehicleMovement->SetYawInput(VehicleYaw);
+			//UE_LOG(LogTemp, Warning, TEXT("Setting YawInput: %f"), VehicleYaw);
+		}
+		else
+		{
+			VehicleYaw = value;
+			VehicleMovement->SetYawInput(VehicleYaw);
+			//UE_LOG(LogTemp, Warning, TEXT("2. Setting YawInput: %f"), VehicleYaw);
+		}
+	}
+	else if (value == 0)
+	{
+		// 회전 값이 0인 경우, VehicleMovement의 YawInput을 0으로 설정
+		VehicleMovement->SetYawInput(0.f);
+	}
+
+
+	// 회전 값이 0이 아니고 MoveState가 0인 경우에 Move를 호출합니다.
+	/*if (value != 0 && MoveState == 0)
+	{
+		Move(1.0f);
+	}*/
+}
 
 // 타켓 방향으로 탱크 움직이기
 void ASunnyRealTankPawn::Move(float value)  
 {
-	UE_LOG(LogTemp, Warning, TEXT("Move()"));
+	//UE_LOG(LogTemp, Warning, TEXT("Move()"));
 	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovement();
 	//UE_LOG(LogTemp, Warning, TEXT("%f"), value);
 	MoveState = value;
 	if (VehicleMovement == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("VehicleMovement is NULL"));
+		//UE_LOG(LogTemp, Error, TEXT("VehicleMovement is NULL"));
 		return;
 	}
 
@@ -247,7 +255,7 @@ void ASunnyRealTankPawn::Move(float value)
 	}
 	else
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("Setting brake to %f"), -1 * value);  
+		//UE_LOG(LogTemp, Warning, TEXT("Setting brake to %f"), -1 * value);
 		VehicleMovement->SetThrottleInput(value);
 		VehicleMovement->SetBrakeInput(-1.f * value);
 	}

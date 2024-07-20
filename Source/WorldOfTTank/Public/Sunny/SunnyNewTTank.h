@@ -22,7 +22,7 @@ public:
 
 
 	// 탱크 머리 회전 계산
-	void CalcTurretRotation(AActor* TargetActor);
+	void CalcTurretRotation(float value);
 
 
 	// 이펙트, 사운드 삭제
@@ -82,24 +82,8 @@ public:
 	UPROPERTY(VisibleAnywhere,Category="Components")
 	UStaticMeshComponent* OnDieMeshComp;
 
-
-	// 공격 타이머 설정
-	void SetFireTimer();
-	// 공격 타이머 해제
-	void ClearFIreTimer();
-
-	//  죽음 상태 호출
-	void Dead();
-
-
-	// NiagaraSystem
-	UPROPERTY(EditAnyWhere)
-	class UNiagaraSystem* BeamNiagara;
-
-	void SetBeamLocation();
-	void DrawBeam(FVector Start, FVector End);
-
-
+	UPROPERTY()
+	class ASunnyAIController* AIController;
 
 	// 체력바 게이지
 	UPROPERTY(meta = (BindWidget))
@@ -111,17 +95,12 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* MaxHealthLabel;
 
-
 	UPROPERTY(EditAnywhere)
 	class USunnyHealth* HealthComp;
 
-	UFUNCTION()
-	//float GetHealthPercent(float health, float maxHealth);
-
-	void SetHealthPercent(float health, float maxHealth);
-
-	bool bDead = false;
-
+	// NiagaraSystem
+	UPROPERTY(EditAnyWhere)
+	class UNiagaraSystem* BeamNiagara;
 
 	// Enemy Indicator
 	UPROPERTY(EditAnywhere)
@@ -137,6 +116,43 @@ public:
 	class USoundBase* DamageSound;
 
 
+
+	// 공격 타이머 설정
+	void SetFireTimer();
+	// 공격 타이머 해제
+	void ClearFIreTimer();
+
 	bool InFireRange();
+
+	//  죽음 상태 호출
+	void Dead();
+
+	void SetBeamLocation();
+	void DrawBeam(FVector Start, FVector End);
+
+
+	UFUNCTION()
+	//float GetHealthPercent(float health, float maxHealth);
+
+	void SetHealthPercent(float health, float maxHealth);
+
+
+	// 아웃 라이너
+	UFUNCTION()
+	void OnOutLine();
+
+	UFUNCTION()
+	void OffOutLine();
 	
+
+	void ChangeStateDie();
+
+
+
+	bool bDead = false;
+
+
+
+
+
 };

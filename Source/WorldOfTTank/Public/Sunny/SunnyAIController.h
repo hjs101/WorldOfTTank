@@ -17,9 +17,12 @@ class WORLDOFTTANK_API ASunnyAIController : public AAIController
 public:
 	ASunnyAIController();
 
-	class ASunnyNewTTank* SunnyNewTTank;
+	class ASunnyNewTTank* SunnyAiTTank;
 	class APlayerTankVehicle* PlayerTTank;
+
+
 	class USunnyNewFSM* FSM;
+
 
 
 	void SetNavPath(FNavPathSharedPtr Path);
@@ -29,7 +32,7 @@ public:
 	void MoveAlongPath(float DeltaTime);
 
 	UFUNCTION()
-	void FinishMove(bool bSuccessed);
+	void FinishMove();
 
 	UFUNCTION()
 	void FindTargetPath(FVector destination);
@@ -56,8 +59,8 @@ public:
 	bool bNonStop = false;
 	bool bAttackMode = false;
 
-	float MoveState = 0.f;
-	float TurnState = 0.f;
+	float bMoveState = 0.f;
+	float bTurnState = 0.f;
 
 
 

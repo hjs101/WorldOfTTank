@@ -36,7 +36,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	class ASunnyNewTTank* SunnyAi;
+	class ASunnyNewTTank* SunnyTTank;
 
 
 	float GetHealth() const { return Health; }
@@ -44,5 +44,7 @@ public:
 
 	float GetMaxHealth() const { return MaxHealth; }
 	void SetMaxHealth(float val) { MaxHealth = val; }
+
+	void SettingDamageTaken();
 		
 };

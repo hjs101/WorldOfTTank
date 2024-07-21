@@ -37,7 +37,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess))
 	class UBoxComponent* BoxComp;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess))
 	UParticleSystemComponent* Explosion;
 

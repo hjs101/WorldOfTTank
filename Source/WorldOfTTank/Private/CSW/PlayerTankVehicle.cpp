@@ -60,7 +60,7 @@ void APlayerTankVehicle::BeginPlay()
 	ChasingAim->SetVisibility(false);
 	ControllerRef = Cast<APlayerController>(GetController());
 	IsFps = false;
-	GetWorld()->GetTimerManager().SetTimer(Timer, this, &APlayerTankVehicle::SetSound, 10.f);
+	GetWorld()->GetTimerManager().SetTimer(Timer, this, &APlayerTankVehicle::SetSound, 1.5f);
 	this->DisableInput(GetWorld()->GetFirstPlayerController());
 
 }
@@ -78,7 +78,7 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 	if (!IsFps)
 	{
 		float dist = SpringArmComp->TargetArmLength;
-		float volume = FMath::GetMappedRangeValueClamped(FVector2D(0.f, 2000.f), FVector2D(5.f, 0.5f), dist);
+		float volume = FMath::GetMappedRangeValueClamped(FVector2D(0.f, 2000.f), FVector2D(3.f, 0.5f), dist);
 		USoundClass* SoundClass = LoadObject<USoundClass>(nullptr, TEXT("/Script/Engine.SoundClass'/Game/CSW/OuterSound.OuterSound'"));
 		SoundClass->Properties.Volume = 1.f;
 		GetOuterFireSoundComp()->SetVolumeMultiplier(volume);
@@ -88,7 +88,7 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 	else
 	{
 		USoundClass* SoundClass = LoadObject<USoundClass>(nullptr, TEXT("/Script/Engine.SoundClass'/Game/CSW/OuterSound.OuterSound'"));
-		SoundClass->Properties.Volume = 0.2f;
+		SoundClass->Properties.Volume = 0.1f;
 		GetInnerFireSoundComp()->SetVolumeMultiplier(1.f);
 	}
 	

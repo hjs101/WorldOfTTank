@@ -4,7 +4,6 @@
 #include "CSW/PlayerTankVehicle.h"
 
 #include "AudioDevice.h"
-#include "ChaosVehicleMovementComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/WidgetComponent.h"
@@ -60,11 +59,14 @@ void APlayerTankVehicle::BeginPlay()
 	ChasingAim->SetVisibility(false);
 	ControllerRef = Cast<APlayerController>(GetController());
 	IsFps = false;
-	GetWorld()->GetTimerManager().SetTimer(Timer, this, &APlayerTankVehicle::SetSound, 20.f);
+	GetWorld()->GetTimerManager().SetTimer(Timer, this, &APlayerTankVehicle::SetSound, 10.f);
+	this->DisableInput(GetWorld()->GetFirstPlayerController());
+
 }
 
 void APlayerTankVehicle::EndIntro()
 {
+	Brake();
 	GetWorld()->GetTimerManager().SetTimer(Timer, this, &APlayerTankVehicle::MoveIntroCamera, 0.01f, true, 0.0f);
 }
 
@@ -203,9 +205,9 @@ void APlayerTankVehicle::MoveIntroCamera()
 		NewWidget->AddToViewport();
 		NewWidget = CreateWidget<UUserWidget>(GetWorld(), MinimapClass);
 		NewWidget->AddToViewport();
-
-		
 		IsIntro = false;
+		this->EnableInput(GetWorld()->GetFirstPlayerController());
+		Move(0);
 	}
 }
 
@@ -215,7 +217,7 @@ void APlayerTankVehicle::SetSound()
 	GetOuterFireSoundComp()->SetSound(OuterFireSound);
 	GetTrackSoundComp()->SetSound(TrackSound);
 	GetTrackSoundComp()->SetVolumeMultiplier(5.f);
-
+	Move(1);
 }
 
 void APlayerTankVehicle::LerpZoom(float DeltaSeconds)

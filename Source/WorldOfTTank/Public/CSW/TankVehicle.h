@@ -26,6 +26,7 @@ public:
 	void Turn(float Value);
 	void Fire();
 	void Brake();
+	void Die();
 	void	RotateTurret(float Value);
 	void	RotateBarrel(float Value);
 	USceneComponent* GetProjectileSpawnPoint() const;
@@ -48,6 +49,8 @@ private:
 	float MaxHp = 700;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
+	UStaticMeshComponent* DieMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
 	TSubclassOf<class AProjectile> ProjectileClass;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
@@ -58,6 +61,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	class UNiagaraComponent* GunRipple;
+
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UParticleSystemComponent* DieFire;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UAudioComponent* OuterFireSoundComp;

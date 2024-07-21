@@ -132,7 +132,7 @@ void ASunnyNewTTank::BeginPlay()
 	if (FSM)
 	{
 		FSM->Me = this;
-		UE_LOG(LogTemp, Error, TEXT("FSM component is ok in ASunnyNewTTank::BeginPlay"));
+		//UE_LOG(LogTemp, Error, TEXT("FSM component is ok in ASunnyNewTTank::BeginPlay"));
 		AIController = Cast<ASunnyAIController>(GetController());
 		if (AIController)
 		{
@@ -147,7 +147,7 @@ void ASunnyNewTTank::BeginPlay()
 
 		if (FSM)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("FSM component is ok in ASunnyNewTTank::BeginPlay"));
+			//UE_LOG(LogTemp, Warning, TEXT("FSM component is ok in ASunnyNewTTank::BeginPlay"));
 		}
 		else
 		{
@@ -393,6 +393,7 @@ void ASunnyNewTTank::DrawBeam(FVector Start, FVector End)
 void ASunnyNewTTank::OnOutLine()
 {
 	GetMesh()->SetRenderCustomDepth(true);
+	GetWorldTimerManager().SetTimer(OutlineTimerHandle, this, &ASunnyNewTTank::OffOutLine, 0.1f, false);
 }
 
 void ASunnyNewTTank::OffOutLine()

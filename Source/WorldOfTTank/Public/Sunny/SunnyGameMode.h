@@ -62,7 +62,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UTotalState> TotalStateUIFactory;
 
-	int32 EnemyCount = 2;
+	int32 EnemyCount = 4;
 
 	UPROPERTY()
 	class UTotalState* TotalStateUI;

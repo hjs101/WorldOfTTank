@@ -150,7 +150,7 @@ void ASunnyAIController::MoveAlongPath(float DeltaTime)
 			// 목표 위치의 Z값을 약간 높여서 설정
 			TargetLocation.Z = TargetLocation.Z + 50.f;
 			//UE_LOG(LogTemp, Warning, TEXT("CurrentPathPointIndex : %d, TargetLocation: %s"), CurrentPathPointIndex, *TargetLocation.ToString());
-			DrawDebugSphere(GetWorld(), TargetLocation, 50.f, 12, FColor::Green, false, 5.f);
+			//DrawDebugSphere(GetWorld(), TargetLocation, 50.f, 12, FColor::Green, false, 5.f);
 
 			// AI 탱크가 유효하면 현재 위치와 상태를 업데이트
 			if (SunnyAiTTank)

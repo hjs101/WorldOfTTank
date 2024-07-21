@@ -287,6 +287,7 @@ void AAITank_1::SetGun()
 void AAITank_1::OnOutLine()
 {
 	GetMesh()->SetRenderCustomDepth(true);
+	GetWorldTimerManager().SetTimer(OutlineTimerHandle, this, &AAITank_1::OffOutLine, 0.1f, false);
 }
 
 void AAITank_1::OffOutLine()

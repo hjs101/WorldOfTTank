@@ -54,6 +54,8 @@ private:
 	void CheckFireCondition();
 	//bool InFireRange();
 
+	UPROPERTY()
+	FTimerHandle OutlineTimerHandle;
 
 	// 탱크 머리 각도
 	float TurretAngle;

@@ -110,6 +110,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UPaperSpriteComponent* Indicator;
 
+	UPROPERTY()
+	FTimerHandle OutlineTimerHandle;
+
 private:
 	void UpdateMovementSound();
 };

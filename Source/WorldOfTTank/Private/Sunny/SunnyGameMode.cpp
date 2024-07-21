@@ -72,7 +72,7 @@ void ASunnyGameMode::BeginPlay()
 		{
 			//화면에 보이게 
 			TotalStateUI->AddToViewport();
-			TotalStateUI->UpdateTotalStateUI(2);
+			TotalStateUI->UpdateTotalStateUI(EnemyCount);
 		}
 	}
 

@@ -18,10 +18,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-private:
+	 
+private: 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
-	UStaticMeshComponent* ProjectileMesh;
+	UStaticMeshComponent* ProjectileMesh; 
 
 	UPROPERTY(VisibleAnywhere, Category = "Movement")
 	class UProjectileMovementComponent* ProjectileMovementComponent;
@@ -42,7 +42,7 @@ public:
 	class UNiagaraSystem* HitNiagara;
 
 	// 미사일 부딪히는 소리
-	/*UPROPERTY(EditAnywhere, Category = "Sound")
-	class USoundBase* HitSound;*/
+	//UPROPERTY(EditAnywhere, Category = "Sound")
+	//class USoundBase* HitSound;
 
 };

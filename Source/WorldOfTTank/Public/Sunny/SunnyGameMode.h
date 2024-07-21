@@ -39,8 +39,6 @@ public:
 	void EndGame();
 
 	void ConvertRankingToString();
-
-	void TotalStateWidgetAdd();
 protected:
 
 	virtual void BeginPlay() override;
@@ -61,10 +59,6 @@ private:
 
 	FTimerHandle BGMTimerHandle;
 
-	FTimerHandle TotalStateWidgetTimerHandle;
-
-
-
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UTotalState> TotalStateUIFactory;
 
@@ -83,7 +77,7 @@ private:
 	void VolumeDown();
 
 	UPROPERTY(EditAnywhere)
-	float BGMRate = 10.f;
+	float BGMRate = 15.f;
 
 
 	// 미니맵 카메라

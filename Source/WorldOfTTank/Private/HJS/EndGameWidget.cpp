@@ -25,7 +25,6 @@ void UEndGameWidget::LoseSetting()
 	GetWorld()->GetTimerManager().SetTimer(FadeInTimerHandle, this, &UEndGameWidget::ResultUIToVisible, 3.f, true);
 	// Add 버튼 비활성화
 	RankingUI->SetDisableAddButton();
-	RankingUI->LoseSet();
 }
 
 void UEndGameWidget::NativeConstruct()
@@ -45,6 +44,4 @@ void UEndGameWidget::ResultUISetting(bool bVictory, TArray<FString> Ranking)
 void UEndGameWidget::ResultUIToVisible()
 {
 	RankingUI->SetVisibility(ESlateVisibility::Visible);
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	PlayerController->SetPause(true);
 }

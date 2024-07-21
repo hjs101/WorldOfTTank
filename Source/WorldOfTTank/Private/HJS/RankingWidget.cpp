@@ -8,7 +8,6 @@
 #include "Components/VerticalBox.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
-#include "Components/Image.h"
 
 void URankingWidget::NativeConstruct()
 {
@@ -68,14 +67,6 @@ void URankingWidget::SetResultTime(float EndTime)
 void URankingWidget::SetDisableAddButton()
 {
 	AddRanking->SetIsEnabled(false);
-}
-
-void URankingWidget::LoseSet()
-{
-	Victory->SetVisibility(ESlateVisibility::Hidden);
-	Time->SetVisibility(ESlateVisibility::Hidden);
-	Name->SetVisibility(ESlateVisibility::Hidden);
-	AddRanking->SetVisibility(ESlateVisibility::Hidden);
 }
 
 // FString 배열을 받아와 UI에 랭킹을 표시하는 부분

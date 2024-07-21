@@ -13,7 +13,6 @@
 #include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
 #include "Sunny/SunnyNewTTank.h"
-#include "Sunny/SunnyGameMode.h"
 
 APlayerTankVehicle::APlayerTankVehicle()
 {
@@ -206,13 +205,6 @@ void APlayerTankVehicle::MoveIntroCamera()
 		NewWidget->AddToViewport();
 		NewWidget = CreateWidget<UUserWidget>(GetWorld(), MinimapClass);
 		NewWidget->AddToViewport();
-		
-		ASunnyGameMode* GM = Cast<ASunnyGameMode>(GetWorld()->GetAuthGameMode());
-		if (GM)
-		{
-			GM->TotalStateWidgetAdd();
-		}
-
 		IsIntro = false;
 		this->EnableInput(GetWorld()->GetFirstPlayerController());
 		Move(0);

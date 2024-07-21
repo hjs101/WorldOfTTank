@@ -11,7 +11,6 @@
 #include "Components/AudioComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "HJS/FractureWall.h"
-#include "Sunny/SunnyGameMode.h"
 ATankVehicle::ATankVehicle()
 {
 	UChaosVehicleMovementComponent* MoveComp = GetVehicleMovementComponent();
@@ -186,14 +185,6 @@ void ATankVehicle::Die()
 	DieMesh->SetCollisionProfileName("Vehicle");
 
 	DieFire->Activate();
-
-	ASunnyGameMode* GM = Cast<ASunnyGameMode>(GetWorld()->GetAuthGameMode());
-
-	if (GM)
-	{
-		GM->OnPlayerDie();
-	}
-
 }
 
 void ATankVehicle::GetCurrentHitPoint(FHitResult& Hit) const

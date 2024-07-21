@@ -61,17 +61,10 @@ void ASunnyGameMode::BeginPlay()
 
 	if (BGM)
 	{
-		
+		BGMComponent = UGameplayStatics::SpawnSound2D(GetWorld(), BGM);
 		GetWorldTimerManager().SetTimer(BGMTimerHandle, this, &ASunnyGameMode::VolumeDown, BGMRate, false);
 	}
 
-	StartTime = GetWorld()->GetTimeSeconds();
-}
-
-
-
-void ASunnyGameMode::TotalStateWidgetAdd()
-{
 	if (TotalStateUIFactory != nullptr)
 	{
 		TotalStateUI = Cast<UTotalState>(CreateWidget(GetWorld(), TotalStateUIFactory, FName("TotalStateUI")));
@@ -82,14 +75,15 @@ void ASunnyGameMode::TotalStateWidgetAdd()
 			TotalStateUI->UpdateTotalStateUI(EnemyCount);
 		}
 	}
+
+	StartTime = GetWorld()->GetTimeSeconds();
 }
 
 void ASunnyGameMode::VolumeDown()
 {
-	BGMComponent = UGameplayStatics::SpawnSound2D(GetWorld(), BGM);
 	if (BGMComponent)
 	{
-		BGMComponent->SetVolumeMultiplier(0.5f);
+		BGMComponent->SetVolumeMultiplier(0.3f);
 	}
 }
 

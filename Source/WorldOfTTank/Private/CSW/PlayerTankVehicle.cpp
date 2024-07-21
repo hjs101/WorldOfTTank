@@ -20,7 +20,7 @@ APlayerTankVehicle::APlayerTankVehicle()
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComp->SetupAttachment(RootComponent, FName("turret_jnt"));
 	SpringArmComp->bUsePawnControlRotation = true;
-	SpringArmComp->TargetArmLength = 1200;
+	SpringArmComp->TargetArmLength = 0;
 	SpringArmComp->SetRelativeLocation(FVector(0,0,500));
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -58,12 +58,9 @@ void APlayerTankVehicle::BeginPlay()
 	CameraComp->Deactivate();
 	FpsCameraComp->Deactivate();
 	ChasingAim->SetVisibility(false);
-	// ChangeToTps();
 	ControllerRef = Cast<APlayerController>(GetController());
-	GetInnerFireSoundComp()->SetSound(InnerFireSound);
-	GetOuterFireSoundComp()->SetSound(OuterFireSound);
-	GetTrackSoundComp()->SetSound(TrackSound);
-	GetVehicleMovement()->SetThrottleInput(1);
+	IsFps = false;
+	GetWorld()->GetTimerManager().SetTimer(Timer, this, &APlayerTankVehicle::SetSound, 20.f);
 }
 
 void APlayerTankVehicle::EndIntro()
@@ -78,11 +75,11 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 	if (!IsFps)
 	{
 		float dist = SpringArmComp->TargetArmLength;
-		float volume = FMath::GetMappedRangeValueClamped(FVector2D(0.f, 2000.f), FVector2D(1.f, 0.5f), dist);
-		GetOuterFireSoundComp()->SetVolumeMultiplier(volume);
-		GetTrackSoundComp()->SetVolumeMultiplier(volume);
+		float volume = FMath::GetMappedRangeValueClamped(FVector2D(0.f, 2000.f), FVector2D(5.f, 0.5f), dist);
 		USoundClass* SoundClass = LoadObject<USoundClass>(nullptr, TEXT("/Script/Engine.SoundClass'/Game/CSW/OuterSound.OuterSound'"));
 		SoundClass->Properties.Volume = 1.f;
+		GetOuterFireSoundComp()->SetVolumeMultiplier(volume);
+		GetTrackSoundComp()->SetVolumeMultiplier(volume);
 		GetInnerFireSoundComp()->SetVolumeMultiplier(0.f);
 	}
 	else
@@ -157,7 +154,6 @@ FVector APlayerTankVehicle::GetCursorTarget() const
 
 void APlayerTankVehicle::LookUpDown(float Value)
 {
-	// Value = FMath::Clamp(Value, 60, -60);
 	if (!IsFps && !IsIntro &&
 		((CameraComp->GetComponentRotation().Pitch >= 30 && Value < 0) ||
 		(CameraComp->GetComponentRotation().Pitch <= -50) && Value > 0))
@@ -197,10 +193,27 @@ void APlayerTankVehicle::MoveIntroCamera()
 		GetWorld()->GetTimerManager().ClearTimer(Timer);
 		IntroCameraComp->SetRelativeRotation(FRotator(0, 0, 0));
 		IntroCameraComp->Deactivate();
-		CameraComp->Activate();
+		SpringArmComp->SetRelativeRotation(FRotator::ZeroRotator);
+		SpringArmComp->TargetArmLength = 1200;
 		ChasingAim->SetVisibility(true);
+		ChangeToTps();
+		UUserWidget* NewWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerStateClass);
+		NewWidget->AddToViewport();
+		NewWidget = CreateWidget<UUserWidget>(GetWorld(), MinimapClass);
+		NewWidget->AddToViewport();
+
+		
 		IsIntro = false;
 	}
+}
+
+void APlayerTankVehicle::SetSound()
+{
+	GetInnerFireSoundComp()->SetSound(InnerFireSound);
+	GetOuterFireSoundComp()->SetSound(OuterFireSound);
+	GetTrackSoundComp()->SetSound(TrackSound);
+	GetTrackSoundComp()->SetVolumeMultiplier(5.f);
+
 }
 
 void APlayerTankVehicle::LerpZoom(float DeltaSeconds)

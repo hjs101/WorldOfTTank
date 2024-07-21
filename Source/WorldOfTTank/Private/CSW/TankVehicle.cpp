@@ -10,7 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 #include "Particles/ParticleSystemComponent.h"
-
+#include "HJS/FractureWall.h"
 ATankVehicle::ATankVehicle()
 {
 	UChaosVehicleMovementComponent* MoveComp = GetVehicleMovementComponent();
@@ -56,6 +56,9 @@ void ATankVehicle::BeginPlay()
 
 	GetMesh()->CreateDynamicMaterialInstance(1);
 	GetMesh()->SetAnimInstanceClass(AnimInstanceClass);
+
+	GetMesh()->SetCollisionProfileName(TEXT("BlockAll"));
+	GetMesh()->SetNotifyRigidBodyCollision(true);  // Hit 이벤트 활성화
 
 	GetMesh()->OnComponentHit.AddDynamic(this, &ATankVehicle::OnHit);
 }
@@ -214,5 +217,14 @@ UAudioComponent* ATankVehicle::GetTrackSoundComp() const
 
 void ATankVehicle::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	
+	AFractureWall* Wall = Cast<AFractureWall>(OtherActor);
+
+	if (Wall != nullptr)
+	{
+		Wall->SetDestroyTimer();
+		Wall->SetActorEnableCollision(false);
+	}
+	
 	HitSoundComp->Activate();
 }

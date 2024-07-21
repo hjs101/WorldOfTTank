@@ -28,4 +28,10 @@ private:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UImage* Enemy_2;
 
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UImage* Enemy_3;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UImage* Enemy_4;
+
 };

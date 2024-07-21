@@ -54,7 +54,7 @@ void USunnyNewFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logMsg);
 
 	// 대상 옆에 글자 표시
-	DrawDebugString(GetWorld(), Me->GetActorLocation(), logMsg, 0, FColor::Yellow, 0.f, true);
+	//DrawDebugString(GetWorld(), Me->GetActorLocation(), logMsg, 0, FColor::Yellow, 0.f, true);
 
 	//UE_LOG(LogTemp, Warning, TEXT("%d"), SunnyAiState);
 	switch (SunnyAiState)

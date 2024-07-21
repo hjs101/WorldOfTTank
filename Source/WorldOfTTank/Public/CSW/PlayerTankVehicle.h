@@ -73,7 +73,9 @@ private:
 
 	bool IsFps = false;
 	bool IsIntro = true;
-	class AAITankCPU_1* EncounterEnemy;
+
+	UPROPERTY()
+    class AAITankCPU_1* EncounterEnemy;
 
 	void	MoveIntroCamera();
 	void	SetSound();

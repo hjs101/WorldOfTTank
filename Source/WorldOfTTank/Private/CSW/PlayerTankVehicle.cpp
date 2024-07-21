@@ -103,7 +103,6 @@ void APlayerTankVehicle::Tick(float DeltaSeconds)
 void APlayerTankVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	
 	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &APlayerTankVehicle::Move);
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APlayerTankVehicle::Turn);
 
@@ -143,12 +142,15 @@ FVector APlayerTankVehicle::GetCursorTarget() const
 
 	if (!(GetWorld()->LineTraceSingleByChannel(hitResult, org , end, ECollisionChannel::ECC_WorldStatic, Params)))
 		return FVector::ZeroVector;
-	static AAITankCPU_1* tmp;
-	if (tmp)
-		tmp->OffOutLine();
+	AAITankCPU_1* tmp;
 	tmp = Cast<AAITankCPU_1>(hitResult.GetActor());
 	if (tmp)
 		tmp->OnOutLine();
+
+	ASunnyNewTTank* tmp2;
+	tmp2 = Cast<ASunnyNewTTank>(hitResult.GetActor());
+	if (tmp2)
+		tmp2->OnOutLine();
 	return hitResult.Location;
 }
 

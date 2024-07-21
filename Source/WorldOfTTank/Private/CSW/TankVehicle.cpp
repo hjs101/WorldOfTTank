@@ -16,6 +16,9 @@ ATankVehicle::ATankVehicle()
 	UChaosVehicleMovementComponent* MoveComp = GetVehicleMovementComponent();
 	MoveComp->SetIsReplicated(true);
 
+	DieMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DieMesh"));
+	DieMesh->SetupAttachment(RootComponent);
+	
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSpawnPoint"));
 	ProjectileSpawnPoint->SetupAttachment(RootComponent, FName("gun_jnt"));
 	ProjectileSpawnPoint->SetRelativeLocation(FVector(500, 0, 0));
@@ -28,6 +31,10 @@ ATankVehicle::ATankVehicle()
 		GunFire->bAutoActivate = false;
 	}
 	GunFire->SetupAttachment(ProjectileSpawnPoint);
+
+	DieFire = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("DieFire"));
+	DieFire->SetupAttachment(RootComponent);
+	DieFire->bAutoActivate = false;
 
 	GunRipple = CreateDefaultSubobject<UNiagaraComponent>(TEXT("GunRipple"));
 	GunRipple->bAutoActivate = false;
@@ -61,6 +68,8 @@ void ATankVehicle::BeginPlay()
 	GetMesh()->SetNotifyRigidBodyCollision(true);  // Hit 이벤트 활성화
 
 	GetMesh()->OnComponentHit.AddDynamic(this, &ATankVehicle::OnHit);
+	DieMesh->SetVisibility(false);
+	DieMesh->SetCollisionProfileName("NoCollision");
 }
 
 void ATankVehicle::Tick(float DeltaSeconds)
@@ -168,6 +177,16 @@ void ATankVehicle::Brake()
 	GetVehicleMovementComponent()->SetBrakeInput(0);
 }
 
+void ATankVehicle::Die()
+{
+	GetMesh()->SetVisibility(false);
+	GetMesh()->SetCollisionProfileName("NoCollision");
+	DieMesh->SetVisibility(true);
+	DieMesh->SetCollisionProfileName("Vehicle");
+
+	DieFire->Activate();
+}
+
 void ATankVehicle::GetCurrentHitPoint(FHitResult& Hit) const
 {
 	FVector Start = ProjectileSpawnPoint->GetComponentLocation() ;
@@ -184,7 +203,10 @@ void ATankVehicle::SetPlayerTankDamage(float Damage)
 	if (Hp > Damage)
 		Hp -= Damage;
 	else
+	{
 		Hp = 0;
+		Die();
+	}
 }
 
 void ATankVehicle::UpdateMovementSound()

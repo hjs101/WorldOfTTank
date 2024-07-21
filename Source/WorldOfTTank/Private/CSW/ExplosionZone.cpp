@@ -22,7 +22,10 @@ AExplosionZone::AExplosionZone()
 	Explosion = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Explosion"));
 	Explosion->SetupAttachment(RootComponent);
 	Explosion->bAutoActivate = false;
-	
+
+	SoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("SoundComp"));
+	SoundComp->SetupAttachment(RootComponent);
+	SoundComp->bAutoActivate = false;
 }
 
 // Called when the game starts or when spawned
@@ -31,6 +34,9 @@ void AExplosionZone::BeginPlay()
 	Super::BeginPlay();
 
 	BoxComp->OnComponentBeginOverlap.AddDynamic(this, &AExplosionZone::OnBeginOverlap);
+	BoxComp->OnComponentEndOverlap.AddDynamic(this, &AExplosionZone::OnEndOverlap);
+
+	SoundComp->SetSound(Sound);
 }
 
 // Called every frame
@@ -45,10 +51,30 @@ void AExplosionZone::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AA
 {
 	if (Cast<APlayerTankVehicle>(OtherActor))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OverLap"));
-
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Explosion->Template, Explosion->GetComponentLocation(), FRotator::ZeroRotator, FVector(3));
-
-		this->Destroy();
+		FTransform tf = OtherActor->GetActorTransform();
+		
+		FVector lc = tf.TransformPosition(FVector(100, 100, 400));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Explosion->Template, lc, FRotator::ZeroRotator, FVector(3));
+		SoundComp->Play(0.f);
 	}
+}
+
+void AExplosionZone::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (Cast<APlayerTankVehicle>(OtherActor))
+	{
+		FTransform tf = OtherActor->GetActorTransform();
+		
+		FVector lc = tf.TransformPosition(FVector(300, -300, 0));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Explosion->Template, lc, FRotator::ZeroRotator, FVector(3));
+		SoundComp->Play(0.f);
+
+		GetWorld()->GetTimerManager().SetTimer(DestroyTimer, this, &AExplosionZone::DestorySelf, 2.f, false);
+	}
+}
+
+void AExplosionZone::DestorySelf()
+{
+	this->Destroy();
 }

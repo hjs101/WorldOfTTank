@@ -47,6 +47,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="UI")
 	TSubclassOf<UUserWidget> FpsAimClass;
 
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> PlayerStateClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> MinimapClass;
+
 	TStrongObjectPtr<UUserWidget> CurrentAim;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -70,6 +76,7 @@ private:
 	class AAITankCPU_1* EncounterEnemy;
 
 	void	MoveIntroCamera();
+	void	SetSound();
 	FTimerHandle Timer;
 	
 	void	LerpZoom(float DeltaSeconds);

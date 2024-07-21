@@ -38,7 +38,11 @@ public:
 
 
 	// NiagaraSystem
-	//UPROPERTY(EditAnyWhere)
-	//class UNiagaraSystem* FireNiagara;
+	UPROPERTY(EditAnyWhere, Category = "Effect")
+	class UNiagaraComponent* HitNiagara;
+
+	// 미사일 부딪히는 소리
+	/*UPROPERTY(EditAnywhere, Category = "Sound")
+	class USoundBase* HitSound;*/
 
 };

@@ -21,6 +21,7 @@
 #include "NiagaraComponent.h"
 #include "Sunny/SunnyNewTTank.h"
 #include "Sunny/SunnyGameMode.h"
+#include "Components/AudioComponent.h"
 
 AAITankCPU_1::AAITankCPU_1()
 {
@@ -521,7 +522,7 @@ void AAITankCPU_1::Die()
 		GetWorldTimerManager().ClearTimer(FireRateTimerHandle);  // 타이머 정지
 		GetWorldTimerManager().ClearTimer(DetectRateTimerHandle);  // 탐지 타이머 정지
 		SetActorTickEnabled(false); // 틱 정지
-
+		TrackSoundComp->Stop();
 		// 움직임 및 AI 컨트롤러 정지
 		AAITankController_1* AIController = Cast<AAITankController_1>(GetController());
 		if (AIController)

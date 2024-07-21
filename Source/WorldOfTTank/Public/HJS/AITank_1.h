@@ -65,14 +65,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	float LookPitch = 0.f;
 
-
+	UPROPERTY(VisibleAnywhere, Category = "SFX")
+    UAudioComponent* TrackSoundComp;
 private:	
 	
 	//UPROPERTY(VisibleAnywhere, Category = "Components")
 	//USkeletalMeshComponent* OutlineMesh;
-
-    UPROPERTY(VisibleAnywhere, Category = "SFX")
-    UAudioComponent* TrackSoundComp;
 
     // Sound cue for the engine sound
     UPROPERTY(EditAnywhere, Category = "SFX")

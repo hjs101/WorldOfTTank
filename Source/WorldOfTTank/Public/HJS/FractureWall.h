@@ -62,4 +62,7 @@ private:
 	UFUNCTION()
 	void OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
+	UPROPERTY(EditAnywhere)
+	class USoundBase* DestroySound;
+
 };

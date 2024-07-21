@@ -3,6 +3,8 @@
 #include "HJS/FractureWall.h"
 #include "TimerManager.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 
 // Sets default values
 AFractureWall::AFractureWall()
@@ -11,7 +13,10 @@ AFractureWall::AFractureWall()
 	PrimaryActorTick.bCanEverTick = true;
 
 	FracturedMeshComp = CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("FracturedMeshComponent"));
-	RootComponent = FracturedMeshComp;	
+	SetRootComponent(FracturedMeshComp);
+
+	FracturedMeshComp->SetCollisionProfileName(TEXT("BlockAll"));
+	FracturedMeshComp->SetNotifyRigidBodyCollision(true);  // Hit 이벤트 활성화
 }
 
 // Called when the game starts or when spawned
@@ -76,6 +81,7 @@ void AFractureWall::SetDestroyTimer()
 	if(!bBroken){
 		bBroken = true;
 		CurrentTime = 0.0f;
+		UGameplayStatics::PlaySound2D(GetWorld(), DestroySound);
 		//GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &AFractureWall::DestroySelf, 5.0f, false);
 	}
 }
@@ -87,9 +93,13 @@ void AFractureWall::DestroySelf()
 
 void AFractureWall::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	//UE_LOG(LogTemp, Warning, TEXT("Hit detected on Geometry Collection!"));
 	// 충돌한 액터가 탱크인지 확인
-	//if (OtherActor && OtherActor->IsA(APawn::StaticClass()))
-	//{
+	if (OtherActor && OtherActor->IsA(APawn::StaticClass()))
+	{
+		SetDestroyTimer();
+		SetActorEnableCollision(false);
+	}
 	//	// 탱크의 이동 방향과 속도 가져오기
 	//	//FVector TankVelocity = OtherActor->GetVelocity();
 	//	FVector TankDirection = OtherActor->GetActorForwardVector().GetSafeNormal(); // 방향 벡터 노멀라이즈

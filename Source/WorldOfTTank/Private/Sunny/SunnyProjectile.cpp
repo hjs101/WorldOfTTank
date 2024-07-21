@@ -29,6 +29,13 @@ ASunnyProjectile::ASunnyProjectile()
 	ProjectileMovementComponent->MaxSpeed = 1300.f;
 	ProjectileMovementComponent->InitialSpeed = 1300.f;
 
+
+	// Hit 이펙트 나이아가라 컴포넌트 추가
+	HitNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("HitNiagara"));
+	HitNiagara->SetupAttachment(ProjectileMesh);
+	HitNiagara->bAutoActivate = false; // 처음에는 비활성 상태로 설정
+	HitNiagara->SetRelativeScale3D(FVector(1.f)); // 필요에 따라 크기 조정
+
 }
 
 // Called when the game starts or when spawned
@@ -88,9 +95,23 @@ void ASunnyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
 	}
-	Destroy();
 
-	
+	// Hit point 
+	FVector Location = ProjectileMesh->GetComponentLocation();
+	FRotator Rotation = ProjectileMesh->GetComponentRotation();
+
+	if (HitNiagara) {
+		// ProjectileSpawnPoint의 위치와 회전에 Niagara 이펙트 재생
+		HitNiagara->SetWorldLocationAndRotation(Location, Rotation);
+		HitNiagara->Activate(); // Niagara 이펙트 활성화
+	}
+
+	/*if (HitSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+	}*/
+
+	Destroy();
 
 }
 

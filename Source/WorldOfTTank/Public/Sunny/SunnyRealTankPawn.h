@@ -62,11 +62,11 @@ public:
 
 
 	// NiagaraSystem
-	UPROPERTY(EditAnyWhere, Category = "Combat")
+	UPROPERTY(EditAnyWhere, Category = "Effect")
 	class UNiagaraComponent* FireNiagara;
 
 	// 발사 소리
-	UPROPERTY(EditAnywhere, Category = "Combat")
+	UPROPERTY(EditAnywhere, Category = "Sound")
 	class USoundBase* FireSound;
 
 	UFUNCTION()

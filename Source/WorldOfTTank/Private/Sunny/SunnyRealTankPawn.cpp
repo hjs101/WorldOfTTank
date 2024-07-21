@@ -23,6 +23,10 @@
 #include "NiagaraSystem.h"
 
 
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
+
+
 
 
 
@@ -43,6 +47,11 @@ ASunnyRealTankPawn::ASunnyRealTankPawn()
 	FireNiagara->bAutoActivate = false; // 처음에는 비활성 상태로 설정
 	FireNiagara->SetRelativeScale3D(FVector(1.f)); // 필요에 따라 크기 조정
 
+	// Track 사운드 컴포넌트 추가
+	TrackSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("TrackSound"));
+	TrackSoundComp->SetupAttachment(RootComponent);
+	TrackSoundComp->bAutoActivate = false;
+
 }
 
 void ASunnyRealTankPawn::BeginPlay()
@@ -52,7 +61,15 @@ void ASunnyRealTankPawn::BeginPlay()
 	// Tank physics settings
 	BodyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
 	TracksMaterial = GetMesh()->CreateDynamicMaterialInstance(1);
+
+	// Track 사운드 설정
+	if (TrackSound)
+	{
+		TrackSoundComp->SetSound(TrackSound);
+	}
+
 }
+
 
 
 void ASunnyRealTankPawn::Tick(float DeltaTime)
@@ -60,6 +77,7 @@ void ASunnyRealTankPawn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	bStopTurn = (GetMesh()->GetPhysicsAngularVelocityInDegrees().Length() > 30);
 	SetSpeed();
+	UpdateTrackSound();
 }
 
 
@@ -76,7 +94,28 @@ void ASunnyRealTankPawn::SetSpeed()
 	SunnyAiAnim->SetWheelSpeed(speed);
 }
 
+void ASunnyRealTankPawn::UpdateTrackSound()
+{
+	FVector velocity = GetMesh()->GetPhysicsLinearVelocity();
+	float speed = velocity.Size();
 
+	if (speed > 0.0f) {
+		if (!TrackSoundComp->IsPlaying())
+		{
+			TrackSoundComp->Play();
+		}
+
+		float Pitch = FMath::GetMappedRangeValueClamped(FVector2D(0.f, 1000.f), FVector2D(0.5f, 1.5f), speed);
+		TrackSoundComp->SetPitchMultiplier(Pitch);
+	}
+	else
+	{
+		if (TrackSoundComp->IsPlaying())
+		{
+			TrackSoundComp->Stop();
+		}
+	}
+}
 
 
 
@@ -292,3 +331,8 @@ void ASunnyRealTankPawn::HandleDestruction()
 {
 }
 
+
+UAudioComponent* ASunnyRealTankPawn::GetTrackSoundComp() const
+{
+	return TrackSoundComp;
+}

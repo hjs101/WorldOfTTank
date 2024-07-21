@@ -69,6 +69,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	class USoundBase* FireSound;
 
+	UFUNCTION()
+	UAudioComponent* GetTrackSoundComp() const;
 
 
 protected:
@@ -94,5 +96,15 @@ private:
 	float VehicleYaw = 0.f;
 
 
+	// Track 사운드 컴포넌트
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	class UAudioComponent* TrackSoundComp;
+
+	// Track 사운드
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	class USoundCue* TrackSound;
+
+
+	void UpdateTrackSound();
 	 
 };

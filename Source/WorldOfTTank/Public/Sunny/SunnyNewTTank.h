@@ -108,12 +108,15 @@ public:
 
 
 	// NiagaraSystem
-	UPROPERTY(EditAnyWhere, Category = "Combat")
+	UPROPERTY(EditAnyWhere, Category = "Effect")
 	class UNiagaraComponent* DamageNiagara;
 
 	// 발사 소리
-	UPROPERTY(EditAnywhere, Category = "Combat")
+	UPROPERTY(EditAnywhere, Category = "Sound")
 	class USoundBase* DamageSound;
+
+	
+
 
 
 
@@ -145,8 +148,8 @@ public:
 	void OffOutLine();
 	
 
+	// 죽음 상태로 변경
 	void ChangeStateDie();
-
 
 
 	bool bDead = false;

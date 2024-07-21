@@ -5,6 +5,7 @@
 #include "Sunny/SunnyNewFSM.h"
 #include "Sunny/SunnyGameMode.h"
 #include "Sunny/SunnyHealth.h"
+#include "Sunny/SunnyAIController.h"
 
 #include "CSW/PlayerTankVehicle.h"
 
@@ -24,7 +25,9 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
-#include "Sunny/SunnyAIController.h"
+
+#include "Components/AudioComponent.h"
+
 
 
 ASunnyNewTTank::ASunnyNewTTank()

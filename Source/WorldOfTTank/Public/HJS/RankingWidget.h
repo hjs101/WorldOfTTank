@@ -28,6 +28,9 @@ public:
 	UFUNCTION()
 	void SetDisableAddButton();
 
+	UFUNCTION()
+	void LoseSet();
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -49,6 +52,9 @@ private:
 
 	UPROPERTY(EditAnywhere,meta=(BindWidget))
 	class UButton* Quit;
+
+	UPROPERTY(EditAnywhere,meta=(BindWidget))
+	class UImage* Victory;
 
 	float ResultTime = 0.f;
 

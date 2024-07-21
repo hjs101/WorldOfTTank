@@ -39,7 +39,7 @@ public:
 
 	// NiagaraSystem
 	UPROPERTY(EditAnyWhere, Category = "Effect")
-	class UNiagaraComponent* HitNiagara;
+	class UNiagaraSystem* HitNiagara;
 
 	// 미사일 부딪히는 소리
 	/*UPROPERTY(EditAnywhere, Category = "Sound")

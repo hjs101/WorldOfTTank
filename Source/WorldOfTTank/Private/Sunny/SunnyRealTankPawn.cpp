@@ -52,6 +52,9 @@ ASunnyRealTankPawn::ASunnyRealTankPawn()
 	TrackSoundComp->SetupAttachment(RootComponent);
 	TrackSoundComp->bAutoActivate = false;
 
+	FireSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("FireSound"));
+	FireSoundComp->SetupAttachment(RootComponent);
+	FireSoundComp->bAutoActivate = false;
 }
 
 void ASunnyRealTankPawn::BeginPlay()
@@ -67,6 +70,9 @@ void ASunnyRealTankPawn::BeginPlay()
 	{
 		TrackSoundComp->SetSound(TrackSound);
 	}
+
+	if (FireSound)
+		FireSoundComp->SetSound(FireSound);
 
 }
 
@@ -99,7 +105,7 @@ void ASunnyRealTankPawn::UpdateTrackSound()
 	FVector velocity = GetMesh()->GetPhysicsLinearVelocity();
 	float speed = velocity.Size();
 
-	if (speed > 0.0f) {
+	// if (speed > 0.0f) {
 		if (!TrackSoundComp->IsPlaying())
 		{
 			TrackSoundComp->Play();
@@ -107,14 +113,14 @@ void ASunnyRealTankPawn::UpdateTrackSound()
 
 		float Pitch = FMath::GetMappedRangeValueClamped(FVector2D(0.f, 1000.f), FVector2D(0.5f, 1.5f), speed);
 		TrackSoundComp->SetPitchMultiplier(Pitch);
-	}
-	else
+	// }
+	/*else
 	{
 		if (TrackSoundComp->IsPlaying())
 		{
 			TrackSoundComp->Stop();
 		}
-	}
+	}*/
 }
 
 
@@ -318,11 +324,7 @@ void ASunnyRealTankPawn::Fire()
 		FireNiagara->SetWorldLocationAndRotation(Location, Rotation);
 		FireNiagara->Activate(); // Niagara 이펙트 활성화
 	}
-
-	if (FireSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
+	FireSoundComp->Play(0.f);
 
 
 }

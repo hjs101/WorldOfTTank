@@ -66,8 +66,13 @@ public:
 	class UNiagaraComponent* FireNiagara;
 
 	// 발사 소리
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	class UAudioComponent* FireSoundComp;
+	
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	class USoundBase* FireSound;
+
+	
 
 	UFUNCTION()
 	UAudioComponent* GetTrackSoundComp() const;

@@ -228,7 +228,7 @@ void AAITank_1::UpdateMovementSound()
 	FVector Velocity = GetMesh()->GetPhysicsLinearVelocity();
 	float Speed = Velocity.Size();
 
-	if (Speed > 0.0f){
+	// if (Speed > 0.0f){
 		if (!TrackSoundComp->IsPlaying())
 		{
 			TrackSoundComp->Play();
@@ -236,14 +236,14 @@ void AAITank_1::UpdateMovementSound()
 
 		float Pitch = FMath::GetMappedRangeValueClamped(FVector2D(0.f,1000.f), FVector2D(0.5f,1.5f),Speed);
 		TrackSoundComp->SetPitchMultiplier(Pitch);
-	}
-	else
-	{
-		if (TrackSoundComp->IsPlaying())
-		{
-			TrackSoundComp->Stop();
-		}
-	}
+	// }
+	// else
+	// {
+	// 	if (TrackSoundComp->IsPlaying())
+	// 	{
+	// 		TrackSoundComp->Stop();
+	// 	}
+	// }
 
 }
 

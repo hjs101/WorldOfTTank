@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "RankingWidget.generated.h"
+#include "PauseUI.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class WORLDOFTTANK_API URankingWidget : public UUserWidget
+class WORLDOFTTANK_API UPauseUI : public UUserWidget
 {
 	GENERATED_BODY()
 	
@@ -21,15 +21,6 @@ public:
 	void OnMyRestart();
 	UFUNCTION()
 	void OnMyQuit();
-	UFUNCTION()
-	void OnAddRanking();
-	UFUNCTION()
-	void SetResultTime(float EndTime);
-	UFUNCTION()
-	void SetDisableAddButton();
-
-	UFUNCTION()
-	void LoseSet();
 
 protected:
 	virtual void NativeConstruct() override;
@@ -39,23 +30,8 @@ private:
 	class UVerticalBox* RankingBox;
 
 	UPROPERTY(EditAnywhere,meta=(BindWidget))
-	class UEditableTextBox* Name;
-
-	UPROPERTY(EditAnywhere,meta=(BindWidget))
-	class UTextBlock* Time;
-
-	UPROPERTY(EditAnywhere,meta=(BindWidget))
-	class UButton* AddRanking;
-
-	UPROPERTY(EditAnywhere,meta=(BindWidget))
 	class UButton* Restart;
 
 	UPROPERTY(EditAnywhere,meta=(BindWidget))
 	class UButton* Quit;
-
-	UPROPERTY(EditAnywhere,meta=(BindWidget))
-	class UImage* Victory;
-
-	float ResultTime = 0.f;
-
 };

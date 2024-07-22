@@ -31,10 +31,10 @@ ASunnyProjectile::ASunnyProjectile()
 
 
 	// Hit 이펙트 나이아가라 컴포넌트 추가
-	HitNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("HitNiagara"));
-	HitNiagara->SetupAttachment(ProjectileMesh);
-	HitNiagara->bAutoActivate = false; // 처음에는 비활성 상태로 설정
-	HitNiagara->SetRelativeScale3D(FVector(1.f)); // 필요에 따라 크기 조정
+	//HitNiagara = CreateDefaultSubobject<UNiagaraComponent>(TEXT("HitNiagara"));
+	//HitNiagara->SetupAttachment(ProjectileMesh);
+	//HitNiagara->bAutoActivate = false; // 처음에는 비활성 상태로 설정
+	//HitNiagara->SetRelativeScale3D(FVector(1.f)); // 필요에 따라 크기 조정
 
 }
 
@@ -102,8 +102,9 @@ void ASunnyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 
 	if (HitNiagara) {
 		// ProjectileSpawnPoint의 위치와 회전에 Niagara 이펙트 재생
-		HitNiagara->SetWorldLocationAndRotation(Location, Rotation);
-		HitNiagara->Activate(); // Niagara 이펙트 활성화
+		//HitNiagara->SetWorldLocationAndRotation(Location, Rotation);
+		//HitNiagara->Activate(); // Niagara 이펙트 활성화
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitNiagara, Hit.Location, FRotator::ZeroRotator, FVector(1));
 	}
 
 	/*if (HitSound)

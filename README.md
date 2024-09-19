@@ -32,7 +32,7 @@
 
 ---
 - Git
-- discode
+- Discode
 
 ### ✨Git 컨벤션
 
